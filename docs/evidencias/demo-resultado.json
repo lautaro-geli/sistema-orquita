@@ -1,0 +1,9 @@
+{
+  "servidor_main_ejecutado": true,
+  "cliente_main_ejecutado": true,
+  "capturas_persistidas": 3,
+  "escape_tras_capturas": true,
+  "escape_tras_reinicio_sin_nuevos_mensajes": true,
+  "archivo_original_del_usuario_modificado": false,
+  "cierre_demo": "Procesos propios terminados por el ejecutor después de verificar; el cierre ordenado se verifica en JUnit."
+}
