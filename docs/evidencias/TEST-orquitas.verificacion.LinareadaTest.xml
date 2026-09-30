@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="orquitas.verificacion.LinareadaTest" time="0.542" tests="13" errors="0" skipped="0" failures="0">
+  <testcase name="detenerCierraClientesQueNoEnvianNada" classname="orquitas.verificacion.LinareadaTest" time="0.046">
+    <system-out>[ReceptorIngestaTCP] Puerto 54145
+</system-out>
+  </testcase>
+  <testcase name="escritorYAuditorSonHilosDistintosConRunPropio" classname="orquitas.verificacion.LinareadaTest" time="0.0" />
+  <testcase name="escritorContinuaDespuesDeUnErrorRecuperable" classname="orquitas.verificacion.LinareadaTest" time="0.006">
+    <system-out>[ActualizadorEstomago] Registrada: B
+</system-out>
+    <system-err>[ActualizadorEstomago] Captura NO confirmada: A; Error inducido
+</system-err>
+  </testcase>
+  <testcase name="retransmitirUnIdNoCuentaOtroLobito" classname="orquitas.verificacion.LinareadaTest" time="0.001" />
+  <testcase name="datosInvalidosNoSePersisten" classname="orquitas.verificacion.LinareadaTest" time="0.002">
+    <system-err>[Recopilador] Mensaje inválido o desconocido: descartado
+[Recopilador] Mensaje inválido o desconocido: descartado
+[Recopilador] Mensaje inválido o desconocido: descartado
+[Recopilador] Mensaje inválido o desconocido: descartado
+[Recopilador] Mensaje inválido o desconocido: descartado
+[Recopilador] Mensaje inválido o desconocido: descartado
+</system-err>
+  </testcase>
+  <testcase name="lectorCuentaArchivoDescartaCorruptosYDuplicados" classname="orquitas.verificacion.LinareadaTest" time="0.003" />
+  <testcase name="colaAceptaClientesConcurrentesYSeDrenaAlDetener" classname="orquitas.verificacion.LinareadaTest" time="0.03">
+    <system-out>[ActualizadorEstomago] Registrada: L0
+[ActualizadorEstomago] Registrada: L1
+[ActualizadorEstomago] Registrada: L2
+[ActualizadorEstomago] Registrada: L4
+[ActualizadorEstomago] Registrada: L5
+[ActualizadorEstomago] Registrada: L3
+[ActualizadorEstomago] Registrada: L6
+[ActualizadorEstomago] Registrada: L7
+[ActualizadorEstomago] Registrada: L8
+[ActualizadorEstomago] Registrada: L9
+[ActualizadorEstomago] Registrada: L10
+[ActualizadorEstomago] Registrada: L12
+[ActualizadorEstomago] Registrada: L11
+[ActualizadorEstomago] Registrada: L13
+[ActualizadorEstomago] Registrada: L14
+[ActualizadorEstomago] Registrada: L15
+[ActualizadorEstomago] Registrada: L16
+[ActualizadorEstomago] Registrada: L17
+[ActualizadorEstomago] Registrada: L18
+[ActualizadorEstomago] Registrada: L20
+[ActualizadorEstomago] Registrada: L21
+[ActualizadorEstomago] Registrada: L23
+[ActualizadorEstomago] Registrada: L25
+[ActualizadorEstomago] Registrada: L19
+[ActualizadorEstomago] Registrada: L24
+[ActualizadorEstomago] Registrada: L22
+[ActualizadorEstomago] Registrada: L26
+[ActualizadorEstomago] Registrada: L28
+[ActualizadorEstomago] Registrada: L29
+[ActualizadorEstomago] Registrada: L27
+</system-out>
+  </testcase>
+  <testcase name="semaforoExcluyeLecturaYEscrituraConcurrentes" classname="orquitas.verificacion.LinareadaTest" time="0.004" />
+  <testcase name="dosRegistrosMantienenBusquedaYElTerceroActivaEscape" classname="orquitas.verificacion.LinareadaTest" time="0.117">
+    <system-out>[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -&gt; ESCAPE
+[Navegador] Modo operativo actualizado a: ESCAPE
+[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T13:19:45.853668200}
+</system-out>
+  </testcase>
+  <testcase name="capturaPendienteBloqueaAlLectorHastaTerminarLaEscritura" classname="orquitas.verificacion.LinareadaTest" time="0.154">
+    <system-out>[ActualizadorEstomago] Registrada: A
+</system-out>
+  </testcase>
+  <testcase name="tcpRealTramasInvalidasFragmentadasReconectarYTresCapturas" classname="orquitas.verificacion.LinareadaTest" time="0.027">
+    <system-out>[ReceptorIngestaTCP] Puerto 54147
+[ActualizadorEstomago] Registrada: A
+[ActualizadorEstomago] Registrada: B
+[ActualizadorEstomago] Registrada: C
+[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -&gt; ESCAPE
+[Navegador] Modo operativo actualizado a: ESCAPE
+[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T13:19:46.034308600}
+</system-out>
+    <system-err>[Recopilador] Mensaje inválido o desconocido: descartado
+</system-err>
+  </testcase>
+  <testcase name="errorDeArchivoLiberaPermisoYNoDevuelveConteoParcial" classname="orquitas.verificacion.LinareadaTest" time="0.001" />
+  <testcase name="reiniciarConTresRegistrosActivaEscapeUnaSolaVez" classname="orquitas.verificacion.LinareadaTest" time="0.114">
+    <system-out>[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -&gt; ESCAPE
+[Navegador] Modo operativo actualizado a: ESCAPE
+[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T13:19:46.043394900}
+</system-out>
+  </testcase>
+</testsuite>
