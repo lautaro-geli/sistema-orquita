@@ -20,7 +20,7 @@ public class EntrenadorDemostracion {
         while(muestras.size()<cantidad) {
             boolean objeto=muestras.size()%2==1;
             double[] d=new double[12];
-            int escenario=azar.nextInt(5);
+            int escenario=azar.nextInt(6);
             for(int i=0;i<12;i++) d[i]=600+azar.nextDouble()*3000;
             if(escenario==0) Arrays.fill(d, objeto?80+azar.nextDouble()*200:1000+azar.nextDouble()*2500);
             if(escenario==1) { // Pared lateral con frente despejado.
@@ -32,6 +32,10 @@ public class EntrenadorDemostracion {
                 int sector=4+azar.nextInt(4);
                 d[sector]=40+azar.nextDouble()*340;
                 if(azar.nextBoolean()) d[4+(sector-4+1)%4]=40+azar.nextDouble()*340;
+            }
+            if (escenario>=4) { // Ejemplos cercanos al umbral; el ruido también puede cruzarlo.
+                for(int i=4;i<8;i++) d[i]=1500+azar.nextDouble()*2000;
+                d[4+azar.nextInt(4)]=330+azar.nextDouble()*170;
             }
             for(int i=0;i<12;i++) d[i]=Math.min(4000,Math.max(0,d[i]*(0.95+azar.nextDouble()*0.1)));
             boolean etiquetaObjeto=false;
@@ -49,7 +53,7 @@ public class EntrenadorDemostracion {
         red.randomizeWeights(new Random(20260930L));
         MomentumBackpropagation regla=new MomentumBackpropagation();
         regla.setLearningRate(0.1); regla.setMomentum(0.7);
-        regla.setMaxIterations(2000); regla.setMaxError(0.006);
+        regla.setMaxIterations(4000); regla.setMaxError(0.003);
         red.setLearningRule(regla);
         DataSet datos=new DataSet(12,2);
         for(Muestra m:generar(2400,101L)) datos.add(new DataSetRow(m.telemetria().normalizar(),

@@ -33,9 +33,9 @@ Servidor: `[puerto] [archivoEstomago] [modelo]`. Simulador: `[host] [puerto] [pr
 
 ## Pruebas verificadas
 
-`mvn test`: 22 pruebas, cero fallos (13 originales sin modificar y 9 nuevas). Las nuevas vuelven a entrenar un modelo temporal y verifican inferencia, validación, persistencia del modelo, ambos giros, detención, telemetría inválida y TCP con dos conexiones, fragmentación, agrupación y reconexión.
+`mvn test`: 30 pruebas, cero fallos (13 de Linareada, 9 de Hito 2 y 8 de robustez). El test de cierre espera que el cliente esté aceptado; otra prueba repite ese cierre 30 veces. Las pruebas TCP se adaptaron a la nueva respuesta ERROR. Las nuevas vuelven a entrenar un modelo temporal y verifican inferencia, validación, persistencia del modelo, ambos giros, detención, telemetría inválida y TCP con dos conexiones, fragmentación, agrupación y reconexión.
 
-Modelo entregado: 2400 ejemplos ficticios de entrenamiento, 1000 de validación con otra semilla; **98,50 %** de exactitud sintética. Matriz: LIBRE 498 correctos / 2 errores; OBJETO 487 correctos / 13 errores. No es precisión del sensor ni una garantía ante toda lectura posible.
+Modelo entregado: 2400 ejemplos ficticios de entrenamiento, 1000 de validación con otra semilla; **98,00 %** de exactitud sintética. Matriz: LIBRE 486 correctos / 14 errores; OBJETO 494 correctos / 6 errores. Una evaluación posterior con semilla nueva obtuvo 97,80 % (978/1000); en la frontera 300–500 mm obtuvo 90,625 % (3625/4000). La frontera usa un generador distinto. Las semillas de desarrollo no se presentan como evaluación final ciega. No es precisión del sensor ni una garantía ante toda lectura posible.
 
 `evidencias/` incluye la evaluación y la ejecución de servidor + simulador: seis órdenes correctas, tres registros y recuperación de ESCAPE al reiniciar. Los .log contienen datos de simulación.
 
@@ -45,7 +45,10 @@ Modelo entregado: 2400 ejemplos ficticios de entrenamiento, 1000 de validación 
 - [Secuencias](docs/Orquitas_Vistas_Secuencia_Modulo_Servidor.md).
 - [Clases](docs/Orquitas_Diagrama_Clases_Modulo_Servidor.md): firmas extraídas del bytecode compilado.
 - `docs/diagramas/`: PNG blancos y draw.io editable; abrir Orquitas_Hito2.drawio.
-- [Protocolo](docs/PROTOCOLO.md).
+- [Protocolo](docs/PROTOCOLO.md): decimal estricto y ERROR ante tramas inválidas completas.
+- [Informe de ejemplos y resultados](docs/Informe_simulacion_Hito2.docx).
+- [DCU en Word](docs/DCU_Hito2.docx), importable a Google Docs.
+- [Correcciones y comprobaciones](docs/REVISION_CONTINUACION.md).
 - `docs/historico-linareada/` conserva lo recibido: no usar sus diagramas como versión actual.
 
 Cambios justificados: `procesarRecopilacion(PaqueteRecopilacion)` y `determinarMovimiento(Telemetria)` devuelven Movimiento. Así ComunicadorOrquita conserva el destino de cada respuesta sin guardar un socket global. `calcularMovimiento` recibe también Telemetria porque necesita las sumas laterales. Se mantiene el escritor permanente probado; la secuencia representa encolar y despertar ese hilo. Las firmas y llamadas nuevas figuran en los diagramas vigentes.
@@ -57,3 +60,11 @@ Esta es una **demostración preliminar con datos ficticios**, no el robot final 
 La consigna de La Orquita Pensante exige ejemplos de sensor real y éxito en campo: faltan esas mediciones. Los 12 sectores representan una convención simulada de 180°, centros 7,5°+15°i; no afirman que un sensor real tenga esa geometría. Antes de conectar hardware hay que calibrar cobertura, rango y errores. La red aprende del generador con ruido ±5 % y no fue validada con hardware. No se presenta la simulación como evidencia de campo.
 
 La publicación del código en GitHub no reemplaza la entrega docente. No se publicaron documentos en Google Docs. La entrega docente requiere sus formatos y revisión del equipo; para Java plano hay una carpeta `entrega-java/` con los fuentes de ejecución.
+
+## Robustez y reproducción
+
+Las distancias admiten dígitos y punto decimal, sin signos, exponentes, hexadecimales ni espacios. Una trama completa inválida o excesiva recibe `ERROR|TRAMA_INVALIDA`; no produce captura ni orden. EOF sin LF se descarta. Leer también ERROR en los clientes evita dejar respuestas pendientes antes de cerrar el socket. El simulador interrumpe su ejecución ante un error; no mueve motores.
+
+El entrenamiento conserva 12-6-2 y añade casos de frontera. Usa 4000 iteraciones máximas y error objetivo 0.003; esta ejecución alcanzó el límite de iteraciones con error 0.005529142110638303, no el error objetivo. EvaluadorDemostracion exporta predicciones de validación, frontera y ejemplos a evidencias/predicciones.csv. Los resultados se pueden recalcular desde ese CSV. La red aproxima una regla sintética; no se afirma que mejore a una regla determinista ni que identifique objetos reales.
+
+GitHub Actions verifica Linux/JDK 21 y Windows/JDK 17; el estado de cada ejecución está en el pull request. No confundir una configuración de CI con un resultado aprobado.

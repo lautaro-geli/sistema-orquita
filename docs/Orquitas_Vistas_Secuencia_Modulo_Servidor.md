@@ -6,7 +6,7 @@ Cada imagen tiene un archivo .drawio con el mismo nombre. El archivo combinado e
 
 ![CU-06](diagramas/02_Secuencia_CU06.png)
 
-Orquita → ReceptorIngestaTCP (línea TCP) → ComunicadorOrquita.enviarRecopilacion(String). PaqueteRecopilacion.decodificar(String) valida la trama completa. Recopilador.procesarRecopilacion(PaqueteRecopilacion) extrae datos, notifica captura opcional y llama a CU-07 si hay telemetría. Retorna Movimiento al comunicador; null para CAPTURA legado. El comunicador continúa CU-08. Una excepción de formato se descarta antes de persistir.
+Orquita → ReceptorIngestaTCP (línea TCP) → ComunicadorOrquita.enviarRecopilacion(String). PaqueteRecopilacion.decodificar(String) valida la trama completa. Recopilador.procesarRecopilacion(PaqueteRecopilacion) extrae datos, notifica captura opcional y llama a CU-07 si hay telemetría. Retorna Movimiento al comunicador; null para CAPTURA legado. El comunicador continúa CU-08. Una excepción de formato se descarta antes de persistir y llama enviarErrorTrama(): ERROR|TRAMA_INVALIDA por la misma conexión. Una línea excesiva recibe el mismo error al llegar LF.
 
 ## CU-07 — Determinar movimiento
 

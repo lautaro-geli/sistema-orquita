@@ -98,6 +98,8 @@ public class HitoDosTest {
                 a.getOutputStream().write(mensaje.substring(8).getBytes(StandardCharsets.UTF_8));
                 assertEquals("ORDEN|AVANZAR",ra.readLine());
                 a.getOutputStream().write(("X".repeat(300)+"\n"+trama("INVALIDA",Double.NaN)+"\n"+trama("C",80)+"\n"+trama("A",2500)+"\n").getBytes(StandardCharsets.UTF_8));
+                assertEquals("ERROR|TRAMA_INVALIDA",ra.readLine()); // Trama excesiva
+                assertEquals("ERROR|TRAMA_INVALIDA",ra.readLine()); // NaN
                 assertEquals("ORDEN|DETENER",ra.readLine()); assertEquals("ORDEN|AVANZAR",ra.readLine());
             }
             try(Socket c=new Socket("localhost",receptor.obtenerPuerto())) {

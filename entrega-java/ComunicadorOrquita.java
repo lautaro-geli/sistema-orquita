@@ -15,10 +15,15 @@ public class ComunicadorOrquita {
         PaqueteRecopilacion paquete;
         try { paquete=PaqueteRecopilacion.decodificar(mensaje); }
         catch (IllegalArgumentException | java.time.DateTimeException e) {
-            System.err.println("[ComunicadorOrquita] Trama invalida: descartada"); return;
+            System.err.println("[ComunicadorOrquita] Trama invalida: descartada");
+            enviarErrorTrama(); return;
         }
         Movimiento movimiento=recopilador.procesarRecopilacion(paquete);
         if(movimiento!=null) enviarOrdenNavegacion(movimiento);
+    }
+    /** Respuesta acotada: no refleja contenido recibido ni confirma una captura. */
+    public void enviarErrorTrama() throws IOException {
+        salida.write("ERROR|TRAMA_INVALIDA\n"); salida.flush();
     }
     public void enviarOrdenNavegacion(Movimiento movimiento) throws IOException {
         salida.write(codificarOrden(movimiento)); salida.flush();

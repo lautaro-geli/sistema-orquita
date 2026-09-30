@@ -1,4 +1,4 @@
-[ReceptorIngestaTCP] Puerto 63294
+[ReceptorIngestaTCP] Puerto 60671
 [ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -> ESCAPE
 [Navegador] Modo operativo actualizado a: ESCAPE
-[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T17:37:55.750205700}
+[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T18:52:23.625826400}

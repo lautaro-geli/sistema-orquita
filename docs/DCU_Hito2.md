@@ -13,7 +13,7 @@ Precondición: servidor iniciado y conexión TCP abierta. Disparador: Orquita en
 5. Si existe aviso, ReceptorCapturas.notificarCaptura(aviso) inicia CU-09 mediante encolarCaptura.
 6. Si existe telemetría, llama Navegador.determinarMovimiento(telemetria) (CU-07). Su retorno llega al comunicador, que continúa CU-08.
 
-Alternativas: una trama inválida se descarta sin captura ni orden; CAPTURA legado ejecuta solamente CU-09. Error de envío cierra esa conexión; una captura ya encolada no se revierte. La orden no es confirmación de persistencia.
+Alternativas: una trama completa inválida se descarta sin captura ni orden, pero recibe ERROR|TRAMA_INVALIDA; CAPTURA legado ejecuta solamente CU-09. Error de envío cierra esa conexión; una captura ya encolada no se revierte. La orden no es confirmación de persistencia.
 
 ## CU-07 — Determinar movimiento
 

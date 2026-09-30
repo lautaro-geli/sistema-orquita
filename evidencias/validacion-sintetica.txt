@@ -3,6 +3,6 @@ MLP 12-6-2 sigmoid / MomentumBackpropagation
 Entrenamiento: 2400 ejemplos, semilla 101; pesos: 20260930
 Validacion independiente: 1000 ejemplos, semilla 202
 Filas=real, columnas=prediccion [LIBRE, OBJETO]
-LIBRE: 498 2
-OBJETO: 13 487
-Exactitud sintetica: 98.50%
+LIBRE: 486 14
+OBJETO: 6 494
+Exactitud sintetica: 98.00%

@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Adaptador TCP de La Linareada; serÃ¡ reemplazado por Bluetooth. */
+/** Adaptador TCP de La Linareada; será reemplazado por Bluetooth. */
 public class ReceptorIngestaTCP {
     private final int puerto;
     private final Recopilador recopilador;
@@ -48,6 +48,11 @@ public class ReceptorIngestaTCP {
 
     public int obtenerPuerto() {
         return servidor == null ? -1 : servidor.getLocalPort();
+    }
+
+    /** Clientes ya aceptados y registrados; no cuenta conexiones en la cola del SO. */
+    public int obtenerCantidadClientes() {
+        synchronized (clientes) { return clientes.size(); }
     }
 
     public void detener() {
@@ -88,6 +93,8 @@ public class ReceptorIngestaTCP {
                         String linea = mensaje.toString();
                         if (linea.endsWith("\r")) linea = linea.substring(0, linea.length() - 1);
                         comunicador.enviarRecopilacion(linea);
+                    } else {
+                        comunicador.enviarErrorTrama();
                     }
                     mensaje.setLength(0);
                     excesivo = false;
@@ -99,7 +106,7 @@ public class ReceptorIngestaTCP {
             }
             // EOF sin '\n': trama incompleta; nunca se acepta como captura.
         } catch (IOException e) {
-            if (activo) System.err.println("[ReceptorIngestaTCP] ConexiÃ³n interrumpida: " + e.getMessage());
+            if (activo) System.err.println("[ReceptorIngestaTCP] Conexión interrumpida: " + e.getMessage());
         } finally {
             synchronized (clientes) {
                 clientes.remove(cliente);

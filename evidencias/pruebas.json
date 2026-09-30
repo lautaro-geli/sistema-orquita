@@ -5,7 +5,7 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "0.945"
+    "time": "9.642"
   },
   {
     "name": "orquitas.verificacion.LinareadaTest",
@@ -13,6 +13,14 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "0.454"
+    "time": "0.453"
+  },
+  {
+    "name": "orquitas.verificacion.RobustezHitoDosTest",
+    "tests": "8",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "10.292"
   }
 ]

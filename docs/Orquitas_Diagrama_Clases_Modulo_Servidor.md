@@ -79,6 +79,7 @@ Fuente: `src/main/java/orquitas/servidor/comunicacion/ComunicadorOrquita.java`.
 - salida : Writer
 + ComunicadorOrquita(Recopilador, Writer)
 + enviarRecopilacion(String) : void
++ enviarErrorTrama() : void
 + enviarOrdenNavegacion(Movimiento) : void
 - codificarOrden(Movimiento) : String
 ```
@@ -97,6 +98,7 @@ Fuente: `src/main/java/orquitas/servidor/comunicacion/ReceptorIngestaTCP.java`.
 + ReceptorIngestaTCP(int, Recopilador)
 + iniciar() : void
 + obtenerPuerto() : int
++ obtenerCantidadClientes() : int
 + detener() : void
 - manejarCliente(Socket) : void
 ```

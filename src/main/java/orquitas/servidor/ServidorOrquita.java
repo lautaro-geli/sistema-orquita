@@ -29,7 +29,7 @@ public class ServidorOrquita {
         actualizador.start(); // JVM invoca run() en el hilo escritor.
         lector.start();       // JVM invoca run() en el hilo auditor independiente.
         Runnable apagar = () -> {
-            entrada.detener(); // Primero termina toda recepciÃ³n en curso.
+            entrada.detener(); // Primero termina toda recepción en curso.
             actualizador.detener();
             try { actualizador.join(); } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

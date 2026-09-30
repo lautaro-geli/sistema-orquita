@@ -19,7 +19,11 @@ public final class PaqueteRecopilacion {
         String[] valores=c[2].split(";", -1);
         if(valores.length!=12) throw new IllegalArgumentException("Faltan distancias");
         double[] distancias=new double[12];
-        for(int i=0;i<12;i++) distancias[i]=Double.parseDouble(valores[i]);
+        for(int i=0;i<12;i++) {
+            if (!valores[i].matches("[0-9]+(?:\\.[0-9]+)?"))
+                throw new IllegalArgumentException("Distancia decimal invalida");
+            distancias[i]=Double.parseDouble(valores[i]);
+        }
         Telemetria t=new Telemetria(distancias);
         AvisoCaptura a=c[3].isEmpty()?null:new AvisoCaptura(c[3], fecha);
         return new PaqueteRecopilacion(t,a);

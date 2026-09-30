@@ -80,6 +80,7 @@
     "metodos": [
       "+ ComunicadorOrquita(Recopilador, Writer)",
       "+ enviarRecopilacion(String) : void",
+      "+ enviarErrorTrama() : void",
       "+ enviarOrdenNavegacion(Movimiento) : void",
       "- codificarOrden(Movimiento) : String"
     ],
@@ -99,6 +100,7 @@
       "+ ReceptorIngestaTCP(int, Recopilador)",
       "+ iniciar() : void",
       "+ obtenerPuerto() : int",
+      "+ obtenerCantidadClientes() : int",
       "+ detener() : void",
       "- manejarCliente(Socket) : void"
     ],

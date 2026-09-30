@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- El servidor sÃ³lo usa el JDK. JUnit se usa exclusivamente para verificar. -->
+    <!-- Neuroph se usa en ejecución; JUnit exclusivamente para verificar. -->
     <dependencies>
         <dependency><groupId>com.github.neuroph</groupId><artifactId>neuroph-core</artifactId><version>2.98</version></dependency>
         <dependency>
