@@ -1,0 +1,190 @@
+{
+  "AvisoCaptura": {
+    "atributos": [
+      "- idCaptura : String",
+      "- timestamp : LocalDateTime"
+    ],
+    "metodos": [
+      "+ AvisoCaptura(String, LocalDateTime)",
+      "+ getIdCaptura() : String",
+      "+ getTimestamp() : LocalDateTime",
+      "+ toString() : String"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/AvisoCaptura.java",
+    "paquete": "orquitas.servidor.captura"
+  },
+  "Captura": {
+    "atributos": [
+      "- idCaptura : String",
+      "- timestamp : LocalDateTime"
+    ],
+    "metodos": [
+      "+ Captura(String, LocalDateTime)",
+      "+ getIdCaptura() : String",
+      "+ getTimestamp() : LocalDateTime",
+      "+ aLinea() : String",
+      "+ desdeLinea(String) : Captura {static}",
+      "+ toString() : String"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/Captura.java",
+    "paquete": "orquitas.servidor.captura"
+  },
+  "ReceptorCapturas": {
+    "atributos": [
+      "- actualizadorEstomago : ActualizadorEstomago"
+    ],
+    "metodos": [
+      "+ ReceptorCapturas(ActualizadorEstomago)",
+      "+ notificarCaptura(AvisoCaptura) : void"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/ReceptorCapturas.java",
+    "paquete": "orquitas.servidor.captura"
+  },
+  "Recopilador": {
+    "atributos": [
+      "- receptorCapturas : ReceptorCapturas"
+    ],
+    "metodos": [
+      "+ Recopilador(ReceptorCapturas)",
+      "+ procesarRecopilacion(String) : boolean",
+      "- descartarPaquete() : boolean"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/Recopilador.java",
+    "paquete": "orquitas.servidor.captura"
+  },
+  "ReceptorIngestaTCP": {
+    "atributos": [
+      "- puerto : int",
+      "- recopilador : Recopilador",
+      "- clientes : Set<Socket>",
+      "- manejadores : Set<Thread>",
+      "- activo : boolean",
+      "- servidor : ServerSocket"
+    ],
+    "metodos": [
+      "+ ReceptorIngestaTCP(int, Recopilador)",
+      "+ iniciar() : void",
+      "+ obtenerPuerto() : int",
+      "+ detener() : void",
+      "- manejarCliente(Socket) : void"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/comunicacion/ReceptorIngestaTCP.java",
+    "paquete": "orquitas.servidor.comunicacion"
+  },
+  "ActivadorModoEscape": {
+    "atributos": [
+      "- UMBRAL_CAPTURAS : int {static}",
+      "- navegador : Navegador",
+      "- modoActual : ModoOperativo"
+    ],
+    "metodos": [
+      "+ ActivadorModoEscape(Navegador)",
+      "+ notificarCapturasCompletas(EventoModoEscape) : void",
+      "+ getModoActual() : ModoOperativo",
+      "- cambiarModo(ModoOperativo) : ModoOperativo",
+      "- mantenerModoBusqueda() : void"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/escape/ActivadorModoEscape.java",
+    "paquete": "orquitas.servidor.escape"
+  },
+  "EventoModoEscape": {
+    "atributos": [
+      "+ TIPO_MODO_ESCAPE_ACTIVADO : String {static}",
+      "- tipoEvento : String",
+      "- cantidadCapturas : int",
+      "- timestamp : LocalDateTime"
+    ],
+    "metodos": [
+      "+ EventoModoEscape(String, int, LocalDateTime)",
+      "+ getTipoEvento() : String",
+      "+ getCantidadCapturas() : int",
+      "+ getTimestamp() : LocalDateTime",
+      "+ toString() : String"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/escape/EventoModoEscape.java",
+    "paquete": "orquitas.servidor.escape"
+  },
+  "ModoOperativo": {
+    "atributos": [
+      "BUSQUEDA",
+      "ESCAPE"
+    ],
+    "metodos": [],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/navegacion/ModoOperativo.java",
+    "paquete": "orquitas.servidor.navegacion"
+  },
+  "Navegador": {
+    "atributos": [
+      "- modoOperativo : ModoOperativo"
+    ],
+    "metodos": [
+      "+ Navegador()",
+      "+ establecerModoOperativo(ModoOperativo) : void",
+      "+ getModoOperativo() : ModoOperativo"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/navegacion/Navegador.java",
+    "paquete": "orquitas.servidor.navegacion"
+  },
+  "ActualizadorEstomago": {
+    "atributos": [
+      "- archivoEstomago : ArchivoEstomago",
+      "- pendientes : ArrayDeque<Captura>",
+      "- activo : boolean"
+    ],
+    "metodos": [
+      "+ ActualizadorEstomago(ArchivoEstomago)",
+      "+ encolarCaptura(Captura) : void",
+      "+ run() : void",
+      "+ detener() : void"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/persistencia/ActualizadorEstomago.java",
+    "paquete": "orquitas.servidor.persistencia"
+  },
+  "ArchivoEstomago": {
+    "atributos": [
+      "- rutaArchivo : String",
+      "- mutex : Semaphore",
+      "- controlEscrituras : Object",
+      "- escriturasPendientes : int"
+    ],
+    "metodos": [
+      "+ ArchivoEstomago(String)",
+      "+ anunciarEscritura() : void",
+      "+ finalizarEscritura() : void",
+      "+ escribirRegistro(Captura) : boolean",
+      "+ leerRegistros() : List<Captura>",
+      "- leerDelArchivo() : List<Captura>"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/persistencia/ArchivoEstomago.java",
+    "paquete": "orquitas.servidor.persistencia"
+  },
+  "LectorEstomago": {
+    "atributos": [
+      "- UMBRAL_CAPTURAS : int {static}",
+      "- archivoEstomago : ArchivoEstomago",
+      "- activadorModoEscape : ActivadorModoEscape",
+      "- intervaloAuditoria : long",
+      "- activo : boolean",
+      "- modoEscapeNotificado : boolean"
+    ],
+    "metodos": [
+      "+ LectorEstomago(ArchivoEstomago, ActivadorModoEscape, long)",
+      "+ run() : void",
+      "+ sistemaActivo() : boolean",
+      "+ detener() : void",
+      "- contarRegistrosValidos(List<Captura>) : int",
+      "- esperarProximoCiclo(long) : void"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/persistencia/LectorEstomago.java",
+    "paquete": "orquitas.servidor.persistencia"
+  },
+  "ServidorOrquita": {
+    "atributos": [],
+    "metodos": [
+      "+ ServidorOrquita()",
+      "+ main(String[]) : void {static}"
+    ],
+    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/ServidorOrquita.java",
+    "paquete": "orquitas.servidor"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "ordenes": [
+    "ORDEN|AVANZAR",
+    "ORDEN|AVANZAR",
+    "ORDEN|GIRAR_IZQ",
+    "ORDEN|GIRAR_DER",
+    "ORDEN|DETENER",
+    "ORDEN|AVANZAR"
+  ],
+  "capturas_persistidas": 3,
+  "escape": true,
+  "reinicio_sin_nuevos_mensajes": true,
+  "datos": "ficticios",
+  "cierre_demo": "terminacion del proceso despues de verificar persistencia; cierre normal cubierto por pruebas"
+}

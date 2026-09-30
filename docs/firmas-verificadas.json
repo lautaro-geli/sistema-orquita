@@ -10,7 +10,7 @@
       "+ getTimestamp() : LocalDateTime",
       "+ toString() : String"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/AvisoCaptura.java",
+    "fuente": "src/main/java/orquitas/servidor/captura/AvisoCaptura.java",
     "paquete": "orquitas.servidor.captura"
   },
   "Captura": {
@@ -26,7 +26,22 @@
       "+ desdeLinea(String) : Captura {static}",
       "+ toString() : String"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/Captura.java",
+    "fuente": "src/main/java/orquitas/servidor/captura/Captura.java",
+    "paquete": "orquitas.servidor.captura"
+  },
+  "PaqueteRecopilacion": {
+    "atributos": [
+      "- telemetria : Telemetria",
+      "- avisoCaptura : AvisoCaptura"
+    ],
+    "metodos": [
+      "- PaqueteRecopilacion(Telemetria, AvisoCaptura)",
+      "+ decodificar(String) : PaqueteRecopilacion {static}",
+      "+ esValido() : boolean",
+      "+ getTelemetria() : Telemetria",
+      "+ getAvisoCaptura() : AvisoCaptura"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/captura/PaqueteRecopilacion.java",
     "paquete": "orquitas.servidor.captura"
   },
   "ReceptorCapturas": {
@@ -37,20 +52,39 @@
       "+ ReceptorCapturas(ActualizadorEstomago)",
       "+ notificarCaptura(AvisoCaptura) : void"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/ReceptorCapturas.java",
+    "fuente": "src/main/java/orquitas/servidor/captura/ReceptorCapturas.java",
     "paquete": "orquitas.servidor.captura"
   },
   "Recopilador": {
     "atributos": [
-      "- receptorCapturas : ReceptorCapturas"
+      "- receptorCapturas : ReceptorCapturas",
+      "- navegador : Navegador"
     ],
     "metodos": [
       "+ Recopilador(ReceptorCapturas)",
+      "+ Recopilador(ReceptorCapturas, Navegador)",
       "+ procesarRecopilacion(String) : boolean",
-      "- descartarPaquete() : boolean"
+      "+ procesarRecopilacion(PaqueteRecopilacion) : Movimiento",
+      "- extraerTelemetria(PaqueteRecopilacion) : Telemetria",
+      "- extraerAvisoCaptura(PaqueteRecopilacion) : AvisoCaptura",
+      "- descartarPaquete(PaqueteRecopilacion) : void"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/captura/Recopilador.java",
+    "fuente": "src/main/java/orquitas/servidor/captura/Recopilador.java",
     "paquete": "orquitas.servidor.captura"
+  },
+  "ComunicadorOrquita": {
+    "atributos": [
+      "- recopilador : Recopilador",
+      "- salida : Writer"
+    ],
+    "metodos": [
+      "+ ComunicadorOrquita(Recopilador, Writer)",
+      "+ enviarRecopilacion(String) : void",
+      "+ enviarOrdenNavegacion(Movimiento) : void",
+      "- codificarOrden(Movimiento) : String"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/comunicacion/ComunicadorOrquita.java",
+    "paquete": "orquitas.servidor.comunicacion"
   },
   "ReceptorIngestaTCP": {
     "atributos": [
@@ -68,7 +102,7 @@
       "+ detener() : void",
       "- manejarCliente(Socket) : void"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/comunicacion/ReceptorIngestaTCP.java",
+    "fuente": "src/main/java/orquitas/servidor/comunicacion/ReceptorIngestaTCP.java",
     "paquete": "orquitas.servidor.comunicacion"
   },
   "ActivadorModoEscape": {
@@ -84,7 +118,7 @@
       "- cambiarModo(ModoOperativo) : ModoOperativo",
       "- mantenerModoBusqueda() : void"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/escape/ActivadorModoEscape.java",
+    "fuente": "src/main/java/orquitas/servidor/escape/ActivadorModoEscape.java",
     "paquete": "orquitas.servidor.escape"
   },
   "EventoModoEscape": {
@@ -101,28 +135,93 @@
       "+ getTimestamp() : LocalDateTime",
       "+ toString() : String"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/escape/EventoModoEscape.java",
+    "fuente": "src/main/java/orquitas/servidor/escape/EventoModoEscape.java",
     "paquete": "orquitas.servidor.escape"
+  },
+  "ClasificadorEntorno": {
+    "atributos": [
+      "- rutaModeloNeuroph : String",
+      "- red : NeuralNetwork<?>"
+    ],
+    "metodos": [
+      "+ ClasificadorEntorno(Path)",
+      "+ clasificarEntorno(Telemetria) : EntornoClasificado"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/navegacion/ClasificadorEntorno.java",
+    "paquete": "orquitas.servidor.navegacion"
+  },
+  "EntornoClasificado": {
+    "atributos": [
+      "+ LIBRE : EntornoClasificado {static}",
+      "+ OBJETO : EntornoClasificado {static}"
+    ],
+    "metodos": [
+      "+ values() : EntornoClasificado[] {static}",
+      "+ valueOf(String) : EntornoClasificado {static}",
+      "- EntornoClasificado()"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/navegacion/EntornoClasificado.java",
+    "paquete": "orquitas.servidor.navegacion"
   },
   "ModoOperativo": {
     "atributos": [
-      "BUSQUEDA",
-      "ESCAPE"
+      "+ BUSQUEDA : ModoOperativo {static}",
+      "+ ESCAPE : ModoOperativo {static}"
     ],
-    "metodos": [],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/navegacion/ModoOperativo.java",
+    "metodos": [
+      "+ values() : ModoOperativo[] {static}",
+      "+ valueOf(String) : ModoOperativo {static}",
+      "- ModoOperativo()"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/navegacion/ModoOperativo.java",
+    "paquete": "orquitas.servidor.navegacion"
+  },
+  "Movimiento": {
+    "atributos": [
+      "+ AVANZAR : Movimiento {static}",
+      "+ GIRAR_IZQ : Movimiento {static}",
+      "+ GIRAR_DER : Movimiento {static}",
+      "+ DETENER : Movimiento {static}"
+    ],
+    "metodos": [
+      "+ values() : Movimiento[] {static}",
+      "+ valueOf(String) : Movimiento {static}",
+      "- Movimiento()"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/navegacion/Movimiento.java",
     "paquete": "orquitas.servidor.navegacion"
   },
   "Navegador": {
     "atributos": [
-      "- modoOperativo : ModoOperativo"
+      "- modoOperativo : ModoOperativo",
+      "- ultimaDecision : Movimiento",
+      "- clasificador : ClasificadorEntorno"
     ],
     "metodos": [
       "+ Navegador()",
+      "+ Navegador(ClasificadorEntorno)",
+      "+ determinarMovimiento(Telemetria) : Movimiento",
+      "- calcularMovimiento(EntornoClasificado, ModoOperativo, Telemetria) : Movimiento",
+      "- mantenerUltimaDecision() : Movimiento",
+      "- obtenerModoOperativo() : ModoOperativo",
       "+ establecerModoOperativo(ModoOperativo) : void",
       "+ getModoOperativo() : ModoOperativo"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/navegacion/Navegador.java",
+    "fuente": "src/main/java/orquitas/servidor/navegacion/Navegador.java",
+    "paquete": "orquitas.servidor.navegacion"
+  },
+  "Telemetria": {
+    "atributos": [
+      "- distancias : double[]"
+    ],
+    "metodos": [
+      "+ Telemetria(double...)",
+      "+ getDistancias() : double[]",
+      "+ normalizar() : double[]",
+      "+ sumarDerecha() : double",
+      "+ sumarIzquierda() : double"
+    ],
+    "fuente": "src/main/java/orquitas/servidor/navegacion/Telemetria.java",
     "paquete": "orquitas.servidor.navegacion"
   },
   "ActualizadorEstomago": {
@@ -137,7 +236,7 @@
       "+ run() : void",
       "+ detener() : void"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/persistencia/ActualizadorEstomago.java",
+    "fuente": "src/main/java/orquitas/servidor/persistencia/ActualizadorEstomago.java",
     "paquete": "orquitas.servidor.persistencia"
   },
   "ArchivoEstomago": {
@@ -155,7 +254,7 @@
       "+ leerRegistros() : List<Captura>",
       "- leerDelArchivo() : List<Captura>"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/persistencia/ArchivoEstomago.java",
+    "fuente": "src/main/java/orquitas/servidor/persistencia/ArchivoEstomago.java",
     "paquete": "orquitas.servidor.persistencia"
   },
   "LectorEstomago": {
@@ -175,7 +274,7 @@
       "- contarRegistrosValidos(List<Captura>) : int",
       "- esperarProximoCiclo(long) : void"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/persistencia/LectorEstomago.java",
+    "fuente": "src/main/java/orquitas/servidor/persistencia/LectorEstomago.java",
     "paquete": "orquitas.servidor.persistencia"
   },
   "ServidorOrquita": {
@@ -184,7 +283,7 @@
       "+ ServidorOrquita()",
       "+ main(String[]) : void {static}"
     ],
-    "fuente": "../proyecto-orquitas-linareada-corregido/src/main/java/orquitas/servidor/ServidorOrquita.java",
+    "fuente": "src/main/java/orquitas/servidor/ServidorOrquita.java",
     "paquete": "orquitas.servidor"
   }
 }

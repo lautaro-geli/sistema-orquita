@@ -1,0 +1,7 @@
+[ReceptorIngestaTCP] Puerto 50736
+[ActualizadorEstomago] Registrada: 001
+[ActualizadorEstomago] Registrada: 002
+[ActualizadorEstomago] Registrada: 003
+[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -> ESCAPE
+[Navegador] Modo operativo actualizado a: ESCAPE
+[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T13:20:56.785467200}

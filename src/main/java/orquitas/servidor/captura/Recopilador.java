@@ -1,31 +1,29 @@
 package orquitas.servidor.captura;
 
-import java.time.LocalDateTime;
+import orquitas.servidor.navegacion.*;
 
-/** CU-06, recorte del hito: valida mensajes de captura, sin telemetría ni IA. */
 public class Recopilador {
     private final ReceptorCapturas receptorCapturas;
-
-    public Recopilador(ReceptorCapturas receptorCapturas) {
-        this.receptorCapturas = receptorCapturas;
+    private final Navegador navegador;
+    public Recopilador(ReceptorCapturas receptor) { this(receptor, new Navegador()); }
+    public Recopilador(ReceptorCapturas receptor, Navegador navegador) {
+        this.receptorCapturas=receptor; this.navegador=navegador;
     }
-
+    /** Adaptador legado: true significa aceptado, no persistido. */
     public boolean procesarRecopilacion(String mensaje) {
-        if (mensaje == null || mensaje.length() > 256) return descartarPaquete();
-        String[] campos = mensaje.split("\\|", -1);
-        if (campos.length != 3 || !"CAPTURA".equals(campos[0])) return descartarPaquete();
-        AvisoCaptura aviso;
-        try {
-            aviso = new AvisoCaptura(campos[1], LocalDateTime.parse(campos[2]));
-        } catch (RuntimeException e) {
-            return descartarPaquete();
-        }
-        receptorCapturas.notificarCaptura(aviso);
-        return true; // Aceptado en cola, NO significa persistido todavía.
+        PaqueteRecopilacion paquete;
+        try { paquete=PaqueteRecopilacion.decodificar(mensaje); }
+        catch (IllegalArgumentException | java.time.DateTimeException e) { descartarPaquete(null); return false; }
+        procesarRecopilacion(paquete); return true;
     }
-
-    private boolean descartarPaquete() {
-        System.err.println("[Recopilador] Mensaje inválido o desconocido: descartado");
-        return false;
+    public Movimiento procesarRecopilacion(PaqueteRecopilacion paqueteRecopilacion) {
+        if(paqueteRecopilacion==null || !paqueteRecopilacion.esValido()) { descartarPaquete(paqueteRecopilacion); return null; }
+        Telemetria telemetria=extraerTelemetria(paqueteRecopilacion);
+        AvisoCaptura aviso=extraerAvisoCaptura(paqueteRecopilacion);
+        if(aviso!=null) receptorCapturas.notificarCaptura(aviso);
+        return telemetria==null ? null : navegador.determinarMovimiento(telemetria);
     }
+    private Telemetria extraerTelemetria(PaqueteRecopilacion p) { return p.getTelemetria(); }
+    private AvisoCaptura extraerAvisoCaptura(PaqueteRecopilacion p) { return p.getAvisoCaptura(); }
+    private void descartarPaquete(PaqueteRecopilacion p) { System.err.println("[Recopilador] Paquete invalido: descartado"); }
 }
