@@ -1,0 +1,4 @@
+[ReceptorIngestaTCP] Puerto 50740
+[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -> ESCAPE
+[Navegador] Modo operativo actualizado a: ESCAPE
+[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T13:20:56.872348600}
