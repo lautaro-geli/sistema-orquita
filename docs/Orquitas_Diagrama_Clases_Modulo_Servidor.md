@@ -1,16 +1,10 @@
-# Diagrama de clases del módulo servidor
+# Clases vigentes — Hito 2 preliminar
 
-## Alcance implementado
+Firmas extraídas del bytecode Java compilado. Referencia: `diagramas/Orquitas_Hito2.drawio`. Las firmas del documento recibido fueron actualizadas con las decisiones explicadas en README.
 
-La Linareada: CU-06 limitado a capturas, CU-09, CU-10 y CU-11. Bluetooth, Neuroph, decisiones de movimiento y Safe Mode físico pertenecen al sistema completo y no están implementados en esta carpeta.
+## AvisoCaptura
 
-Los PNG de fondo blanco y los originales editables están en `entrega-linareada-corregida/diagramas`.
-
-## Clases y firmas verificadas
-
-### AvisoCaptura
-
-Paquete: `orquitas.servidor.captura`.
+Fuente: `src/main/java/orquitas/servidor/captura/AvisoCaptura.java`.
 
 ```text
 - idCaptura : String
@@ -21,9 +15,9 @@ Paquete: `orquitas.servidor.captura`.
 + toString() : String
 ```
 
-### Captura
+## Captura
 
-Paquete: `orquitas.servidor.captura`.
+Fuente: `src/main/java/orquitas/servidor/captura/Captura.java`.
 
 ```text
 - idCaptura : String
@@ -36,9 +30,23 @@ Paquete: `orquitas.servidor.captura`.
 + toString() : String
 ```
 
-### ReceptorCapturas
+## PaqueteRecopilacion
 
-Paquete: `orquitas.servidor.captura`.
+Fuente: `src/main/java/orquitas/servidor/captura/PaqueteRecopilacion.java`.
+
+```text
+- telemetria : Telemetria
+- avisoCaptura : AvisoCaptura
+- PaqueteRecopilacion(Telemetria, AvisoCaptura)
++ decodificar(String) : PaqueteRecopilacion {static}
++ esValido() : boolean
++ getTelemetria() : Telemetria
++ getAvisoCaptura() : AvisoCaptura
+```
+
+## ReceptorCapturas
+
+Fuente: `src/main/java/orquitas/servidor/captura/ReceptorCapturas.java`.
 
 ```text
 - actualizadorEstomago : ActualizadorEstomago
@@ -46,20 +54,39 @@ Paquete: `orquitas.servidor.captura`.
 + notificarCaptura(AvisoCaptura) : void
 ```
 
-### Recopilador
+## Recopilador
 
-Paquete: `orquitas.servidor.captura`.
+Fuente: `src/main/java/orquitas/servidor/captura/Recopilador.java`.
 
 ```text
 - receptorCapturas : ReceptorCapturas
+- navegador : Navegador
 + Recopilador(ReceptorCapturas)
++ Recopilador(ReceptorCapturas, Navegador)
 + procesarRecopilacion(String) : boolean
-- descartarPaquete() : boolean
++ procesarRecopilacion(PaqueteRecopilacion) : Movimiento
+- extraerTelemetria(PaqueteRecopilacion) : Telemetria
+- extraerAvisoCaptura(PaqueteRecopilacion) : AvisoCaptura
+- descartarPaquete(PaqueteRecopilacion) : void
 ```
 
-### ReceptorIngestaTCP
+## ComunicadorOrquita
 
-Paquete: `orquitas.servidor.comunicacion`.
+Fuente: `src/main/java/orquitas/servidor/comunicacion/ComunicadorOrquita.java`.
+
+```text
+- recopilador : Recopilador
+- salida : Writer
++ ComunicadorOrquita(Recopilador, Writer)
++ enviarRecopilacion(String) : void
++ enviarErrorTrama() : void
++ enviarOrdenNavegacion(Movimiento) : void
+- codificarOrden(Movimiento) : String
+```
+
+## ReceptorIngestaTCP
+
+Fuente: `src/main/java/orquitas/servidor/comunicacion/ReceptorIngestaTCP.java`.
 
 ```text
 - puerto : int
@@ -71,13 +98,14 @@ Paquete: `orquitas.servidor.comunicacion`.
 + ReceptorIngestaTCP(int, Recopilador)
 + iniciar() : void
 + obtenerPuerto() : int
++ obtenerCantidadClientes() : int
 + detener() : void
 - manejarCliente(Socket) : void
 ```
 
-### ActivadorModoEscape
+## ActivadorModoEscape
 
-Paquete: `orquitas.servidor.escape`.
+Fuente: `src/main/java/orquitas/servidor/escape/ActivadorModoEscape.java`.
 
 ```text
 - UMBRAL_CAPTURAS : int {static}
@@ -90,9 +118,9 @@ Paquete: `orquitas.servidor.escape`.
 - mantenerModoBusqueda() : void
 ```
 
-### EventoModoEscape
+## EventoModoEscape
 
-Paquete: `orquitas.servidor.escape`.
+Fuente: `src/main/java/orquitas/servidor/escape/EventoModoEscape.java`.
 
 ```text
 + TIPO_MODO_ESCAPE_ACTIVADO : String {static}
@@ -106,29 +134,89 @@ Paquete: `orquitas.servidor.escape`.
 + toString() : String
 ```
 
-### ModoOperativo
+## ClasificadorEntorno
 
-Paquete: `orquitas.servidor.navegacion`.
+Fuente: `src/main/java/orquitas/servidor/navegacion/ClasificadorEntorno.java`.
 
 ```text
-BUSQUEDA
-ESCAPE
+- rutaModeloNeuroph : String
+- red : NeuralNetwork<?>
++ ClasificadorEntorno(Path)
++ clasificarEntorno(Telemetria) : EntornoClasificado
 ```
 
-### Navegador
+## EntornoClasificado
 
-Paquete: `orquitas.servidor.navegacion`.
+Fuente: `src/main/java/orquitas/servidor/navegacion/EntornoClasificado.java`.
+
+```text
++ LIBRE : EntornoClasificado {static}
++ OBJETO : EntornoClasificado {static}
++ values() : EntornoClasificado[] {static}
++ valueOf(String) : EntornoClasificado {static}
+- EntornoClasificado()
+```
+
+## ModoOperativo
+
+Fuente: `src/main/java/orquitas/servidor/navegacion/ModoOperativo.java`.
+
+```text
++ BUSQUEDA : ModoOperativo {static}
++ ESCAPE : ModoOperativo {static}
++ values() : ModoOperativo[] {static}
++ valueOf(String) : ModoOperativo {static}
+- ModoOperativo()
+```
+
+## Movimiento
+
+Fuente: `src/main/java/orquitas/servidor/navegacion/Movimiento.java`.
+
+```text
++ AVANZAR : Movimiento {static}
++ GIRAR_IZQ : Movimiento {static}
++ GIRAR_DER : Movimiento {static}
++ DETENER : Movimiento {static}
++ values() : Movimiento[] {static}
++ valueOf(String) : Movimiento {static}
+- Movimiento()
+```
+
+## Navegador
+
+Fuente: `src/main/java/orquitas/servidor/navegacion/Navegador.java`.
 
 ```text
 - modoOperativo : ModoOperativo
+- ultimaDecision : Movimiento
+- clasificador : ClasificadorEntorno
 + Navegador()
++ Navegador(ClasificadorEntorno)
++ determinarMovimiento(Telemetria) : Movimiento
+- calcularMovimiento(EntornoClasificado, ModoOperativo, Telemetria) : Movimiento
+- mantenerUltimaDecision() : Movimiento
+- obtenerModoOperativo() : ModoOperativo
 + establecerModoOperativo(ModoOperativo) : void
 + getModoOperativo() : ModoOperativo
 ```
 
-### ActualizadorEstomago
+## Telemetria
 
-Paquete: `orquitas.servidor.persistencia`.
+Fuente: `src/main/java/orquitas/servidor/navegacion/Telemetria.java`.
+
+```text
+- distancias : double[]
++ Telemetria(double...)
++ getDistancias() : double[]
++ normalizar() : double[]
++ sumarDerecha() : double
++ sumarIzquierda() : double
+```
+
+## ActualizadorEstomago
+
+Fuente: `src/main/java/orquitas/servidor/persistencia/ActualizadorEstomago.java`.
 
 ```text
 - archivoEstomago : ArchivoEstomago
@@ -140,9 +228,9 @@ Paquete: `orquitas.servidor.persistencia`.
 + detener() : void
 ```
 
-### ArchivoEstomago
+## ArchivoEstomago
 
-Paquete: `orquitas.servidor.persistencia`.
+Fuente: `src/main/java/orquitas/servidor/persistencia/ArchivoEstomago.java`.
 
 ```text
 - rutaArchivo : String
@@ -157,9 +245,9 @@ Paquete: `orquitas.servidor.persistencia`.
 - leerDelArchivo() : List<Captura>
 ```
 
-### LectorEstomago
+## LectorEstomago
 
-Paquete: `orquitas.servidor.persistencia`.
+Fuente: `src/main/java/orquitas/servidor/persistencia/LectorEstomago.java`.
 
 ```text
 - UMBRAL_CAPTURAS : int {static}
@@ -176,21 +264,35 @@ Paquete: `orquitas.servidor.persistencia`.
 - esperarProximoCiclo(long) : void
 ```
 
-### ServidorOrquita
+## ServidorOrquita
 
-Paquete: `orquitas.servidor`.
+Fuente: `src/main/java/orquitas/servidor/ServidorOrquita.java`.
 
 ```text
 + ServidorOrquita()
 + main(String[]) : void {static}
 ```
 
-## Relaciones y concurrencia
+## Relaciones
 
-Recopilador → ReceptorCapturas → ActualizadorEstomago → ArchivoEstomago ← LectorEstomago → ActivadorModoEscape → Navegador.
-
-ActualizadorEstomago y LectorEstomago heredan de Thread; `ServidorOrquita.main()` ejecuta `start()` en ambos. Hay un solo ArchivoEstomago compartido. El contador escriturasPendientes coordina operaciones: no determina la cantidad de capturas. La cantidad se reconstruye siempre desde el archivo.
-
-`escribirRegistro`, `leerRegistros` y `leerDelArchivo` propagan IOException; las dos primeras también InterruptedException. En las secciones críticas, el permiso se libera antes del retorno o propagación.
-
-Los datos usan atributos privados y accesores públicos, tal como el código. `aLinea()` y `desdeLinea()` reemplazan los nombres ingleses de serialización.
+- Navegador → ClasificadorEntorno
+- ClasificadorEntorno → Telemetria
+- Navegador → ModoOperativo
+- Navegador → Movimiento
+- ClasificadorEntorno → EntornoClasificado
+- ReceptorIngestaTCP → Recopilador
+- ReceptorIngestaTCP → ComunicadorOrquita
+- ComunicadorOrquita → Recopilador
+- Recopilador → PaqueteRecopilacion
+- ReceptorCapturas → ActualizadorEstomago
+- ActualizadorEstomago → ArchivoEstomago
+- LectorEstomago → ArchivoEstomago
+- LectorEstomago → ActivadorModoEscape
+- ActivadorModoEscape → EventoModoEscape
+- Recopilador → Navegador / ReceptorCapturas
+- PaqueteRecopilacion → Telemetria / AvisoCaptura
+- ActivadorModoEscape → Navegador
+- ActualizadorEstomago y LectorEstomago heredan Thread y comparten ArchivoEstomago.
+- ServidorOrquita construye el grafo y ejecuta start() en ambos hilos.
+- ClasificadorEntorno posee NeuralNetwork; carga el modelo y sincroniza la inferencia.
+- El cliente y el entrenador son simulación; no integran el diseño POO del servidor.

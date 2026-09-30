@@ -1,0 +1,26 @@
+[
+  {
+    "name": "orquitas.verificacion.HitoDosTest",
+    "tests": "9",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "9.642"
+  },
+  {
+    "name": "orquitas.verificacion.LinareadaTest",
+    "tests": "13",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.453"
+  },
+  {
+    "name": "orquitas.verificacion.RobustezHitoDosTest",
+    "tests": "8",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "10.292"
+  }
+]

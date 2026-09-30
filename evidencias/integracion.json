@@ -1,0 +1,16 @@
+{
+  "ordenes": [
+    "ORDEN|AVANZAR",
+    "ORDEN|AVANZAR",
+    "ORDEN|GIRAR_IZQ",
+    "ORDEN|GIRAR_DER",
+    "ORDEN|DETENER",
+    "ORDEN|AVANZAR"
+  ],
+  "capturas_persistidas": 3,
+  "escape": true,
+  "reinicio_sin_nuevos_mensajes": true,
+  "datos": "ficticios",
+  "modelo_sha256": "15f312013f62ed4c846399f364cece623bcc81963321cb403f324ce32ef5dde5",
+  "cierre_demo": "terminacion del proceso despues de verificar persistencia; cierre normal cubierto por pruebas"
+}

@@ -16,3 +16,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Datos de una mision local
+/estomago*.txt
+!evidencias/*.log

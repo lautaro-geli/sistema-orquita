@@ -1,131 +1,43 @@
-# Vistas de secuencia del módulo servidor
+# Secuencias vigentes — Hito 2 preliminar
 
-## Alcance y actor
+Cada imagen tiene un archivo .drawio con el mismo nombre. El archivo combinado es [Orquitas_Hito2.drawio](diagramas/Orquitas_Hito2.drawio). El actor Orquita se representa como actor externo; no se diseña su módulo interno.
 
-La Linareada implementa CU-06 sólo para capturas, CU-09, CU-10 y CU-11. El actor es Orquita y aparece en todas las vistas. Los fragmentos `ref` muestran cómo sus capturas originan las operaciones internas; no inventan llamadas del robot a `run()`.
+## CU-06 — Recibir recopilación
 
-Las imágenes y los editables draw.io están en `entrega-linareada-corregida/diagramas`. No se documenta el interior del simulador cliente. CU-07, CU-08 y CU-12 pertenecen al diseño completo y no se presentan como implementados en este recorte.
+![CU-06](diagramas/02_Secuencia_CU06.png)
 
-## CU-06 Recibir recopilación de capturas
+Orquita → ReceptorIngestaTCP (línea TCP) → ComunicadorOrquita.enviarRecopilacion(String). PaqueteRecopilacion.decodificar(String) valida la trama completa. Recopilador.procesarRecopilacion(PaqueteRecopilacion) extrae datos, notifica captura opcional y llama a CU-07 si hay telemetría. Retorna Movimiento al comunicador; null para CAPTURA legado. El comunicador continúa CU-08. Una excepción de formato se descarta antes de persistir y llama enviarErrorTrama(): ERROR|TRAMA_INVALIDA por la misma conexión. Una línea excesiva recibe el mismo error al llegar LF.
 
-```plantuml
-@startuml
-skinparam backgroundColor white
-actor Orquita
-participant ReceptorIngestaTCP
-participant Recopilador
-participant ReceptorCapturas
-Orquita -> ReceptorIngestaTCP : CAPTURA|id|fecha + LF
-ReceptorIngestaTCP -> Recopilador : procesarRecopilacion(mensaje)
-alt mensaje completo, campos y fecha válidos
-  note right of Recopilador : Construir AvisoCaptura(id, timestamp)
-  Recopilador -> ReceptorCapturas : notificarCaptura(avisoCaptura)
-  ref over ReceptorCapturas : CU-09 Actualizar estómago
-else inválido o tipo desconocido
-  Recopilador -> Recopilador : descartarPaquete()
-end
-note over ReceptorIngestaTCP : Trama excesiva o EOF sin LF: descartar antes de llamar al Recopilador.
-@enduml
-```
+## CU-07 — Determinar movimiento
 
-## CU-09 Actualizar estómago
+![CU-07](diagramas/08_Secuencia_CU07.png)
 
-```plantuml
-@startuml
-skinparam backgroundColor white
-actor Orquita
-participant Recopilador
-participant ReceptorCapturas
-participant ActualizadorEstomago
-participant ArchivoEstomago
-ref over Orquita, Recopilador : CU-06 Captura validada
-Recopilador -> ReceptorCapturas : notificarCaptura(avisoCaptura)
-ReceptorCapturas -> ActualizadorEstomago : encolarCaptura(captura)
-ActualizadorEstomago -> ArchivoEstomago : anunciarEscritura()
-note over ActualizadorEstomago : synchronized(pendientes): addLast y notifyAll\nEl escritor ya fue iniciado con start(); la JVM ejecuta run().
-loop run(): esperar trabajo o procesar siguiente captura
-  critical permiso exclusivo sobre estomago.txt
-    ActualizadorEstomago -> ArchivoEstomago : escribirRegistro(captura)
-    note over ArchivoEstomago : mutex.acquire(); leerDelArchivo()
-    alt id nuevo
-      note over ArchivoEstomago : Escribir UTF-8 y cerrar correctamente
-    else id ya persistido
-      note over ArchivoEstomago : No duplicar la línea
-    else IOException
-      note over ArchivoEstomago : Error pendiente de propagación
-    end
-    note over ArchivoEstomago : finally: mutex.release()
-    ArchivoEstomago --> ActualizadorEstomago : true / false / excepción
-  end
-  ActualizadorEstomago -> ArchivoEstomago : finally: finalizarEscritura()
-end
-@enduml
-```
+Navegador.determinarMovimiento(Telemetria) → ClasificadorEntorno.clasificarEntorno(Telemetria). ALT nulo: mantenerUltimaDecision(). ELSE: obtenerModoOperativo(), calcularMovimiento(EntornoClasificado, ModoOperativo, Telemetria), guardar y retornar Movimiento. El comunicador conserva el destino de la respuesta: Navegador no posee un socket global.
 
-La cola organiza solicitudes. El número de pendientes nunca decide el modo. Al cerrar se drena la cola; un error de disco se registra sin confirmar y no se reintenta automáticamente. Si se interrumpe la espera del permiso, el aviso se reencola para cerrar ordenadamente.
+## CU-08 — Enviar orden
 
-## CU-10 Leer estómago
+![CU-08](diagramas/09_Secuencia_CU08.png)
 
-```plantuml
-@startuml
-skinparam backgroundColor white
-actor Orquita
-participant ActualizadorEstomago
-participant ArchivoEstomago
-participant LectorEstomago
-participant ActivadorModoEscape
-par recepción y escritura
-  ref over Orquita, ActualizadorEstomago : CU-06 y CU-09: capturas encoladas y persistidas
-else auditor independiente
-  loop sistemaActivo() == true
-    critical lectura del archivo
-      LectorEstomago -> ArchivoEstomago : leerRegistros()
-      note over ArchivoEstomago : wait() mientras escriturasPendientes > 0\nmutex.acquire()
-      ArchivoEstomago -> ArchivoEstomago : leerDelArchivo()
-      note over ArchivoEstomago : finally: mutex.release()
-      ArchivoEstomago --> LectorEstomago : registros válidos y únicos
-    end
-    alt lectura correcta
-      LectorEstomago -> LectorEstomago : contarRegistrosValidos(registros)
-      opt cantidadCapturas >= 3 y !modoEscapeNotificado
-        note over LectorEstomago : Crear EventoModoEscape
-        LectorEstomago -> ActivadorModoEscape : notificarCapturasCompletas(evento)
-        ref over ActivadorModoEscape : CU-11
-        note over LectorEstomago : modoEscapeNotificado = true
-      end
-    else IOException
-      note over LectorEstomago : Registrar error; no contar ni notificar
-    end
-    LectorEstomago -> LectorEstomago : esperarProximoCiclo(intervaloAuditoria)
-  end
-end
-@enduml
-```
+ComunicadorOrquita.enviarOrdenNavegacion(Movimiento) → codificarOrden(Movimiento) → Writer.write/flush → Orquita. IOException propaga al manejador que cierra la conexión. El servidor continúa aceptando nuevos clientes; una nueva lectura genera otra decisión. Se eliminó del diseño el bucle de reconexión sin destino de la versión anterior.
 
-El LOOP se inicia con el servidor y sigue sin mensajes nuevos. Una lectura en curso puede terminar antes de una captura recién anunciada; las siguientes lecturas esperan las escrituras pendientes. El cierre interrumpe al lector y termina su ciclo.
+## CU-09 — Actualizar estómago
 
-## CU-11 Activar modo escape
+![CU-09](diagramas/03_Secuencia_CU09.png)
 
-```plantuml
-@startuml
-skinparam backgroundColor white
-actor Orquita
-participant LectorEstomago
-participant ActivadorModoEscape
-participant Navegador
-ref over Orquita, LectorEstomago : CU-06 / CU-09 / CU-10: capturas persistidas y auditadas
-LectorEstomago -> ActivadorModoEscape : notificarCapturasCompletas(evento)
-alt evento nulo o tipo incorrecto
-  ActivadorModoEscape --> LectorEstomago : IllegalArgumentException
-else modoActual == ESCAPE
-  note over ActivadorModoEscape : Retornar sin repetir ni revertir
-else cantidadCapturas < 3
-  ActivadorModoEscape -> ActivadorModoEscape : mantenerModoBusqueda()
-else cantidadCapturas >= 3
-  ActivadorModoEscape -> ActivadorModoEscape : modoActual = cambiarModo(ESCAPE)
-  ActivadorModoEscape -> Navegador : establecerModoOperativo(modoActual)
-end
-@enduml
-```
+El actor inicia CU-06. ReceptorCapturas.notificarCaptura(AvisoCaptura) crea Captura y llama ActualizadorEstomago.encolarCaptura(Captura), que anuncia la escritura y despierta el hilo permanente. run() procesa dentro de LOOP. ArchivoEstomago.escribirRegistro protege con Semaphore el acceso CRITICAL. finally libera el permiso; finalmente el escritor llama finalizarEscritura(). IOException no confirma, duplicado no suma; el hilo continúa.
 
-El evento contiene tipoEvento, cantidadCapturas y timestamp. No existe una llamada sin argumentos a notificarCapturasCompletas. Este hito cambia el modo interno y no simula que ya navega hacia una salida física.
+## CU-10 — Leer estómago
+
+![CU-10](diagramas/04_Secuencia_CU10.png)
+
+PAR entre escritor y auditor. El lector permanece en LOOP desde el arranque. leerRegistros espera escrituras pendientes, adquiere el mismo semáforo, lee en CRITICAL y libera en finally. Luego contarRegistrosValidos. OPT cantidad >= 3 y no notificado: notificarCapturasCompletas(EventoModoEscape). Espera el próximo ciclo. Una lectura fallida no produce conteo parcial ni evento.
+
+## CU-11 — Activar escape
+
+![CU-11](diagramas/05_Secuencia_CU11.png)
+
+ActivadorModoEscape valida el evento, ignora repetidos si ya está en ESCAPE y resuelve ALT cantidad < 3 / >= 3. cambiarModo(ESCAPE) y Navegador.establecerModoOperativo(ModoOperativo) actualizan el estado interno. La demostración sigue evitando obstáculos; localizar la salida es un pendiente.
+
+## Diferencias explícitas respecto del material recibido
+
+Se conserva el escritor permanente con cola, no un hilo nuevo por captura. Las funciones de decisión devuelven Movimiento para que la respuesta vuelva al mismo cliente. calcularMovimiento recibe Telemetria para comparar los laterales. Todos estos cambios figuran también en el DCU, las clases y el código. No son diagramas literalmente idénticos a las versiones antiguas: son las vistas de esta implementación.

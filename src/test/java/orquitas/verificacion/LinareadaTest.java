@@ -208,6 +208,10 @@ public class LinareadaTest {
                 salida.flush();
                 salida.write(("TURA|A|2026-09-30T12:00\nCAPTURA|B|2026-09-30T12:00\r\n"
                         +"CAPTURA|C|2026-09-30T12:00\n").getBytes(StandardCharsets.UTF_8));
+                s.setSoTimeout(2000);
+                var respuestas = new java.io.BufferedReader(new java.io.InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
+                assertEquals("ERROR|TRAMA_INVALIDA", respuestas.readLine());
+                assertEquals("ERROR|TRAMA_INVALIDA", respuestas.readLine());
             }
             esperar(() -> navegador.getModoOperativo()==ModoOperativo.ESCAPE);
             assertEquals(3, archivo.leerRegistros().size());
@@ -224,6 +228,8 @@ public class LinareadaTest {
         esperar(() -> entrada.obtenerPuerto()>0);
         try (Socket cliente = new Socket("127.0.0.1", entrada.obtenerPuerto())) {
             cliente.setSoTimeout(1000);
+            // connect() no garantiza que accept() haya registrado el socket.
+            esperar(() -> entrada.obtenerCantidadClientes() == 1);
             entrada.detener(); servidor.join(1000);
             assertFalse(servidor.isAlive());
             assertEquals(-1, cliente.getInputStream().read());
