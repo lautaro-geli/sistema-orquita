@@ -1,0 +1,16 @@
+{
+  "ActivadorModoEscape.java": "bd1ed7ed0a97cf00239cc5f3184f3ac68b3bec0e70586e02d6e35605b81f9c3f",
+  "ActualizadorEstomago.java": "fe0c2b7c203bfbe3d74e3946f7d48bed9251a9a90728371ca42c82235fd17547",
+  "ArchivoEstomago.java": "98717fd1b67494e92cc6f2b90ed3f91f0fccc3301d1cdade22e328bb0b356616",
+  "AvisoCaptura.java": "d5df89135468b92cc23938d8bee076394295a04f9cf5bc89e9c7c822a12147bc",
+  "Captura.java": "ebeea4333dae412925313f68f22185f4f063af9811c621ad3990a145696e501d",
+  "EventoModoEscape.java": "e254079179698457e2685e3f99a0dbba3538208a72980486b25d862aeb8c4c8b",
+  "LectorEstomago.java": "94096b0a205f6feaa8cf1403c8d10de3b2127393fb1c1beceea9ab3693f41f67",
+  "ModoOperativo.java": "5f7062405d9c6cfbe56cb338ab79cb82954359d1eb28faece1880f924e4bdf1f",
+  "Navegador.java": "eadc59251d63cf8c28be87b05683cdf6b9ce91601254abadcfa2cac42e3af2cd",
+  "ReceptorCapturas.java": "899d36eaa893ee6298223d6687b5f829483579e4f95e9b933308dbfe86fdfc16",
+  "ReceptorIngestaTCP.java": "77b84cb2e850ac7b9d89e156ad0616087a7df537fac9e0606c4de92646fb5fd9",
+  "Recopilador.java": "0d5821de0605509abcbf8225bd2bc6437258dbaa715b255ffdc265c3b4baa958",
+  "ServidorOrquita.java": "9c6eb7f0e8eabc391ec3cfd2278591f41f24b2dad3cbcda27144e95694be770a",
+  "SimuladorIngestaTCP.java": "a913bac94b7b5e315817caba55b3ef20b8c05bb8a5835d3167347dd3c4e01d86"
+}
