@@ -106,12 +106,12 @@ d.save(R/'docs/Informe_simulacion_Hito2.docx')
 
 # Editable DCU of the current implementation, without publishing to an external account.
 d=base('Casos de uso del servidor Orquitas','Hito 2 preliminar con telemetría y datos ficticios')
-text=(R/'docs/DCU_Hito2.md').read_text(encoding='utf-8')
+text=(R/'docs/historico/DCU_Hito2.md').read_text(encoding='utf-8')
 for line in text.splitlines()[2:]:
  if not line.strip():continue
  if line.startswith('## '):d.add_heading(re.sub(r'[^\w\sáéíóúñÁÉÍÓÚÑ]',' ',line[3:]).strip(),1)
  else:
   para=d.add_paragraph(re.sub(r'[*`]+','',line))
   if re.match(r'^\d+\.',line):para.paragraph_format.left_indent=Inches(.12)
-d.save(R/'docs/DCU_Hito2.docx')
+d.save(R/'docs/historico/DCU_Hito2.docx')
 print('Created two DOCX files')

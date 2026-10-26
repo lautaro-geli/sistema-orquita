@@ -3,10 +3,10 @@ package orquitas.servidor.navegacion;
 import java.nio.file.Path;
 import org.neuroph.core.NeuralNetwork;
 
-public class ClasificadorEntorno {
+public class RedNeuronal {
     private final String rutaModeloNeuroph;
     private final NeuralNetwork<?> red;
-    public ClasificadorEntorno(Path ruta) {
+    public RedNeuronal(Path ruta) {
         rutaModeloNeuroph = ruta.toString();
         red = NeuralNetwork.createFromFile(rutaModeloNeuroph);
         if (red.getInputsCount()!=12 || red.getOutputsCount()!=2)

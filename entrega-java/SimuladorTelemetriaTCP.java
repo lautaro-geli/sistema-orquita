@@ -30,6 +30,7 @@ public class SimuladorTelemetriaTCP {
                 String trama="RECOPILACION|"+LocalDateTime.now()+"|"+distancias+"|"+id;
                 salida.write(trama+"\n"); salida.flush();
                 String respuesta=entrada.readLine();
+                while(respuesta!=null && respuesta.startsWith("ESTADO|")) respuesta=entrada.readLine(); // CU-12: senal, no orden.
                 if(respuesta==null || !respuesta.startsWith("ORDEN|")) throw new IOException("No llego una orden valida");
                 System.out.println("SIMULADO "+trama+" -> "+respuesta);
                 Thread.sleep(650);

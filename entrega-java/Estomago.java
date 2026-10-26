@@ -11,27 +11,47 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 /** CU-09/CU-10. Una única instancia compartida por escritor y lector. */
-public class ArchivoEstomago {
+public class Estomago {
     private final String rutaArchivo;
     private final Semaphore mutex = new Semaphore(1, true);
     private final Object controlEscrituras = new Object();
     // Coordinación de trabajo pendiente; NO es la cantidad de Lobitos capturados.
     private int escriturasPendientes;
 
-    public ArchivoEstomago(String rutaArchivo) {
+    public Estomago(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
     }
 
-    public void anunciarEscritura() {
+    /** CU-09. Un hilo Escritor por captura; la recepción no espera al disco. */
+    public void registrarCaptura(Captura captura) {
+        Escritor escritor = new Escritor(this, Objects.requireNonNull(captura));
+        anunciarEscritura(); // Desde aquí las nuevas lecturas esperan.
+        try {
+            escritor.start(); // JVM invoca run() en el hilo escritor.
+        } catch (RuntimeException | Error e) {
+            finalizarEscritura();
+            throw e;
+        }
+    }
+
+    /** Bloquea hasta que terminen todos los Escritor iniciados (apagado y pruebas). */
+    public void esperarEscrituras() throws InterruptedException {
+        synchronized (controlEscrituras) {
+            while (escriturasPendientes > 0) controlEscrituras.wait();
+        }
+    }
+
+    void anunciarEscritura() {
         synchronized (controlEscrituras) {
             escriturasPendientes++;
         }
     }
 
-    public void finalizarEscritura() {
+    void finalizarEscritura() {
         synchronized (controlEscrituras) {
             if (escriturasPendientes <= 0) throw new IllegalStateException("Sin escritura pendiente");
             escriturasPendientes--;
@@ -44,7 +64,7 @@ public class ArchivoEstomago {
         try {
             // El archivo sigue siendo la autoridad, incluso ante una retransmisión.
             for (Captura registrada : leerDelArchivo()) {
-                if (registrada.getIdCaptura().equals(captura.getIdCaptura())) return false;
+                if (registrada.getIdentificador().equals(captura.getIdentificador())) return false;
             }
             // BufferedWriter propaga errores de escritura/cierre; PrintWriter los ocultaba.
             try (BufferedWriter salida = Files.newBufferedWriter(Path.of(rutaArchivo),
@@ -71,6 +91,12 @@ public class ArchivoEstomago {
         }
     }
 
+    /** Cantidad de capturas distintas y bien formadas; la única fuente es el archivo leído. */
+    public int contarRegistrosValidos(List<Captura> registros) {
+        return (int) registros.stream().filter(Objects::nonNull)
+                .map(Captura::getIdentificador).distinct().count();
+    }
+
     private List<Captura> leerDelArchivo() throws IOException {
         List<String> lineas;
         try {
@@ -81,7 +107,7 @@ public class ArchivoEstomago {
         var unicas = new LinkedHashMap<String, Captura>();
         for (String linea : lineas) {
             Captura captura = Captura.desdeLinea(linea);
-            if (captura != null) unicas.putIfAbsent(captura.getIdCaptura(), captura);
+            if (captura != null) unicas.putIfAbsent(captura.getIdentificador(), captura);
         }
         return new ArrayList<>(unicas.values());
     }

@@ -1,22 +1,25 @@
 // Archivo de simulacion
 package orquitas.cliente;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 /**
  * Simulador de ingesta de Lobitos por socket TCP.
  *
  * Según la consigna del hito, el simulador NO requiere documentación
  * (no tiene diseño POO ni UML asociado): es una rutina simple que abre
- * una conexión TCP hacia el Servidor y envía el mensaje de captura según
- * el protocolo acordado, simulando lo que en el sistema final haría la
- * Orquita real vía Bluetooth.
+ * una conexión TCP hacia el Servidor y envía una RECOPILACION con aviso de
+ * captura según el protocolo acordado, simulando lo que en el sistema final
+ * haría la Orquita real vía Bluetooth.
  *
- * Protocolo de mensajes: CAPTURA|&lt;idCaptura&gt;|&lt;timestamp ISO-8601&gt;
+ * Protocolo de mensajes: RECOPILACION|&lt;fecha ISO-8601&gt;|d0;...;d11|&lt;idCaptura&gt;
  *
  * Uso:
  *   java orquitas.cliente.SimuladorIngestaTCP [host] [puerto] [cantidadCapturas] [delayMs]
@@ -27,6 +30,8 @@ import java.time.LocalDateTime;
  * entrantes pudiendo solaparse en el tiempo).
  */
 public class SimuladorIngestaTCP {
+
+    private static final String DISTANCIAS = String.join(";", Collections.nCopies(12, "2500"));
 
     public static void main(String[] args) throws InterruptedException {
         String host = args.length > 0 ? args[0] : "localhost";
@@ -39,8 +44,8 @@ public class SimuladorIngestaTCP {
 
         for (int i = 1; i <= cantidadCapturas; i++) {
             String idCaptura = String.format("%03d", i);
-            String timestamp = LocalDateTime.now().toString();
-            String mensaje = "CAPTURA|" + idCaptura + "|" + timestamp;
+            String fecha = LocalDateTime.now().toString();
+            String mensaje = "RECOPILACION|" + fecha + "|" + DISTANCIAS + "|" + idCaptura;
 
             enviarMensaje(host, puerto, mensaje);
 
@@ -54,10 +59,13 @@ public class SimuladorIngestaTCP {
 
     private static void enviarMensaje(String host, int puerto, String mensaje) {
         try (Socket socket = new Socket(host, puerto);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8)) {
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
+            socket.setSoTimeout(5000);
             out.println(mensaje);
             if (out.checkError()) throw new IOException("Falló el envío TCP");
-            System.out.println("[SimuladorIngestaTCP] Enviado: " + mensaje);
+            // Se consume la respuesta antes de cerrar (ORDEN|... o ERROR|TRAMA_INVALIDA).
+            System.out.println("[SimuladorIngestaTCP] Enviado: " + mensaje + " -> " + in.readLine());
         } catch (IOException e) {
             System.err.println("[SimuladorIngestaTCP] No se pudo enviar el mensaje '" + mensaje
                     + "': " + e.getMessage());
