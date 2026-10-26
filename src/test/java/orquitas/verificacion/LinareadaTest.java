@@ -2,6 +2,7 @@
 package orquitas.verificacion;
 
 import orquitas.servidor.captura.*;
+import orquitas.servidor.comunicacion.EnlaceOrquita;
 import orquitas.servidor.comunicacion.ReceptorIngestaTCP;
 import orquitas.servidor.escape.*;
 import orquitas.servidor.navegacion.*;
@@ -9,6 +10,7 @@ import orquitas.servidor.persistencia.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -25,6 +27,10 @@ public class LinareadaTest {
 
     private static Path archivoNuevo() throws IOException {
         return Files.createTempDirectory("orquitas-prueba-").resolve("estomago.txt");
+    }
+
+    private static Navegacion navegacion() throws IOException {
+        return new Navegacion(ModeloPrueba.red());
     }
 
     private static void esperar(BooleanSupplier condicion) throws InterruptedException {
@@ -51,12 +57,10 @@ public class LinareadaTest {
                 return super.escribirRegistro(captura);
             }
         };
-        Escritor escritor = new Escritor(archivo);
-        escritor.start();
         FutureTask<List<Captura>> lectura = new FutureTask<>(archivo::leerRegistros);
         Thread lector = new Thread(lectura);
         try {
-            escritor.encolarCaptura(captura("A"));
+            archivo.registrarCaptura(captura("A"));
             assertTrue(entroEscritor.await(1, TimeUnit.SECONDS));
             lector.start();
             try { lectura.get(150, TimeUnit.MILLISECONDS); fail("El lector se adelantó al escritor"); }
@@ -65,7 +69,7 @@ public class LinareadaTest {
             assertEquals("A", lectura.get(1, TimeUnit.SECONDS).get(0).getIdCaptura());
         } finally {
             permitirEscritura.countDown();
-            escritor.detener(); escritor.join(1000); lector.join(1000);
+            archivo.esperarEscrituras(); lector.join(1000);
         }
     }
 
@@ -86,19 +90,16 @@ public class LinareadaTest {
         assertEquals(1, archivo.leerRegistros().size());
     }
 
-    @Test(timeout=5000) public void colaAceptaClientesConcurrentesYSeDrenaAlDetener() throws Exception {
+    @Test(timeout=5000) public void capturasConcurrentesUnEscritorPorCapturaYSeEsperanAlDetener() throws Exception {
         Estomago archivo = new Estomago(archivoNuevo().toString());
-        Escritor escritor = new Escritor(archivo);
-        escritor.start();
         List<Thread> productores = new ArrayList<>();
         for (int i=0; i<30; i++) {
             String id = "L" + i;
-            Thread t = new Thread(() -> escritor.encolarCaptura(captura(id)));
+            Thread t = new Thread(() -> archivo.registrarCaptura(captura(id)));
             productores.add(t); t.start();
         }
         for (Thread t : productores) t.join();
-        escritor.detener(); escritor.join(3000);
-        assertFalse(escritor.isAlive());
+        archivo.esperarEscrituras();
         assertEquals(30, archivo.leerRegistros().size());
     }
 
@@ -138,9 +139,10 @@ public class LinareadaTest {
                 return super.escribirRegistro(c);
             }
         };
-        Escritor escritor = new Escritor(archivo);
-        escritor.start(); escritor.encolarCaptura(captura("A")); escritor.encolarCaptura(captura("B"));
-        escritor.detener(); escritor.join(1000);
+        archivo.registrarCaptura(captura("A")); archivo.esperarEscrituras();
+        archivo.registrarCaptura(captura("B")); archivo.esperarEscrituras();
+        assertEquals(2, intentos.get());
+        assertEquals(1, archivo.leerRegistros().size());
         assertEquals("B", archivo.leerRegistros().get(0).getIdCaptura());
     }
 
@@ -148,25 +150,24 @@ public class LinareadaTest {
         Path ruta = archivoNuevo();
         Estomago inicial = new Estomago(ruta.toString());
         for (String id : List.of("A", "B", "C")) inicial.escribirRegistro(captura(id));
-        AtomicInteger notificaciones = new AtomicInteger();
-        Navegacion navegacion = new Navegacion();
-        ModoEscape activador = new ModoEscape(navegacion) {
-            @Override public void notificarCapturasCompletas(EventoModoEscape e) {
-                super.notificarCapturasCompletas(e); notificaciones.incrementAndGet();
+        AtomicInteger activaciones = new AtomicInteger();
+        Navegacion navegacion = new Navegacion(ModeloPrueba.red()) {
+            @Override public void establecerModoOperativo(ModoOperativo modo) {
+                super.establecerModoOperativo(modo); activaciones.incrementAndGet();
             }
         };
-        Auditor lector = new Auditor(new Estomago(ruta.toString()), activador, 20);
+        Auditor lector = new Auditor(new Estomago(ruta.toString()), new ModoEscape(navegacion), 20);
         lector.start();
         try {
             esperar(() -> navegacion.getModoOperativo()==ModoOperativo.ESCAPE);
-            Thread.sleep(100); assertEquals(1, notificaciones.get());
+            Thread.sleep(100); assertEquals(1, activaciones.get()); // Varios ciclos, un solo cambio.
         } finally { lector.detener(); lector.join(1000); }
     }
 
     @Test(timeout=5000) public void dosRegistrosMantienenBusquedaYElTerceroActivaEscape() throws Exception {
         Estomago archivo = new Estomago(archivoNuevo().toString());
         archivo.escribirRegistro(captura("A")); archivo.escribirRegistro(captura("B"));
-        Navegacion navegacion = new Navegacion();
+        Navegacion navegacion = navegacion();
         Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
         lector.start();
         try {
@@ -178,25 +179,26 @@ public class LinareadaTest {
 
     @Test(timeout=5000) public void datosInvalidosNoSePersisten() throws Exception {
         Estomago archivo = new Estomago(archivoNuevo().toString());
-        Escritor escritor = new Escritor(archivo);
-        Recopilador recopilador = new Recopilador(new ReceptorCapturas(escritor));
-        escritor.start();
-        for (String trama : List.of("", "OTRO|A|2026-09-30T12:00", "CAPTURA|A",
-                "CAPTURA|A;B|2026-09-30T12:00", "CAPTURA|A|mal", "CAPTURA||2026-09-30T12:00")) {
-            assertFalse(recopilador.procesarRecopilacion(trama));
+        StringWriter respuestas = new StringWriter();
+        EnlaceOrquita enlace = new EnlaceOrquita(archivo, navegacion(), respuestas);
+        List<String> tramas = List.of("", "OTRO|A|2026-09-30T12:00", "CAPTURA|A",
+                "CAPTURA|A;B|2026-09-30T12:00", "CAPTURA|A|mal", "CAPTURA||2026-09-30T12:00");
+        for (String trama : tramas) {
+            assertFalse(Recopilacion.decodificar(trama).esValida());
+            enlace.enviarRecopilacion(trama);
         }
-        escritor.detener(); escritor.join(1000);
+        assertEquals("ERROR|TRAMA_INVALIDA\n".repeat(tramas.size()), respuestas.toString());
+        archivo.esperarEscrituras();
         assertTrue(archivo.leerRegistros().isEmpty());
     }
 
     @Test(timeout=5000) public void tcpRealTramasInvalidasFragmentadasReconectarYTresCapturas() throws Exception {
         Estomago archivo = new Estomago(archivoNuevo().toString());
-        Escritor escritor = new Escritor(archivo);
-        Navegacion navegacion = new Navegacion();
+        Navegacion navegacion = navegacion();
         Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
-        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor)));
+        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, archivo, navegacion);
         Thread servidor = new Thread(entrada::iniciar);
-        escritor.start(); lector.start(); servidor.start();
+        lector.start(); servidor.start();
         try {
             esperar(() -> entrada.obtenerPuerto()>0);
             try (Socket s = new Socket("127.0.0.1", entrada.obtenerPuerto())) {
@@ -217,13 +219,12 @@ public class LinareadaTest {
             assertEquals(3, archivo.leerRegistros().size());
         } finally {
             entrada.detener(); servidor.join(1000);
-            escritor.detener(); escritor.join(1000); lector.detener(); lector.join(1000);
+            archivo.esperarEscrituras(); lector.detener(); lector.join(1000);
         }
     }
 
     @Test(timeout=5000) public void detenerCierraClientesQueNoEnvianNada() throws Exception {
-        Escritor escritor = new Escritor(new Estomago(archivoNuevo().toString()));
-        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor)));
+        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion());
         Thread servidor = new Thread(entrada::iniciar); servidor.start();
         esperar(() -> entrada.obtenerPuerto()>0);
         try (Socket cliente = new Socket("127.0.0.1", entrada.obtenerPuerto())) {

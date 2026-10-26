@@ -1,50 +1,38 @@
 package orquitas.servidor.escape;
 
+import java.util.Objects;
 import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.Navegacion;
 
 /**
- * Corresponde a CU-11 (Activar Modo Escape). Recibe el EventoModoEscape
- * emitido por Auditor y, si corresponde, cambia el modo operativo
- * del sistema de BUSQUEDA a ESCAPE, avisando a Navegacion.
+ * Corresponde a CU-11 (Activar Modo Escape). Auditor le informa la cantidad
+ * de capturas leída de estomago.txt y, si se alcanzó el umbral, cambia el
+ * modo operativo de Navegacion de BUSQUEDA a ESCAPE.
  */
 public class ModoEscape {
 
-    private static final int UMBRAL_CAPTURAS = 3;
+    public static final int UMBRAL_CAPTURAS = 3;
 
     private final Navegacion navegacion;
-    private volatile ModoOperativo modoActual;
 
     public ModoEscape(Navegacion navegacion) {
-        this.navegacion = navegacion;
-        this.modoActual = ModoOperativo.BUSQUEDA;
+        this.navegacion = Objects.requireNonNull(navegacion);
     }
 
-    /**
-     * Punto de entrada del protocolo de mensajes interno definido con
-     * EventoModoEscape (ver clase EventoModoEscape).
-     */
-    public void notificarCapturasCompletas(EventoModoEscape evento) {
-        if (evento == null || !EventoModoEscape.TIPO_MODO_ESCAPE_ACTIVADO.equals(evento.getTipoEvento())) {
-            throw new IllegalArgumentException("Evento de escape inválido");
-        }
-        if (modoActual == ModoOperativo.ESCAPE) return;
-        if (evento.getCantidadCapturas() < UMBRAL_CAPTURAS) {
+    public void notificarCapturasCompletas(int cantidadCapturas) {
+        if (cantidadCapturas < 0) throw new IllegalArgumentException("Cantidad de capturas negativa");
+        if (cantidadCapturas < UMBRAL_CAPTURAS) {
             mantenerModoBusqueda();
             return;
         }
-        modoActual = cambiarModo(ModoOperativo.ESCAPE);
-        navegacion.establecerModoOperativo(modoActual);
-        System.out.println("[ModoEscape] ¡MODO ESCAPE ACTIVADO! " + evento);
+        activar(cantidadCapturas);
     }
 
-    public ModoOperativo getModoActual() {
-        return modoActual;
-    }
-
-    private ModoOperativo cambiarModo(ModoOperativo nuevoModo) {
-        System.out.println("[ModoEscape] Cambiando modo operativo: " + modoActual + " -> " + nuevoModo);
-        return nuevoModo;
+    /** Idempotente: el Auditor vuelve a notificar en cada ciclo y el cambio ocurre una sola vez. */
+    private synchronized void activar(int cantidadCapturas) {
+        if (navegacion.getModoOperativo() == ModoOperativo.ESCAPE) return;
+        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
+        System.out.println("[ModoEscape] ¡MODO ESCAPE ACTIVADO! capturas=" + cantidadCapturas);
     }
 
     private void mantenerModoBusqueda() {

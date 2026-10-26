@@ -17,8 +17,7 @@ import orquitas.simulacion.EntrenadorDemostracion;
 public class HitoDosTest {
     private static Path modelo;
     @BeforeClass public static void prepararModelo() throws Exception {
-        modelo=Files.createTempDirectory("orquita-red-").resolve("red.nnet");
-        EntrenadorDemostracion.entrenarSiFalta(modelo);
+        modelo=ModeloPrueba.ruta();
     }
     private static Telemetria uniforme(double valor) { double[] d=new double[12]; Arrays.fill(d,valor); return new Telemetria(d); }
     private static String trama(String id, double valor) {
@@ -68,19 +67,21 @@ public class HitoDosTest {
     }
     @Test public void tramaInvalidaConCapturaNoProduceEfectosParciales() throws Exception {
         Estomago archivo=new Estomago(Files.createTempDirectory("orquita-parser-").resolve("estomago.txt").toString());
-        Escritor escritor=new Escritor(archivo); escritor.start();
-        try {
-            Recopilador r=new Recopilador(new ReceptorCapturas(escritor),new Navegacion(new RedNeuronal(modelo)));
-            for(String t:List.of(trama("A",Double.NaN),trama("B",-1),trama("C",5000),trama("D",100).replace("2026-09-30T12:00","mal"),trama("E;X",100),"RECOPILACION|2026-09-30T12:00|1;2|F"))
-                assertFalse(r.procesarRecopilacion(t));
-        } finally { escritor.detener(); escritor.join(1000); }
+        StringWriter respuestas=new StringWriter();
+        EnlaceOrquita enlace=new EnlaceOrquita(archivo,new Navegacion(new RedNeuronal(modelo)),respuestas);
+        List<String> invalidas=List.of(trama("A",Double.NaN),trama("B",-1),trama("C",5000),trama("D",100).replace("2026-09-30T12:00","mal"),trama("E;X",100),"RECOPILACION|2026-09-30T12:00|1;2|F");
+        for(String t:invalidas) {
+            assertFalse(Recopilacion.decodificar(t).esValida());
+            enlace.enviarRecopilacion(t);
+        }
+        assertEquals("ERROR|TRAMA_INVALIDA\n".repeat(invalidas.size()),respuestas.toString());
+        archivo.esperarEscrituras();
         assertTrue(archivo.leerRegistros().isEmpty());
     }
     @Test(timeout=10000) public void tcpRespondePorSocketCorrectoFragmentaAgrupaYReconecta() throws Exception {
         Estomago archivo=new Estomago(Files.createTempDirectory("orquita-e2e-").resolve("estomago.txt").toString());
-        Escritor escritor=new Escritor(archivo); escritor.start();
         Navegacion n=new Navegacion(new RedNeuronal(modelo));
-        ReceptorIngestaTCP receptor=new ReceptorIngestaTCP(0,new Recopilador(new ReceptorCapturas(escritor),n));
+        ReceptorIngestaTCP receptor=new ReceptorIngestaTCP(0,archivo,n);
         Thread servidor=new Thread(receptor::iniciar); servidor.start();
         try {
             long limite=System.nanoTime()+2_000_000_000L;
@@ -107,7 +108,7 @@ public class HitoDosTest {
                 c.getOutputStream().write((trama("",2500)+"\n").getBytes(StandardCharsets.UTF_8));
                 assertEquals("ORDEN|AVANZAR",new BufferedReader(new InputStreamReader(c.getInputStream())).readLine());
             }
-        } finally { receptor.detener(); servidor.join(1000); escritor.detener(); escritor.join(1000); }
+        } finally { receptor.detener(); servidor.join(1000); archivo.esperarEscrituras(); }
         assertEquals(3,archivo.leerRegistros().size());
     }
     @Test public void modeloIncompatibleSeRechaza() throws Exception {

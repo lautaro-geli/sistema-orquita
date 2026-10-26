@@ -1,7 +1,8 @@
 // Archivo de simulacion
 package orquitas.servidor.comunicacion;
 
-import orquitas.servidor.captura.Recopilador;
+import orquitas.servidor.navegacion.Navegacion;
+import orquitas.servidor.persistencia.Estomago;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -14,15 +15,17 @@ import java.util.Set;
 /** Adaptador TCP de La Linareada; será reemplazado por Bluetooth. */
 public class ReceptorIngestaTCP {
     private final int puerto;
-    private final Recopilador recopilador;
+    private final Estomago estomago;
+    private final Navegacion navegacion;
     private final Set<Socket> clientes = new HashSet<>();
     private final Set<Thread> manejadores = new HashSet<>();
     private volatile boolean activo = true;
     private volatile ServerSocket servidor;
 
-    public ReceptorIngestaTCP(int puerto, Recopilador recopilador) {
+    public ReceptorIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion) {
         this.puerto = puerto;
-        this.recopilador = recopilador;
+        this.estomago = estomago;
+        this.navegacion = navegacion;
     }
 
     public void iniciar() {
@@ -82,7 +85,7 @@ public class ReceptorIngestaTCP {
     private void manejarCliente(Socket cliente) {
         try (cliente; Reader entrada = new InputStreamReader(cliente.getInputStream(), StandardCharsets.UTF_8)) {
             cliente.setSoTimeout(10000); // Cliente silencioso: cerrar y permitir una conexion nueva.
-            EnlaceOrquita enlace = new EnlaceOrquita(recopilador,
+            EnlaceOrquita enlace = new EnlaceOrquita(estomago, navegacion,
                     new java.io.OutputStreamWriter(cliente.getOutputStream(), StandardCharsets.UTF_8));
             StringBuilder mensaje = new StringBuilder();
             boolean excesivo = false;

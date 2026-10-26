@@ -21,8 +21,7 @@ public class RobustezHitoDosTest {
     private static Path modelo;
     private static final String DISTANCIAS_OK = String.join(";", Collections.nCopies(12, "2500"));
     @BeforeClass public static void prepararModelo() throws Exception {
-        modelo = Files.createTempDirectory("orquita-robustez-").resolve("red.nnet");
-        EntrenadorDemostracion.entrenarSiFalta(modelo);
+        modelo = ModeloPrueba.ruta();
     }
     private static double[] todas(double v) { double[] d = new double[12]; Arrays.fill(d, v); return d; }
     private static String trama(String distancias, String id) { return "RECOPILACION|2026-09-30T12:00|" + distancias + "|" + id; }
@@ -75,16 +74,14 @@ public class RobustezHitoDosTest {
     @Test public void parserRechazaNotacionNoDecimal() {
         for (String malo : new String[]{"1e3", "0x1p3", "+2500", " 2500", "2500 ", "-1", "NaN", "Infinity", "2,5", "", "12345", "4001"}) {
             String d = malo + ";" + String.join(";", Collections.nCopies(11, "2500"));
-            try { PaqueteRecopilacion.decodificar(trama(d, "")); fail("Debia rechazar '" + malo + "'"); }
-            catch (IllegalArgumentException esperado) { }
+            assertFalse("Debia rechazar '" + malo + "'", Recopilacion.decodificar(trama(d, "")).esValida());
         }
-        assertNotNull(PaqueteRecopilacion.decodificar(trama("2500.5;" + String.join(";", Collections.nCopies(11, "0")), "")));
+        assertTrue(Recopilacion.decodificar(trama("2500.5;" + String.join(";", Collections.nCopies(11, "0")), "")).esValida());
     }
     @Test(timeout = 15000) public void tramaInvalidaDeRecopilacionRecibeErrorYLaConexionSigue() throws Exception {
         Path estomago = Files.createTempDirectory("orquita-err-").resolve("estomago.txt");
         Estomago archivo = new Estomago(estomago.toString());
-        Escritor escritor = new Escritor(archivo); escritor.start();
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor), new Navegacion(new RedNeuronal(modelo))));
+        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, archivo, new Navegacion(new RedNeuronal(modelo)));
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         try {
             esperarArranque(rx);
@@ -100,14 +97,13 @@ public class RobustezHitoDosTest {
                 out.write(trama(DISTANCIAS_OK, "") + "\n"); out.flush();
                 assertEquals("ORDEN|AVANZAR", in.readLine());
             }
-        } finally { rx.detener(); servidor.join(1000); escritor.detener(); escritor.join(1000); }
+        } finally { rx.detener(); servidor.join(1000); archivo.esperarEscrituras(); }
         assertTrue(archivo.leerRegistros().isEmpty());
     }
     @Test(timeout = 30000) public void variosClientesRecibenSuPropiaOrdenYLasCapturasSonUnicas() throws Exception {
         Path estomago = Files.createTempDirectory("orquita-conc-").resolve("estomago.txt");
         Estomago archivo = new Estomago(estomago.toString());
-        Escritor escritor = new Escritor(archivo); escritor.start();
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor), new Navegacion(new RedNeuronal(modelo))));
+        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, archivo, new Navegacion(new RedNeuronal(modelo)));
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         AtomicInteger errores = new AtomicInteger();
         ExecutorService pool = Executors.newFixedThreadPool(6);
@@ -131,7 +127,7 @@ public class RobustezHitoDosTest {
                 }));
             }
             for (Future<?> f : fs) f.get(25, TimeUnit.SECONDS);
-        } finally { pool.shutdownNow(); rx.detener(); servidor.join(1000); escritor.detener(); escritor.join(2000); pool.awaitTermination(2, TimeUnit.SECONDS); }
+        } finally { pool.shutdownNow(); rx.detener(); servidor.join(1000); archivo.esperarEscrituras(); pool.awaitTermination(2, TimeUnit.SECONDS); }
         assertEquals(0, errores.get());
         assertEquals(24, archivo.leerRegistros().size());
     }

@@ -11,6 +11,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 /** CU-09/CU-10. Una única instancia compartida por escritor y lector. */
@@ -25,13 +26,32 @@ public class Estomago {
         this.rutaArchivo = rutaArchivo;
     }
 
-    public void anunciarEscritura() {
+    /** CU-09. Un hilo Escritor por captura; la recepción no espera al disco. */
+    public void registrarCaptura(Captura captura) {
+        Escritor escritor = new Escritor(this, Objects.requireNonNull(captura));
+        anunciarEscritura(); // Desde aquí las nuevas lecturas esperan.
+        try {
+            escritor.start(); // JVM invoca run() en el hilo escritor.
+        } catch (RuntimeException | Error e) {
+            finalizarEscritura();
+            throw e;
+        }
+    }
+
+    /** Bloquea hasta que terminen todos los Escritor iniciados (apagado y pruebas). */
+    public void esperarEscrituras() throws InterruptedException {
+        synchronized (controlEscrituras) {
+            while (escriturasPendientes > 0) controlEscrituras.wait();
+        }
+    }
+
+    void anunciarEscritura() {
         synchronized (controlEscrituras) {
             escriturasPendientes++;
         }
     }
 
-    public void finalizarEscritura() {
+    void finalizarEscritura() {
         synchronized (controlEscrituras) {
             if (escriturasPendientes <= 0) throw new IllegalStateException("Sin escritura pendiente");
             escriturasPendientes--;
@@ -69,6 +89,12 @@ public class Estomago {
         } finally {
             mutex.release();
         }
+    }
+
+    /** Cantidad de capturas distintas y bien formadas; la única fuente es el archivo leído. */
+    public int contarRegistrosValidos(List<Captura> registros) {
+        return (int) registros.stream().filter(Objects::nonNull)
+                .map(Captura::getIdCaptura).distinct().count();
     }
 
     private List<Captura> leerDelArchivo() throws IOException {

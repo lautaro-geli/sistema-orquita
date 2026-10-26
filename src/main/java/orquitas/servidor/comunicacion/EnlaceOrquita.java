@@ -1,24 +1,26 @@
 package orquitas.servidor.comunicacion;
 
 import java.io.*;
-import orquitas.servidor.captura.*;
+import orquitas.servidor.captura.Recopilacion;
 import orquitas.servidor.navegacion.Movimiento;
+import orquitas.servidor.navegacion.Navegacion;
+import orquitas.servidor.persistencia.Estomago;
 
 /** Una instancia por conexion: una orden nunca se entrega a otro cliente. */
 public class EnlaceOrquita {
-    private final Recopilador recopilador;
+    private final Estomago estomago;
+    private final Navegacion navegacion;
     private final Writer salida;
-    public EnlaceOrquita(Recopilador recopilador, Writer salida) {
-        this.recopilador=recopilador; this.salida=salida;
+    public EnlaceOrquita(Estomago estomago, Navegacion navegacion, Writer salida) {
+        this.estomago=estomago; this.navegacion=navegacion; this.salida=salida;
     }
-    public void enviarRecopilacion(String mensaje) throws IOException {
-        PaqueteRecopilacion paquete;
-        try { paquete=PaqueteRecopilacion.decodificar(mensaje); }
-        catch (IllegalArgumentException | java.time.DateTimeException e) {
+    public void enviarRecopilacion(String linea) throws IOException {
+        Recopilacion recopilacion=Recopilacion.decodificar(linea);
+        if(!recopilacion.esValida()) {
             System.err.println("[EnlaceOrquita] Trama invalida: descartada");
             enviarErrorTrama(); return;
         }
-        Movimiento movimiento=recopilador.procesarRecopilacion(paquete);
+        Movimiento movimiento=recopilacion.procesar(estomago, navegacion);
         if(movimiento!=null) enviarOrdenNavegacion(movimiento);
     }
     /** Respuesta acotada: no refleja contenido recibido ni confirma una captura. */
