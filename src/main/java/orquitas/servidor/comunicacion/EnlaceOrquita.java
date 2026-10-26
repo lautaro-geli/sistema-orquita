@@ -5,17 +5,17 @@ import orquitas.servidor.captura.*;
 import orquitas.servidor.navegacion.Movimiento;
 
 /** Una instancia por conexion: una orden nunca se entrega a otro cliente. */
-public class ComunicadorOrquita {
+public class EnlaceOrquita {
     private final Recopilador recopilador;
     private final Writer salida;
-    public ComunicadorOrquita(Recopilador recopilador, Writer salida) {
+    public EnlaceOrquita(Recopilador recopilador, Writer salida) {
         this.recopilador=recopilador; this.salida=salida;
     }
     public void enviarRecopilacion(String mensaje) throws IOException {
         PaqueteRecopilacion paquete;
         try { paquete=PaqueteRecopilacion.decodificar(mensaje); }
         catch (IllegalArgumentException | java.time.DateTimeException e) {
-            System.err.println("[ComunicadorOrquita] Trama invalida: descartada");
+            System.err.println("[EnlaceOrquita] Trama invalida: descartada");
             enviarErrorTrama(); return;
         }
         Movimiento movimiento=recopilador.procesarRecopilacion(paquete);

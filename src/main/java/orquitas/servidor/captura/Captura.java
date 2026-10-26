@@ -42,7 +42,7 @@ public class Captura {
     /**
      * Reconstruye una Captura a partir de una línea leída de estomago.txt.
      * Devuelve null si la línea está vacía, mal formada o corrupta, para que
-     * quien la lea (ArchivoEstomago) pueda descartarla sin romper
+     * quien la lea (Estomago) pueda descartarla sin romper
      * la lectura del resto del archivo.
      */
     public static Captura desdeLinea(String linea) {

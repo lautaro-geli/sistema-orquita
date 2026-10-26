@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 /**
  * Protocolo de mensajes interno acordado en la revisión del hito para la
- * notificación de LectorEstomago hacia ActivadorModoEscape (punto 5 de la
+ * notificación de Auditor hacia ModoEscape (punto 5 de la
  * Fase 1).
  *
  * Aunque la comunicación es intra-proceso (misma JVM), se formaliza como un

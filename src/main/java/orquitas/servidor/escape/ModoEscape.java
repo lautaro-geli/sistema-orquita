@@ -1,22 +1,22 @@
 package orquitas.servidor.escape;
 
 import orquitas.servidor.navegacion.ModoOperativo;
-import orquitas.servidor.navegacion.Navegador;
+import orquitas.servidor.navegacion.Navegacion;
 
 /**
  * Corresponde a CU-11 (Activar Modo Escape). Recibe el EventoModoEscape
- * emitido por LectorEstomago y, si corresponde, cambia el modo operativo
- * del sistema de BUSQUEDA a ESCAPE, avisando a Navegador.
+ * emitido por Auditor y, si corresponde, cambia el modo operativo
+ * del sistema de BUSQUEDA a ESCAPE, avisando a Navegacion.
  */
-public class ActivadorModoEscape {
+public class ModoEscape {
 
     private static final int UMBRAL_CAPTURAS = 3;
 
-    private final Navegador navegador;
+    private final Navegacion navegacion;
     private volatile ModoOperativo modoActual;
 
-    public ActivadorModoEscape(Navegador navegador) {
-        this.navegador = navegador;
+    public ModoEscape(Navegacion navegacion) {
+        this.navegacion = navegacion;
         this.modoActual = ModoOperativo.BUSQUEDA;
     }
 
@@ -34,8 +34,8 @@ public class ActivadorModoEscape {
             return;
         }
         modoActual = cambiarModo(ModoOperativo.ESCAPE);
-        navegador.establecerModoOperativo(modoActual);
-        System.out.println("[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! " + evento);
+        navegacion.establecerModoOperativo(modoActual);
+        System.out.println("[ModoEscape] ¡MODO ESCAPE ACTIVADO! " + evento);
     }
 
     public ModoOperativo getModoActual() {
@@ -43,11 +43,11 @@ public class ActivadorModoEscape {
     }
 
     private ModoOperativo cambiarModo(ModoOperativo nuevoModo) {
-        System.out.println("[ActivadorModoEscape] Cambiando modo operativo: " + modoActual + " -> " + nuevoModo);
+        System.out.println("[ModoEscape] Cambiando modo operativo: " + modoActual + " -> " + nuevoModo);
         return nuevoModo;
     }
 
     private void mantenerModoBusqueda() {
-        System.out.println("[ActivadorModoEscape] Todavía no se alcanzaron las 3 capturas; se mantiene Modo Búsqueda.");
+        System.out.println("[ModoEscape] Todavía no se alcanzaron las 3 capturas; se mantiene Modo Búsqueda.");
     }
 }

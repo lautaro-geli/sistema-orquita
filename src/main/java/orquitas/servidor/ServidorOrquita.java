@@ -4,26 +4,26 @@ package orquitas.servidor;
 import orquitas.servidor.captura.Recopilador;
 import orquitas.servidor.captura.ReceptorCapturas;
 import orquitas.servidor.comunicacion.ReceptorIngestaTCP;
-import orquitas.servidor.escape.ActivadorModoEscape;
-import orquitas.servidor.navegacion.Navegador;
-import orquitas.servidor.persistencia.ActualizadorEstomago;
-import orquitas.servidor.persistencia.ArchivoEstomago;
-import orquitas.servidor.persistencia.LectorEstomago;
+import orquitas.servidor.escape.ModoEscape;
+import orquitas.servidor.navegacion.Navegacion;
+import orquitas.servidor.persistencia.Escritor;
+import orquitas.servidor.persistencia.Estomago;
+import orquitas.servidor.persistencia.Auditor;
 
 /** Arranque del Hito 2 simulado. No borra capturas al reiniciar. */
 public class ServidorOrquita {
     public static void main(String[] args) throws java.io.IOException {
         int puerto = args.length > 0 ? Integer.parseInt(args[0]) : 5000;
         String ruta = args.length > 1 ? args[1] : "estomago.txt";
-        ArchivoEstomago archivo = new ArchivoEstomago(ruta);
-        ActualizadorEstomago actualizador = new ActualizadorEstomago(archivo);
+        Estomago archivo = new Estomago(ruta);
+        Escritor actualizador = new Escritor(archivo);
         java.nio.file.Path modelo = java.nio.file.Path.of(args.length > 2 ? args[2] : "modelos/entorno-demo.nnet");
         orquitas.simulacion.EntrenadorDemostracion.entrenarSiFalta(modelo);
-        Navegador navegador = new Navegador(new orquitas.servidor.navegacion.ClasificadorEntorno(modelo));
-        ActivadorModoEscape activador = new ActivadorModoEscape(navegador);
-        LectorEstomago lector = new LectorEstomago(archivo, activador, 500);
+        Navegacion navegacion = new Navegacion(new orquitas.servidor.navegacion.RedNeuronal(modelo));
+        ModoEscape activador = new ModoEscape(navegacion);
+        Auditor lector = new Auditor(archivo, activador, 500);
         ReceptorCapturas receptor = new ReceptorCapturas(actualizador);
-        Recopilador recopilador = new Recopilador(receptor, navegador);
+        Recopilador recopilador = new Recopilador(receptor, navegacion);
         ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(puerto, recopilador);
 
         actualizador.start(); // JVM invoca run() en el hilo escritor.

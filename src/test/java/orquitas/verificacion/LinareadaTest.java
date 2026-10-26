@@ -34,24 +34,24 @@ public class LinareadaTest {
     }
 
     @Test(timeout=5000) public void escritorYAuditorSonHilosDistintosConRunPropio() throws Exception {
-        assertEquals(Thread.class, ActualizadorEstomago.class.getSuperclass());
-        assertEquals(Thread.class, LectorEstomago.class.getSuperclass());
-        assertEquals(ActualizadorEstomago.class, ActualizadorEstomago.class.getDeclaredMethod("run").getDeclaringClass());
-        assertEquals(LectorEstomago.class, LectorEstomago.class.getDeclaredMethod("run").getDeclaringClass());
+        assertEquals(Thread.class, Escritor.class.getSuperclass());
+        assertEquals(Thread.class, Auditor.class.getSuperclass());
+        assertEquals(Escritor.class, Escritor.class.getDeclaredMethod("run").getDeclaringClass());
+        assertEquals(Auditor.class, Auditor.class.getDeclaredMethod("run").getDeclaringClass());
     }
 
     @Test(timeout=5000) public void capturaPendienteBloqueaAlLectorHastaTerminarLaEscritura() throws Exception {
         Path ruta = archivoNuevo();
         CountDownLatch entroEscritor = new CountDownLatch(1);
         CountDownLatch permitirEscritura = new CountDownLatch(1);
-        ArchivoEstomago archivo = new ArchivoEstomago(ruta.toString()) {
+        Estomago archivo = new Estomago(ruta.toString()) {
             @Override public boolean escribirRegistro(Captura captura) throws IOException, InterruptedException {
                 entroEscritor.countDown();
                 permitirEscritura.await();
                 return super.escribirRegistro(captura);
             }
         };
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo);
+        Escritor escritor = new Escritor(archivo);
         escritor.start();
         FutureTask<List<Captura>> lectura = new FutureTask<>(archivo::leerRegistros);
         Thread lector = new Thread(lectura);
@@ -70,8 +70,8 @@ public class LinareadaTest {
     }
 
     @Test(timeout=5000) public void semaforoExcluyeLecturaYEscrituraConcurrentes() throws Exception {
-        ArchivoEstomago archivo = new ArchivoEstomago(archivoNuevo().toString());
-        var campo = ArchivoEstomago.class.getDeclaredField("mutex");
+        Estomago archivo = new Estomago(archivoNuevo().toString());
+        var campo = Estomago.class.getDeclaredField("mutex");
         campo.setAccessible(true);
         Semaphore mutex = (Semaphore) campo.get(archivo);
         mutex.acquire();
@@ -87,8 +87,8 @@ public class LinareadaTest {
     }
 
     @Test(timeout=5000) public void colaAceptaClientesConcurrentesYSeDrenaAlDetener() throws Exception {
-        ArchivoEstomago archivo = new ArchivoEstomago(archivoNuevo().toString());
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo);
+        Estomago archivo = new Estomago(archivoNuevo().toString());
+        Escritor escritor = new Escritor(archivo);
         escritor.start();
         List<Thread> productores = new ArrayList<>();
         for (int i=0; i<30; i++) {
@@ -104,7 +104,7 @@ public class LinareadaTest {
 
     @Test(timeout=5000) public void retransmitirUnIdNoCuentaOtroLobito() throws Exception {
         Path ruta = archivoNuevo();
-        ArchivoEstomago archivo = new ArchivoEstomago(ruta.toString());
+        Estomago archivo = new Estomago(ruta.toString());
         assertTrue(archivo.escribirRegistro(captura("A")));
         assertFalse(archivo.escribirRegistro(captura("A")));
         assertEquals(1, Files.readAllLines(ruta).size());
@@ -115,12 +115,12 @@ public class LinareadaTest {
         Path ruta = archivoNuevo();
         Files.writeString(ruta, captura("A").aLinea()+"\ncorrupto\n"+captura("A").aLinea()
                 +"\nB;fecha-invalida\n"+captura("C").aLinea()+"\n");
-        assertEquals(2, new ArchivoEstomago(ruta.toString()).leerRegistros().size());
+        assertEquals(2, new Estomago(ruta.toString()).leerRegistros().size());
     }
 
     @Test(timeout=5000) public void errorDeArchivoLiberaPermisoYNoDevuelveConteoParcial() throws Exception {
         Path ruta = archivoNuevo(); Files.createDirectory(ruta);
-        ArchivoEstomago archivo = new ArchivoEstomago(ruta.toString());
+        Estomago archivo = new Estomago(ruta.toString());
         try { archivo.escribirRegistro(captura("A")); fail("Debía informar IOException"); }
         catch (IOException esperado) { }
         try { archivo.leerRegistros(); fail("Debía informar IOException"); }
@@ -132,13 +132,13 @@ public class LinareadaTest {
 
     @Test(timeout=5000) public void escritorContinuaDespuesDeUnErrorRecuperable() throws Exception {
         AtomicInteger intentos = new AtomicInteger();
-        ArchivoEstomago archivo = new ArchivoEstomago(archivoNuevo().toString()) {
+        Estomago archivo = new Estomago(archivoNuevo().toString()) {
             @Override public boolean escribirRegistro(Captura c) throws IOException, InterruptedException {
                 if (intentos.getAndIncrement()==0) throw new IOException("Error inducido");
                 return super.escribirRegistro(c);
             }
         };
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo);
+        Escritor escritor = new Escritor(archivo);
         escritor.start(); escritor.encolarCaptura(captura("A")); escritor.encolarCaptura(captura("B"));
         escritor.detener(); escritor.join(1000);
         assertEquals("B", archivo.leerRegistros().get(0).getIdCaptura());
@@ -146,39 +146,39 @@ public class LinareadaTest {
 
     @Test(timeout=5000) public void reiniciarConTresRegistrosActivaEscapeUnaSolaVez() throws Exception {
         Path ruta = archivoNuevo();
-        ArchivoEstomago inicial = new ArchivoEstomago(ruta.toString());
+        Estomago inicial = new Estomago(ruta.toString());
         for (String id : List.of("A", "B", "C")) inicial.escribirRegistro(captura(id));
         AtomicInteger notificaciones = new AtomicInteger();
-        Navegador navegador = new Navegador();
-        ActivadorModoEscape activador = new ActivadorModoEscape(navegador) {
+        Navegacion navegacion = new Navegacion();
+        ModoEscape activador = new ModoEscape(navegacion) {
             @Override public void notificarCapturasCompletas(EventoModoEscape e) {
                 super.notificarCapturasCompletas(e); notificaciones.incrementAndGet();
             }
         };
-        LectorEstomago lector = new LectorEstomago(new ArchivoEstomago(ruta.toString()), activador, 20);
+        Auditor lector = new Auditor(new Estomago(ruta.toString()), activador, 20);
         lector.start();
         try {
-            esperar(() -> navegador.getModoOperativo()==ModoOperativo.ESCAPE);
+            esperar(() -> navegacion.getModoOperativo()==ModoOperativo.ESCAPE);
             Thread.sleep(100); assertEquals(1, notificaciones.get());
         } finally { lector.detener(); lector.join(1000); }
     }
 
     @Test(timeout=5000) public void dosRegistrosMantienenBusquedaYElTerceroActivaEscape() throws Exception {
-        ArchivoEstomago archivo = new ArchivoEstomago(archivoNuevo().toString());
+        Estomago archivo = new Estomago(archivoNuevo().toString());
         archivo.escribirRegistro(captura("A")); archivo.escribirRegistro(captura("B"));
-        Navegador navegador = new Navegador();
-        LectorEstomago lector = new LectorEstomago(archivo, new ActivadorModoEscape(navegador), 20);
+        Navegacion navegacion = new Navegacion();
+        Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
         lector.start();
         try {
-            Thread.sleep(100); assertEquals(ModoOperativo.BUSQUEDA, navegador.getModoOperativo());
+            Thread.sleep(100); assertEquals(ModoOperativo.BUSQUEDA, navegacion.getModoOperativo());
             archivo.escribirRegistro(captura("C"));
-            esperar(() -> navegador.getModoOperativo()==ModoOperativo.ESCAPE);
+            esperar(() -> navegacion.getModoOperativo()==ModoOperativo.ESCAPE);
         } finally { lector.detener(); lector.join(1000); }
     }
 
     @Test(timeout=5000) public void datosInvalidosNoSePersisten() throws Exception {
-        ArchivoEstomago archivo = new ArchivoEstomago(archivoNuevo().toString());
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo);
+        Estomago archivo = new Estomago(archivoNuevo().toString());
+        Escritor escritor = new Escritor(archivo);
         Recopilador recopilador = new Recopilador(new ReceptorCapturas(escritor));
         escritor.start();
         for (String trama : List.of("", "OTRO|A|2026-09-30T12:00", "CAPTURA|A",
@@ -190,10 +190,10 @@ public class LinareadaTest {
     }
 
     @Test(timeout=5000) public void tcpRealTramasInvalidasFragmentadasReconectarYTresCapturas() throws Exception {
-        ArchivoEstomago archivo = new ArchivoEstomago(archivoNuevo().toString());
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo);
-        Navegador navegador = new Navegador();
-        LectorEstomago lector = new LectorEstomago(archivo, new ActivadorModoEscape(navegador), 20);
+        Estomago archivo = new Estomago(archivoNuevo().toString());
+        Escritor escritor = new Escritor(archivo);
+        Navegacion navegacion = new Navegacion();
+        Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
         ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor)));
         Thread servidor = new Thread(entrada::iniciar);
         escritor.start(); lector.start(); servidor.start();
@@ -213,7 +213,7 @@ public class LinareadaTest {
                 assertEquals("ERROR|TRAMA_INVALIDA", respuestas.readLine());
                 assertEquals("ERROR|TRAMA_INVALIDA", respuestas.readLine());
             }
-            esperar(() -> navegador.getModoOperativo()==ModoOperativo.ESCAPE);
+            esperar(() -> navegacion.getModoOperativo()==ModoOperativo.ESCAPE);
             assertEquals(3, archivo.leerRegistros().size());
         } finally {
             entrada.detener(); servidor.join(1000);
@@ -222,7 +222,7 @@ public class LinareadaTest {
     }
 
     @Test(timeout=5000) public void detenerCierraClientesQueNoEnvianNada() throws Exception {
-        ActualizadorEstomago escritor = new ActualizadorEstomago(new ArchivoEstomago(archivoNuevo().toString()));
+        Escritor escritor = new Escritor(new Estomago(archivoNuevo().toString()));
         ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor)));
         Thread servidor = new Thread(entrada::iniciar); servidor.start();
         esperar(() -> entrada.obtenerPuerto()>0);

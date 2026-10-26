@@ -65,10 +65,10 @@ public class EntrenadorDemostracion {
         System.out.println("[Entrenamiento] Iteraciones="+regla.getCurrentIteration()+" error="+regla.getTotalNetworkError());
     }
     public static double evaluar(Path ruta, Path informe) throws IOException {
-        ClasificadorEntorno clasificador=new ClasificadorEntorno(ruta);
+        RedNeuronal redNeuronal=new RedNeuronal(ruta);
         int[][] matriz=new int[2][2];
         for(Muestra m:generar(1000,202L)) {
-            EntornoClasificado pred=clasificador.clasificarEntorno(m.telemetria());
+            EntornoClasificado pred=redNeuronal.clasificarEntorno(m.telemetria());
             matriz[m.etiqueta().ordinal()][pred.ordinal()]++;
         }
         double precision=(matriz[0][0]+matriz[1][1])/10.0;
@@ -88,7 +88,7 @@ public class EntrenadorDemostracion {
         double exactitud=evaluar(ruta,Path.of("evidencias/validacion-sintetica.txt"));
         for(Muestra m:generar(6,303L)) {
             System.out.println(Arrays.toString(m.telemetria().getDistancias())+" esperado="+m.etiqueta()+
-                " red="+new ClasificadorEntorno(ruta).clasificarEntorno(m.telemetria()));
+                " red="+new RedNeuronal(ruta).clasificarEntorno(m.telemetria()));
         }
         if(exactitud<95) throw new IllegalStateException("No se alcanzo el objetivo del 95% sintetico");
     }

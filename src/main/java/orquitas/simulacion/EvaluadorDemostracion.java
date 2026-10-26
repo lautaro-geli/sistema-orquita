@@ -8,11 +8,11 @@ import orquitas.servidor.navegacion.*;
 
 /** Exporta predicciones reproducibles. No usa la etiqueta de referencia para decidir. */
 public class EvaluadorDemostracion {
-    private static void registrar(Writer salida, ClasificadorEntorno red, String grupo, int caso,
+    private static void registrar(Writer salida, RedNeuronal red, String grupo, int caso,
                                   double[] d, EntornoClasificado esperado) throws IOException {
         Telemetria t=new Telemetria(d);
         EntornoClasificado predicho=red.clasificarEntorno(t);
-        Movimiento orden=new Navegador(red).determinarMovimiento(t);
+        Movimiento orden=new Navegacion(red).determinarMovimiento(t);
         salida.write(grupo+";"+caso+";"+esperado+";"+predicho+";"+orden);
         for(double v:d) salida.write(String.format(Locale.ROOT,";%.6f",v));
         salida.write("\n");
@@ -20,7 +20,7 @@ public class EvaluadorDemostracion {
     public static void main(String[] args) throws Exception {
         Path modelo=Path.of(args.length>0?args[0]:"modelos/entorno-demo.nnet");
         Path salida=Path.of(args.length>1?args[1]:"evidencias/predicciones.csv");
-        ClasificadorEntorno red=new ClasificadorEntorno(modelo);
+        RedNeuronal red=new RedNeuronal(modelo);
         Files.createDirectories(salida.toAbsolutePath().getParent());
         try(Writer csv=Files.newBufferedWriter(salida)) {
             csv.write("grupo;caso;esperado;predicho;orden;d0;d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11\n");

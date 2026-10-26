@@ -82,7 +82,7 @@ public class ReceptorIngestaTCP {
     private void manejarCliente(Socket cliente) {
         try (cliente; Reader entrada = new InputStreamReader(cliente.getInputStream(), StandardCharsets.UTF_8)) {
             cliente.setSoTimeout(10000); // Cliente silencioso: cerrar y permitir una conexion nueva.
-            ComunicadorOrquita comunicador = new ComunicadorOrquita(recopilador,
+            EnlaceOrquita enlace = new EnlaceOrquita(recopilador,
                     new java.io.OutputStreamWriter(cliente.getOutputStream(), StandardCharsets.UTF_8));
             StringBuilder mensaje = new StringBuilder();
             boolean excesivo = false;
@@ -92,9 +92,9 @@ public class ReceptorIngestaTCP {
                     if (!excesivo) {
                         String linea = mensaje.toString();
                         if (linea.endsWith("\r")) linea = linea.substring(0, linea.length() - 1);
-                        comunicador.enviarRecopilacion(linea);
+                        enlace.enviarRecopilacion(linea);
                     } else {
-                        comunicador.enviarErrorTrama();
+                        enlace.enviarErrorTrama();
                     }
                     mensaje.setLength(0);
                     excesivo = false;

@@ -4,10 +4,10 @@ import orquitas.servidor.navegacion.*;
 
 public class Recopilador {
     private final ReceptorCapturas receptorCapturas;
-    private final Navegador navegador;
-    public Recopilador(ReceptorCapturas receptor) { this(receptor, new Navegador()); }
-    public Recopilador(ReceptorCapturas receptor, Navegador navegador) {
-        this.receptorCapturas=receptor; this.navegador=navegador;
+    private final Navegacion navegacion;
+    public Recopilador(ReceptorCapturas receptor) { this(receptor, new Navegacion()); }
+    public Recopilador(ReceptorCapturas receptor, Navegacion navegacion) {
+        this.receptorCapturas=receptor; this.navegacion=navegacion;
     }
     /** Adaptador legado: true significa aceptado, no persistido. */
     public boolean procesarRecopilacion(String mensaje) {
@@ -21,7 +21,7 @@ public class Recopilador {
         Telemetria telemetria=extraerTelemetria(paqueteRecopilacion);
         AvisoCaptura aviso=extraerAvisoCaptura(paqueteRecopilacion);
         if(aviso!=null) receptorCapturas.notificarCaptura(aviso);
-        return telemetria==null ? null : navegador.determinarMovimiento(telemetria);
+        return telemetria==null ? null : navegacion.determinarMovimiento(telemetria);
     }
     private Telemetria extraerTelemetria(PaqueteRecopilacion p) { return p.getTelemetria(); }
     private AvisoCaptura extraerAvisoCaptura(PaqueteRecopilacion p) { return p.getAvisoCaptura(); }

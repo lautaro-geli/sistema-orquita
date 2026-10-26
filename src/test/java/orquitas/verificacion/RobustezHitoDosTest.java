@@ -36,7 +36,7 @@ public class RobustezHitoDosTest {
         for(int i=0;i<30;i++) new LinareadaTest().detenerCierraClientesQueNoEnvianNada();
     }
     @Test public void umbralDeCadaSectorFrontalEstaCercaDe400() throws Exception {
-        ClasificadorEntorno c = new ClasificadorEntorno(modelo);
+        RedNeuronal c = new RedNeuronal(modelo);
         for (int sector = 4; sector <= 7; sector++) {
             int umbral = -1;
             for (int d = 1000; d >= 40; d -= 5) {
@@ -47,14 +47,14 @@ public class RobustezHitoDosTest {
         }
     }
     @Test public void sectoresLateralesAisladosConFrenteLibre() throws Exception {
-        ClasificadorEntorno c = new ClasificadorEntorno(modelo);
+        RedNeuronal c = new RedNeuronal(modelo);
         for (int sector : new int[]{0, 1, 2, 3, 8, 9, 10, 11}) {
             double[] x = todas(2500); x[sector] = 50;
             assertEquals("sector " + sector, EntornoClasificado.LIBRE, c.clasificarEntorno(new Telemetria(x)));
         }
     }
     @Test public void exactitudEnFronteraSuperaElNivelMinimo() throws Exception {
-        ClasificadorEntorno c = new ClasificadorEntorno(modelo);
+        RedNeuronal c = new RedNeuronal(modelo);
         Random r = new Random(7); int aciertos = 0, n = 2000;
         for (int i = 0; i < n; i++) {
             double[] x = new double[12]; for (int j = 0; j < 12; j++) x[j] = 1500 + r.nextDouble() * 2000;
@@ -65,7 +65,7 @@ public class RobustezHitoDosTest {
         assertTrue("franja 300-500 mm: " + aciertos + "/" + n, aciertos >= 0.85 * n);
     }
     @Test public void exactitudConOtrasSemillasSupera95() throws Exception {
-        ClasificadorEntorno c = new ClasificadorEntorno(modelo);
+        RedNeuronal c = new RedNeuronal(modelo);
         for (long semilla = 1000; semilla < 1004; semilla++) {
             int ok = 0; var muestras = EntrenadorDemostracion.generar(1000, semilla);
             for (var m : muestras) if (c.clasificarEntorno(m.telemetria()) == m.etiqueta()) ok++;
@@ -82,9 +82,9 @@ public class RobustezHitoDosTest {
     }
     @Test(timeout = 15000) public void tramaInvalidaDeRecopilacionRecibeErrorYLaConexionSigue() throws Exception {
         Path estomago = Files.createTempDirectory("orquita-err-").resolve("estomago.txt");
-        ArchivoEstomago archivo = new ArchivoEstomago(estomago.toString());
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo); escritor.start();
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor), new Navegador(new ClasificadorEntorno(modelo))));
+        Estomago archivo = new Estomago(estomago.toString());
+        Escritor escritor = new Escritor(archivo); escritor.start();
+        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor), new Navegacion(new RedNeuronal(modelo))));
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         try {
             esperarArranque(rx);
@@ -105,9 +105,9 @@ public class RobustezHitoDosTest {
     }
     @Test(timeout = 30000) public void variosClientesRecibenSuPropiaOrdenYLasCapturasSonUnicas() throws Exception {
         Path estomago = Files.createTempDirectory("orquita-conc-").resolve("estomago.txt");
-        ArchivoEstomago archivo = new ArchivoEstomago(estomago.toString());
-        ActualizadorEstomago escritor = new ActualizadorEstomago(archivo); escritor.start();
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor), new Navegador(new ClasificadorEntorno(modelo))));
+        Estomago archivo = new Estomago(estomago.toString());
+        Escritor escritor = new Escritor(archivo); escritor.start();
+        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Recopilador(new ReceptorCapturas(escritor), new Navegacion(new RedNeuronal(modelo))));
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         AtomicInteger errores = new AtomicInteger();
         ExecutorService pool = Executors.newFixedThreadPool(6);

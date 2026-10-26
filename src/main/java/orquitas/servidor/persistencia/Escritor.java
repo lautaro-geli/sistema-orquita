@@ -6,21 +6,21 @@ import java.util.ArrayDeque;
 import java.util.Objects;
 
 /** CU-09. Hilo escritor permanente; la recepción sólo encola y lo despierta. */
-public class ActualizadorEstomago extends Thread {
-    private final ArchivoEstomago archivoEstomago;
+public class Escritor extends Thread {
+    private final Estomago estomago;
     private final ArrayDeque<Captura> pendientes = new ArrayDeque<>();
     private boolean activo = true;
 
-    public ActualizadorEstomago(ArchivoEstomago archivoEstomago) {
-        super("ActualizadorEstomago");
-        this.archivoEstomago = Objects.requireNonNull(archivoEstomago);
+    public Escritor(Estomago estomago) {
+        super("Escritor");
+        this.estomago = Objects.requireNonNull(estomago);
     }
 
     public void encolarCaptura(Captura captura) {
         Objects.requireNonNull(captura);
         synchronized (pendientes) {
             if (!activo) throw new IllegalStateException("El escritor está detenido");
-            archivoEstomago.anunciarEscritura(); // Desde aquí las nuevas lecturas esperan.
+            estomago.anunciarEscritura(); // Desde aquí las nuevas lecturas esperan.
             pendientes.addLast(captura);
             pendientes.notifyAll(); // Activa al escritor que esperaba trabajo.
         }
@@ -42,21 +42,21 @@ public class ActualizadorEstomago extends Thread {
                 captura = pendientes.removeFirst();
             }
             try {
-                boolean nueva = archivoEstomago.escribirRegistro(captura);
-                System.out.println("[ActualizadorEstomago] " + (nueva ? "Registrada: " : "Duplicada omitida: ")
+                boolean nueva = estomago.escribirRegistro(captura);
+                System.out.println("[Escritor] " + (nueva ? "Registrada: " : "Duplicada omitida: ")
                         + captura.getIdCaptura());
             } catch (IOException e) {
-                System.err.println("[ActualizadorEstomago] Captura NO confirmada: "
+                System.err.println("[Escritor] Captura NO confirmada: "
                         + captura.getIdCaptura() + "; " + e.getMessage());
             } catch (InterruptedException e) {
                 // No se pierde un aviso al interrumpirse la espera del semáforo.
                 synchronized (pendientes) {
-                    archivoEstomago.anunciarEscritura();
+                    estomago.anunciarEscritura();
                     pendientes.addFirst(captura);
                     activo = false;
                 }
             } finally {
-                archivoEstomago.finalizarEscritura();
+                estomago.finalizarEscritura();
             }
         }
     }

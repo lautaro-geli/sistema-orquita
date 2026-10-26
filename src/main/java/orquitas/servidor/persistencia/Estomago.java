@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /** CU-09/CU-10. Una única instancia compartida por escritor y lector. */
-public class ArchivoEstomago {
+public class Estomago {
     private final String rutaArchivo;
     private final Semaphore mutex = new Semaphore(1, true);
     private final Object controlEscrituras = new Object();
     // Coordinación de trabajo pendiente; NO es la cantidad de Lobitos capturados.
     private int escriturasPendientes;
 
-    public ArchivoEstomago(String rutaArchivo) {
+    public Estomago(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
     }
 

@@ -2,16 +2,16 @@ package orquitas.servidor.navegacion;
 
 import java.util.Objects;
 
-public class Navegador {
+public class Navegacion {
     private volatile ModoOperativo modoOperativo = ModoOperativo.BUSQUEDA;
     private Movimiento ultimaDecision = Movimiento.DETENER;
-    private final ClasificadorEntorno clasificador;
+    private final RedNeuronal redNeuronal;
     /** Compatibilidad con las pruebas de persistencia de La Linareada. */
-    public Navegador() { this(null); }
-    public Navegador(ClasificadorEntorno clasificador) { this.clasificador = clasificador; }
-    /** Devuelve la decision para que el comunicador responda al cliente correcto. */
+    public Navegacion() { this(null); }
+    public Navegacion(RedNeuronal redNeuronal) { this.redNeuronal = redNeuronal; }
+    /** Devuelve la decision para que el enlace responda al cliente correcto. */
     public synchronized Movimiento determinarMovimiento(Telemetria telemetria) {
-        EntornoClasificado entorno = clasificador == null ? null : clasificador.clasificarEntorno(telemetria);
+        EntornoClasificado entorno = redNeuronal == null ? null : redNeuronal.clasificarEntorno(telemetria);
         if (entorno == null) return mantenerUltimaDecision();
         ModoOperativo modoActual = obtenerModoOperativo();
         ultimaDecision = calcularMovimiento(entorno, modoActual, telemetria);
@@ -28,7 +28,7 @@ public class Navegador {
     private ModoOperativo obtenerModoOperativo() { return modoOperativo; }
     public void establecerModoOperativo(ModoOperativo modo) {
         modoOperativo = Objects.requireNonNull(modo);
-        System.out.println("[Navegador] Modo operativo actualizado a: " + modo);
+        System.out.println("[Navegacion] Modo operativo actualizado a: " + modo);
     }
     public ModoOperativo getModoOperativo() { return modoOperativo; }
 }
