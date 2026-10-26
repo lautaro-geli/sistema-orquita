@@ -8,24 +8,36 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
 /** Adaptador TCP de La Linareada; será reemplazado por Bluetooth. */
 public class ReceptorIngestaTCP {
+    /** Sin trafico durante este multiplo de TIMEOUT_MAXIMO (5 s -> 30 s) se cierra la conexion. */
+    private static final int FACTOR_CIERRE_DURO = 6;
     private final int puerto;
     private final Estomago estomago;
     private final Navegacion navegacion;
+    private final long timeoutMaximo;
     private final Set<Socket> clientes = new HashSet<>();
     private final Set<Thread> manejadores = new HashSet<>();
     private volatile boolean activo = true;
     private volatile ServerSocket servidor;
 
     public ReceptorIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion) {
+        this(puerto, estomago, navegacion, EnlaceOrquita.TIMEOUT_MAXIMO);
+    }
+
+    /** timeoutMaximo en ms; parametro para pruebas, debe ser menor a los 10 s del reglamento. */
+    public ReceptorIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion, long timeoutMaximo) {
+        if (timeoutMaximo <= 0 || timeoutMaximo >= 10000)
+            throw new IllegalArgumentException("TIMEOUT_MAXIMO debe estar entre 1 y 9999 ms");
         this.puerto = puerto;
         this.estomago = estomago;
         this.navegacion = navegacion;
+        this.timeoutMaximo = timeoutMaximo;
     }
 
     public void iniciar() {
@@ -82,15 +94,36 @@ public class ReceptorIngestaTCP {
         }
     }
 
+    /** CU-12. Devuelve false cuando corresponde el cierre duro de la conexion. */
+    private boolean verificarRecepcion(EnlaceOrquita enlace) {
+        long tiempoSinRecepcion = enlace.calcularTiempoSinRecepcion();
+        if (tiempoSinRecepcion < timeoutMaximo) {
+            enlace.continuarOperacionNormal();
+            return true;
+        }
+        enlace.registrarFalla();
+        enlace.enviarSenalReconexion(); // Se repite en cada vencimiento hasta recibir trafico.
+        return tiempoSinRecepcion < timeoutMaximo * FACTOR_CIERRE_DURO;
+    }
+
     private void manejarCliente(Socket cliente) {
         try (cliente; Reader entrada = new InputStreamReader(cliente.getInputStream(), StandardCharsets.UTF_8)) {
-            cliente.setSoTimeout(10000); // Cliente silencioso: cerrar y permitir una conexion nueva.
+            // Lectura con plazo corto (<= TIMEOUT_MAXIMO) para evaluar la inactividad (CU-12).
+            cliente.setSoTimeout((int) Math.max(1, Math.min(1000, timeoutMaximo / 5)));
             EnlaceOrquita enlace = new EnlaceOrquita(estomago, navegacion,
                     new java.io.OutputStreamWriter(cliente.getOutputStream(), StandardCharsets.UTF_8));
             StringBuilder mensaje = new StringBuilder();
             boolean excesivo = false;
-            int caracter;
-            while (activo && (caracter = entrada.read()) != -1) {
+            while (activo) {
+                int caracter;
+                try {
+                    caracter = entrada.read();
+                } catch (SocketTimeoutException sinDatos) {
+                    if (verificarRecepcion(enlace)) continue;
+                    System.err.println("[ReceptorIngestaTCP] Cierre duro: sin trafico tras las senales de reconexion");
+                    break;
+                }
+                if (caracter == -1) break;
                 if (caracter == '\n') {
                     if (!excesivo) {
                         String linea = mensaje.toString();
