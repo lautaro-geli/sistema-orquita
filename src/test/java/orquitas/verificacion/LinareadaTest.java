@@ -29,6 +29,12 @@ public class LinareadaTest {
         return Files.createTempDirectory("orquitas-prueba-").resolve("estomago.txt");
     }
 
+    private static final String DISTANCIAS = String.join(";", Collections.nCopies(12, "2500"));
+
+    private static String recopilacion(String id) {
+        return "RECOPILACION|2026-09-30T12:00|" + DISTANCIAS + "|" + id;
+    }
+
     private static Navegacion navegacion() throws IOException {
         return new Navegacion(ModeloPrueba.red());
     }
@@ -66,7 +72,7 @@ public class LinareadaTest {
             try { lectura.get(150, TimeUnit.MILLISECONDS); fail("El lector se adelantó al escritor"); }
             catch (TimeoutException esperado) { /* Sigue esperando mientras hay trabajo pendiente. */ }
             permitirEscritura.countDown();
-            assertEquals("A", lectura.get(1, TimeUnit.SECONDS).get(0).getIdCaptura());
+            assertEquals("A", lectura.get(1, TimeUnit.SECONDS).get(0).getIdentificador());
         } finally {
             permitirEscritura.countDown();
             archivo.esperarEscrituras(); lector.join(1000);
@@ -143,7 +149,7 @@ public class LinareadaTest {
         archivo.registrarCaptura(captura("B")); archivo.esperarEscrituras();
         assertEquals(2, intentos.get());
         assertEquals(1, archivo.leerRegistros().size());
-        assertEquals("B", archivo.leerRegistros().get(0).getIdCaptura());
+        assertEquals("B", archivo.leerRegistros().get(0).getIdentificador());
     }
 
     @Test(timeout=5000) public void reiniciarConTresRegistrosActivaEscapeUnaSolaVez() throws Exception {
@@ -181,8 +187,10 @@ public class LinareadaTest {
         Estomago archivo = new Estomago(archivoNuevo().toString());
         StringWriter respuestas = new StringWriter();
         EnlaceOrquita enlace = new EnlaceOrquita(archivo, navegacion(), respuestas);
-        List<String> tramas = List.of("", "OTRO|A|2026-09-30T12:00", "CAPTURA|A",
-                "CAPTURA|A;B|2026-09-30T12:00", "CAPTURA|A|mal", "CAPTURA||2026-09-30T12:00");
+        List<String> tramas = List.of("", "OTRO|A|2026-09-30T12:00",
+                "RECOPILACION|2026-09-30T12:00|" + DISTANCIAS, recopilacion("A;B"),
+                recopilacion("A").replace("2026-09-30T12:00", "mal"),
+                recopilacion("A") + "|extra");
         for (String trama : tramas) {
             assertFalse(Recopilacion.decodificar(trama).esValida());
             enlace.enviarRecopilacion(trama);
@@ -202,18 +210,19 @@ public class LinareadaTest {
         try {
             esperar(() -> entrada.obtenerPuerto()>0);
             try (Socket s = new Socket("127.0.0.1", entrada.obtenerPuerto())) {
-                s.getOutputStream().write("CAPTURA|INCOMPLETA|2026-09-30T12:00".getBytes(StandardCharsets.UTF_8));
+                s.getOutputStream().write(recopilacion("INCOMPLETA").getBytes(StandardCharsets.UTF_8));
             }
             try (Socket s = new Socket("127.0.0.1", entrada.obtenerPuerto())) {
                 var salida = s.getOutputStream();
-                salida.write(("OTRO|x\n"+"X".repeat(300)+"\nCAP").getBytes(StandardCharsets.UTF_8));
+                salida.write(("OTRO|x\n"+"X".repeat(300)+"\nRECOPI").getBytes(StandardCharsets.UTF_8));
                 salida.flush();
-                salida.write(("TURA|A|2026-09-30T12:00\nCAPTURA|B|2026-09-30T12:00\r\n"
-                        +"CAPTURA|C|2026-09-30T12:00\n").getBytes(StandardCharsets.UTF_8));
+                salida.write((recopilacion("A").substring(6)+"\n"+recopilacion("B")+"\r\n"
+                        +recopilacion("C")+"\n").getBytes(StandardCharsets.UTF_8));
                 s.setSoTimeout(2000);
                 var respuestas = new java.io.BufferedReader(new java.io.InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
                 assertEquals("ERROR|TRAMA_INVALIDA", respuestas.readLine());
                 assertEquals("ERROR|TRAMA_INVALIDA", respuestas.readLine());
+                for (int i = 0; i < 3; i++) assertEquals("ORDEN|AVANZAR", respuestas.readLine());
             }
             esperar(() -> navegacion.getModoOperativo()==ModoOperativo.ESCAPE);
             assertEquals(3, archivo.leerRegistros().size());

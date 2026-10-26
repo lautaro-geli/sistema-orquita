@@ -28,11 +28,6 @@ public final class Recopilacion {
     private static Recopilacion interpretar(String linea) {
         if (linea == null || linea.length() > LARGO_MAXIMO) throw new IllegalArgumentException("Trama invalida");
         String[] c = linea.split("\\|", -1);
-        if (c.length == 3 && c[0].equals("CAPTURA")) { // Mensaje legado: aviso sin telemetría.
-            LocalDateTime fecha = LocalDateTime.parse(c[2]);
-            new Captura(c[1], fecha);
-            return new Recopilacion(fecha, null, c[1]);
-        }
         if (c.length != 4 || !c[0].equals("RECOPILACION")) throw new IllegalArgumentException("Tipo/campos invalidos");
         LocalDateTime fecha = LocalDateTime.parse(c[1]);
         String[] valores = c[2].split(";", -1);
@@ -49,14 +44,14 @@ public final class Recopilacion {
         return new Recopilacion(fecha, telemetria, idCaptura);
     }
 
-    public boolean esValida() { return telemetria != null || idCaptura != null; }
+    public boolean esValida() { return telemetria != null; }
 
     public boolean tieneAvisoCaptura() { return idCaptura != null; }
 
-    /** Registra la captura (si la hay) y devuelve la orden; null si no trae telemetría. */
+    /** Registra la captura (si la hay) y devuelve la orden de navegación. */
     public Movimiento procesar(Estomago estomago, Navegacion navegacion) {
         if (!esValida()) throw new IllegalStateException("No se procesa una recopilacion invalida");
         if (tieneAvisoCaptura()) estomago.registrarCaptura(new Captura(idCaptura, fecha));
-        return telemetria == null ? null : navegacion.determinarMovimiento(telemetria);
+        return navegacion.determinarMovimiento(telemetria);
     }
 }

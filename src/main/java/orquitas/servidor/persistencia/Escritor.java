@@ -9,7 +9,7 @@ public class Escritor extends Thread {
     private final Captura captura;
 
     Escritor(Estomago estomago, Captura captura) {
-        super("Escritor-" + captura.getIdCaptura());
+        super("Escritor-" + captura.getIdentificador());
         this.estomago = estomago;
         this.captura = captura;
     }
@@ -19,13 +19,13 @@ public class Escritor extends Thread {
         try {
             boolean nueva = estomago.escribirRegistro(captura);
             System.out.println("[Escritor] " + (nueva ? "Registrada: " : "Duplicada omitida: ")
-                    + captura.getIdCaptura());
+                    + captura.getIdentificador());
         } catch (IOException e) {
             // El error de E/S se registra; no se propaga ni detiene la recepción.
             System.err.println("[Escritor] Captura NO confirmada: "
-                    + captura.getIdCaptura() + "; " + e.getMessage());
+                    + captura.getIdentificador() + "; " + e.getMessage());
         } catch (InterruptedException e) {
-            System.err.println("[Escritor] Interrumpido antes de escribir: " + captura.getIdCaptura());
+            System.err.println("[Escritor] Interrumpido antes de escribir: " + captura.getIdentificador());
             Thread.currentThread().interrupt();
         } finally {
             estomago.finalizarEscritura();

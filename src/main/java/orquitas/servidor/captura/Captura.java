@@ -11,32 +11,32 @@ import java.time.format.DateTimeParseException;
  * definió en la revisión: "lo más simple y corto posible, lo importante es
  * la concurrencia".
  *
- * Formato de línea en el archivo: idCaptura;timestamp
+ * Formato de línea en el archivo: identificador;marcaTiempo
  */
 public class Captura {
 
-    private final String idCaptura;
-    private final LocalDateTime timestamp;
+    private final String identificador;
+    private final LocalDateTime marcaTiempo;
 
-    public Captura(String idCaptura, LocalDateTime timestamp) {
-        if (idCaptura == null || !idCaptura.matches("[A-Za-z0-9_-]{1,64}") || timestamp == null) {
+    public Captura(String identificador, LocalDateTime marcaTiempo) {
+        if (identificador == null || !identificador.matches("[A-Za-z0-9_-]{1,64}") || marcaTiempo == null) {
             throw new IllegalArgumentException("Id o fecha de captura inválidos");
         }
-        this.idCaptura = idCaptura;
-        this.timestamp = timestamp;
+        this.identificador = identificador;
+        this.marcaTiempo = marcaTiempo;
     }
 
-    public String getIdCaptura() {
-        return idCaptura;
+    public String getIdentificador() {
+        return identificador;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public LocalDateTime getMarcaTiempo() {
+        return marcaTiempo;
     }
 
     /** Serializa esta captura a la línea que se escribe en estomago.txt. */
     public String aLinea() {
-        return idCaptura + ";" + timestamp;
+        return identificador + ";" + marcaTiempo;
     }
 
     /**
@@ -54,12 +54,12 @@ public class Captura {
             return null;
         }
         try {
-            String idCaptura = partes[0].trim();
-            LocalDateTime timestamp = LocalDateTime.parse(partes[1].trim());
-            if (idCaptura.isEmpty()) {
+            String identificador = partes[0].trim();
+            LocalDateTime marcaTiempo = LocalDateTime.parse(partes[1].trim());
+            if (identificador.isEmpty()) {
                 return null;
             }
-            return new Captura(idCaptura, timestamp);
+            return new Captura(identificador, marcaTiempo);
         } catch (RuntimeException ex) {
             return null;
         }
@@ -67,6 +67,6 @@ public class Captura {
 
     @Override
     public String toString() {
-        return "Captura{idCaptura='" + idCaptura + "', timestamp=" + timestamp + "}";
+        return "Captura{identificador='" + identificador + "', marcaTiempo=" + marcaTiempo + "}";
     }
 }

@@ -15,7 +15,12 @@ public class ServidorOrquita {
         String ruta = args.length > 1 ? args[1] : "estomago.txt";
         Estomago estomago = new Estomago(ruta);
         java.nio.file.Path modelo = java.nio.file.Path.of(args.length > 2 ? args[2] : "modelos/entorno-demo.nnet");
-        orquitas.simulacion.EntrenadorDemostracion.entrenarSiFalta(modelo);
+        if (!java.nio.file.Files.isRegularFile(modelo)) {
+            // El servidor no entrena: el modelo se genera aparte y se versiona.
+            System.err.println("[ServidorOrquita] No se encontró el modelo " + modelo.toAbsolutePath()
+                    + ". Generarlo con: ./ejecutar.ps1 entrenar");
+            System.exit(1);
+        }
         Navegacion navegacion = new Navegacion(new RedNeuronal(modelo));
         ModoEscape modoEscape = new ModoEscape(navegacion);
         Auditor auditor = new Auditor(estomago, modoEscape, 500);

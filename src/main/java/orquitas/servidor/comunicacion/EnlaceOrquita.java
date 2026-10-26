@@ -20,8 +20,8 @@ public class EnlaceOrquita {
             System.err.println("[EnlaceOrquita] Trama invalida: descartada");
             enviarErrorTrama(); return;
         }
-        Movimiento movimiento=recopilacion.procesar(estomago, navegacion);
-        if(movimiento!=null) enviarOrdenNavegacion(movimiento);
+        // C.1: la orden de navegacion es la respuesta a cada RECOPILACION valida.
+        enviarOrdenNavegacion(recopilacion.procesar(estomago, navegacion));
     }
     /** Respuesta acotada: no refleja contenido recibido ni confirma una captura. */
     public void enviarErrorTrama() throws IOException {

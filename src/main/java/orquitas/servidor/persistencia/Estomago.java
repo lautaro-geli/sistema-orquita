@@ -64,7 +64,7 @@ public class Estomago {
         try {
             // El archivo sigue siendo la autoridad, incluso ante una retransmisión.
             for (Captura registrada : leerDelArchivo()) {
-                if (registrada.getIdCaptura().equals(captura.getIdCaptura())) return false;
+                if (registrada.getIdentificador().equals(captura.getIdentificador())) return false;
             }
             // BufferedWriter propaga errores de escritura/cierre; PrintWriter los ocultaba.
             try (BufferedWriter salida = Files.newBufferedWriter(Path.of(rutaArchivo),
@@ -94,7 +94,7 @@ public class Estomago {
     /** Cantidad de capturas distintas y bien formadas; la única fuente es el archivo leído. */
     public int contarRegistrosValidos(List<Captura> registros) {
         return (int) registros.stream().filter(Objects::nonNull)
-                .map(Captura::getIdCaptura).distinct().count();
+                .map(Captura::getIdentificador).distinct().count();
     }
 
     private List<Captura> leerDelArchivo() throws IOException {
@@ -107,7 +107,7 @@ public class Estomago {
         var unicas = new LinkedHashMap<String, Captura>();
         for (String linea : lineas) {
             Captura captura = Captura.desdeLinea(linea);
-            if (captura != null) unicas.putIfAbsent(captura.getIdCaptura(), captura);
+            if (captura != null) unicas.putIfAbsent(captura.getIdentificador(), captura);
         }
         return new ArrayList<>(unicas.values());
     }
