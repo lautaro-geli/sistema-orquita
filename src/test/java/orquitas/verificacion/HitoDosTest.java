@@ -55,10 +55,8 @@ public class HitoDosTest {
         assertEquals(EntornoClasificado.OBJETO,c.clasificarEntorno(new Telemetria(d)));
     }
     @Test public void decideAvanceAmbosGirosYDetencionConModeloReal() {
+        // BUSQUEDA ante OBJETO esquiva hacia lo abierto y solo se detiene encerrada.
         Navegacion n=new Navegacion(new RedNeuronal(modelo));
-        assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(uniforme(2500)));
-        assertEquals(Movimiento.DETENER,n.determinarMovimiento(new Telemetria(400,400,400,400,120,150,2200,2200,2500,2500,2500,2500))); // Busqueda evalua.
-        n.establecerModoOperativo(ModoOperativo.ESCAPE); // Los giros son de la politica de escape.
         assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(uniforme(2500)));
         assertEquals(Movimiento.GIRAR_IZQ,n.determinarMovimiento(new Telemetria(400,400,400,400,120,150,2200,2200,2500,2500,2500,2500)));
         assertEquals(Movimiento.GIRAR_DER,n.determinarMovimiento(new Telemetria(2500,2500,2500,2500,2200,2200,150,120,400,400,400,400)));
@@ -70,7 +68,7 @@ public class HitoDosTest {
         n.determinarMovimiento(uniforme(2500)); n.establecerModoOperativo(ModoOperativo.ESCAPE);
         assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(null));
         assertEquals(ModoOperativo.ESCAPE,n.getModoOperativo());
-        assertEquals(Movimiento.DETENER,n.determinarMovimiento(uniforme(80)));
+        assertEquals(Movimiento.GIRAR_IZQ,n.determinarMovimiento(uniforme(80))); // Escape nunca se detiene.
     }
     @Test public void tramaInvalidaConCapturaNoProduceEfectosParciales() throws Exception {
         Estomago archivo=new Estomago(Files.createTempDirectory("orquita-parser-").resolve("estomago.txt").toString());

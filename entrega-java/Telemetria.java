@@ -29,4 +29,10 @@ public final class Telemetria {
     }
     public double sumarDerecha() { double s=0; for(int i=0;i<6;i++) s+=distancias[i]; return s; }
     public double sumarIzquierda() { double s=0; for(int i=6;i<12;i++) s+=distancias[i]; return s; }
+    /** Indice (0..11) de la menor distancia en mm; ante empate, el menor indice. */
+    public int sectorMasCercano() {
+        int cercano = 0;
+        for (int i = 1; i < 12; i++) if (distancias[i] < distancias[cercano]) cercano = i;
+        return cercano;
+    }
 }
