@@ -43,11 +43,15 @@ public class HitoDosTest {
         Telemetria t=new Telemetria(datos); datos[0]=0; t.getDistancias()[0]=0;
         assertEquals(1234,t.getDistancias()[0],0);
     }
-    @Test public void frenteLibreConParedLateralNoSeConfundeConObjetoFrontal() {
+    @Test public void clasificaPorAnchoDeLaBandaCercana() {
+        // 1 sector cercano = lobito (17 mm < 15 grados); bloque contiguo = objeto; todo lejos = libre.
         RedNeuronal c=new RedNeuronal(modelo);
-        double[] d=uniforme(2500).getDistancias(); Arrays.fill(d,0,4,100);
-        assertEquals(EntornoClasificado.LIBRE,c.clasificarEntorno(new Telemetria(d)));
-        d[5]=100;
+        assertEquals(EntornoClasificado.LIBRE,c.clasificarEntorno(uniforme(2500)));
+        double[] d=uniforme(2500).getDistancias(); d[5]=300;
+        assertEquals(EntornoClasificado.LOBITO,c.clasificarEntorno(new Telemetria(d)));
+        d[4]=300;
+        assertEquals(EntornoClasificado.OBJETO,c.clasificarEntorno(new Telemetria(d)));
+        Arrays.fill(d,0,4,100); // Pared lateral ancha.
         assertEquals(EntornoClasificado.OBJETO,c.clasificarEntorno(new Telemetria(d)));
     }
     @Test public void decideAvanceAmbosGirosYDetencionConModeloReal() {
@@ -118,5 +122,7 @@ public class HitoDosTest {
         Path ruta=modelo.resolveSibling("incompatible.nnet");
         new org.neuroph.nnet.MultiLayerPerceptron(3,2).save(ruta.toString());
         try { new RedNeuronal(ruta); fail("Acepto otra dimension"); } catch(IllegalArgumentException esperado) { }
+        new org.neuroph.nnet.MultiLayerPerceptron(12,6,2).save(ruta.toString()); // Modelo viejo de 2 clases.
+        try { new RedNeuronal(ruta); fail("Acepto un modelo de 2 clases"); } catch(IllegalArgumentException esperado) { }
     }
 }

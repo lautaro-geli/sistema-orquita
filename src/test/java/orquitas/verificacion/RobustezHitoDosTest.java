@@ -34,34 +34,50 @@ public class RobustezHitoDosTest {
     @Test(timeout=30000) public void cierreDeClientesSilenciososRepetidoSinEsperaFija() throws Exception {
         for(int i=0;i<30;i++) new LinareadaTest().detenerCierraClientesQueNoEnvianNada();
     }
-    @Test public void umbralDeCadaSectorFrontalEstaCercaDe400() throws Exception {
+    @Test public void umbralDeLobitoEnCadaSectorCaeEnLaFranjaSinEntrenar() throws Exception {
+        // Entrenamiento: cerca <= 900 mm, lejos >= 1200 mm. El cambio debe ocurrir entre ambos y mantenerse.
         RedNeuronal c = new RedNeuronal(modelo);
-        for (int sector = 4; sector <= 7; sector++) {
+        for (int sector = 0; sector < 12; sector++) {
             int umbral = -1;
-            for (int d = 1000; d >= 40; d -= 5) {
+            for (int d = 1500; d >= 40; d -= 5) {
                 double[] x = todas(2500); x[sector] = d;
-                if (c.clasificarEntorno(new Telemetria(x)) == EntornoClasificado.OBJETO) { umbral = d; break; }
+                boolean lobito = c.clasificarEntorno(new Telemetria(x)) == EntornoClasificado.LOBITO;
+                if (lobito && umbral < 0) umbral = d;
+                if (umbral > 0) assertTrue("sector " + sector + " deja de ser LOBITO en " + d, lobito);
             }
-            assertTrue("sector " + sector + " umbral " + umbral, umbral >= 330 && umbral <= 470);
+            assertTrue("sector " + sector + " umbral " + umbral, umbral >= 800 && umbral <= 1250);
         }
     }
-    @Test public void sectoresLateralesAisladosConFrenteLibre() throws Exception {
+    @Test public void sectorAisladoEsLobitoYDosContiguosSonObjeto() throws Exception {
         RedNeuronal c = new RedNeuronal(modelo);
-        for (int sector : new int[]{0, 1, 2, 3, 8, 9, 10, 11}) {
-            double[] x = todas(2500); x[sector] = 50;
-            assertEquals("sector " + sector, EntornoClasificado.LIBRE, c.clasificarEntorno(new Telemetria(x)));
+        for (int sector = 0; sector < 12; sector++) {
+            for (double cerca : new double[]{50, 600}) {
+                double[] x = todas(2500); x[sector] = cerca;
+                assertEquals("sector " + sector + " a " + cerca, EntornoClasificado.LOBITO, c.clasificarEntorno(new Telemetria(x)));
+            }
+            if (sector < 11) {
+                double[] x = todas(2500); x[sector] = 300; x[sector + 1] = 300;
+                assertEquals("sectores " + sector + "-" + (sector + 1), EntornoClasificado.OBJETO, c.clasificarEntorno(new Telemetria(x)));
+            }
         }
     }
-    @Test public void exactitudEnFronteraSuperaElNivelMinimo() throws Exception {
+    @Test public void exactitudEnFronteraDeDistanciaYDeAnchoSuperaElNivelMinimo() throws Exception {
         RedNeuronal c = new RedNeuronal(modelo);
-        Random r = new Random(7); int aciertos = 0, n = 2000;
+        Random r = new Random(7); int aciertosDistancia = 0, aciertosAncho = 0, n = 2000;
         for (int i = 0; i < n; i++) {
             double[] x = new double[12]; for (int j = 0; j < 12; j++) x[j] = 1500 + r.nextDouble() * 2000;
-            int s = 4 + r.nextInt(4); x[s] = 300 + r.nextDouble() * 200;
-            boolean objeto = x[s] < 400;
-            if ((c.clasificarEntorno(new Telemetria(x)) == EntornoClasificado.OBJETO) == objeto) aciertos++;
+            int s = r.nextInt(12);
+            do { x[s] = 600 + r.nextDouble() * 900; } while (x[s] >= 900 && x[s] <= 1200); // 600-900 o 1200-1500 mm.
+            EntornoClasificado esperado = x[s] < 900 ? EntornoClasificado.LOBITO : EntornoClasificado.LIBRE;
+            if (c.clasificarEntorno(new Telemetria(x)) == esperado) aciertosDistancia++;
+            double[] y = new double[12]; for (int j = 0; j < 12; j++) y[j] = 1200 + r.nextDouble() * 2800;
+            int ancho = 1 + r.nextInt(2), inicio = r.nextInt(13 - ancho);
+            for (int j = inicio; j < inicio + ancho; j++) y[j] = 50 + r.nextDouble() * 850;
+            esperado = ancho == 1 ? EntornoClasificado.LOBITO : EntornoClasificado.OBJETO;
+            if (c.clasificarEntorno(new Telemetria(y)) == esperado) aciertosAncho++;
         }
-        assertTrue("franja 300-500 mm: " + aciertos + "/" + n, aciertos >= 0.85 * n);
+        assertTrue("frontera de distancia: " + aciertosDistancia + "/" + n, aciertosDistancia >= 0.90 * n);
+        assertTrue("frontera 1 contra 2 sectores: " + aciertosAncho + "/" + n, aciertosAncho >= 0.90 * n);
     }
     @Test public void exactitudConOtrasSemillasSupera95() throws Exception {
         RedNeuronal c = new RedNeuronal(modelo);

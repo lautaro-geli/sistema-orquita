@@ -9,15 +9,19 @@ public class RedNeuronal {
     public RedNeuronal(Path ruta) {
         rutaModeloNeuroph = ruta.toString();
         red = NeuralNetwork.createFromFile(rutaModeloNeuroph);
-        if (red.getInputsCount()!=12 || red.getOutputsCount()!=2)
-            throw new IllegalArgumentException("Modelo incompatible: se espera 12 entradas / 2 salidas");
+        if (red.getInputsCount()!=12 || red.getOutputsCount()!=3)
+            throw new IllegalArgumentException("Modelo incompatible: se espera 12 entradas / 3 salidas");
     }
     /** Neuroph reutiliza buffers: proteger setInput/calculate/getOutput como una sola operacion. */
     public synchronized EntornoClasificado clasificarEntorno(Telemetria telemetria) {
         if (telemetria == null) return null;
         red.setInput(telemetria.normalizar()); red.calculate();
         double[] salida = red.getOutput();
-        if (!Double.isFinite(salida[0]) || !Double.isFinite(salida[1])) return null;
-        return salida[0] >= salida[1] ? EntornoClasificado.LIBRE : EntornoClasificado.OBJETO;
+        int mayor = 0; // argmax; el orden de las salidas es el del enum.
+        for (int i = 0; i < salida.length; i++) {
+            if (!Double.isFinite(salida[i])) return null;
+            if (salida[i] > salida[mayor]) mayor = i;
+        }
+        return EntornoClasificado.values()[mayor];
     }
 }
