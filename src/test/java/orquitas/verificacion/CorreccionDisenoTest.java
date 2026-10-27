@@ -274,4 +274,31 @@ public class CorreccionDisenoTest {
         double[] encerrado = new double[12]; Arrays.fill(encerrado, 80);
         assertEquals(Movimiento.DETENER, navegacion.determinarMovimiento(new Telemetria(encerrado)));
     }
+
+    @Test(timeout = 15000) public void auditorLeeMientrasHayEscriturasConcurrentes() throws Exception {
+        Estomago estomago = new Estomago(archivoNuevo().toString());
+        AtomicInteger siguiente = new AtomicInteger();
+        java.util.concurrent.atomic.AtomicBoolean seguir = new java.util.concurrent.atomic.AtomicBoolean(true);
+        List<Thread> productores = new ArrayList<>();
+        for (int p = 0; p < 4; p++) { // Flujo continuo de capturas mientras el auditor lee.
+            Thread t = new Thread(() -> { while (seguir.get()) estomago.registrarCaptura(captura("S" + siguiente.getAndIncrement())); });
+            productores.add(t); t.start();
+        }
+        try {
+            int anterior = -1;
+            for (int ciclo = 0; ciclo < 5; ciclo++) {
+                FutureTask<List<Captura>> lectura = new FutureTask<>(estomago::leerRegistros);
+                new Thread(lectura).start();
+                int cantidad = estomago.contarRegistrosValidos(lectura.get(3, TimeUnit.SECONDS)); // Sin postergacion.
+                assertTrue(cantidad >= anterior); // El conteo del archivo nunca retrocede.
+                anterior = cantidad;
+                Thread.sleep(20);
+            }
+        } finally {
+            seguir.set(false);
+            for (Thread t : productores) t.join(2000);
+            estomago.esperarEscrituras();
+        }
+        assertEquals(siguiente.get(), estomago.contarRegistrosValidos(estomago.leerRegistros()));
+    }
 }

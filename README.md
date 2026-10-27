@@ -31,7 +31,7 @@ Servidor: `[puerto] [archivoEstomago] [modelo]`. Cliente de telemetría: `[host]
 - BUSQUEDA: LIBRE → AVANZAR. OBJETO → girar hacia la suma lateral mayor; empate a izquierda; ambas sumas menores a 1200 mm → DETENER.
 - ESCAPE (heurística preliminar hacia el espacio abierto, sin evaluar objetos): suma frontal ≥ 800 mm → AVANZAR; si no, girar hacia el lado más abierto; DETENER solo si frente < 800 mm y ambos lados < 1200 mm.
 - El mensaje legado `CAPTURA|...` fue eliminado: la captura viaja como id opcional de RECOPILACION.
-- Un hilo `Escritor` por captura y un hilo `Auditor` periódico, semáforo justo `Semaphore(1, true)` y prioridad de escrituras pendientes. `estomago.txt` es la única fuente del conteo. Con tres capturas válidas únicas el Auditor notifica a `ModoEscape`, que pasa `Navegacion` a ESCAPE una sola vez; la Orquita lo recibe como `ESTADO|ESCAPE` antes de la siguiente orden.
+- Un hilo `Escritor` por captura y un hilo `Auditor` periódico, semáforo justo `Semaphore(1, true)` compartido por lecturas y escrituras, sin prioridad extra al escritor: el Auditor nunca queda postergado y, si lee entre dos escrituras, vuelve a contar en el ciclo siguiente. `estomago.txt` es la única fuente del conteo. Con tres capturas válidas únicas el Auditor notifica a `ModoEscape`, que pasa `Navegacion` a ESCAPE una sola vez; la Orquita lo recibe como `ESTADO|ESCAPE` antes de la siguiente orden.
 - CU-12: sin tramas durante `TIMEOUT_MAXIMO` (5 s) se registra la falla y se envía `ESTADO|RECONECTAR` hasta recibir tráfico o cerrar a los 30 s. CU-08: reintento acotado (3 intentos) de una respuesta que no se pudo enviar.
 
 ## Pruebas verificadas

@@ -52,7 +52,8 @@ public class LinareadaTest {
         assertEquals(Auditor.class, Auditor.class.getDeclaredMethod("run").getDeclaringClass());
     }
 
-    @Test(timeout=5000) public void capturaPendienteBloqueaAlLectorHastaTerminarLaEscritura() throws Exception {
+    @Test(timeout=5000) public void escrituraPendienteNoPostergaAlLectorYLaSiguienteLecturaLaVe() throws Exception {
+        // Sin prioridad al escritor: un Escritor que todavía no tomó el mutex no frena al Auditor.
         Path ruta = archivoNuevo();
         CountDownLatch entroEscritor = new CountDownLatch(1);
         CountDownLatch permitirEscritura = new CountDownLatch(1);
@@ -63,19 +64,18 @@ public class LinareadaTest {
                 return super.escribirRegistro(captura);
             }
         };
-        FutureTask<List<Captura>> lectura = new FutureTask<>(archivo::leerRegistros);
-        Thread lector = new Thread(lectura);
         try {
             archivo.registrarCaptura(captura("A"));
             assertTrue(entroEscritor.await(1, TimeUnit.SECONDS));
-            lector.start();
-            try { lectura.get(150, TimeUnit.MILLISECONDS); fail("El lector se adelantó al escritor"); }
-            catch (TimeoutException esperado) { /* Sigue esperando mientras hay trabajo pendiente. */ }
+            FutureTask<List<Captura>> lectura = new FutureTask<>(archivo::leerRegistros);
+            new Thread(lectura).start();
+            assertTrue(lectura.get(1, TimeUnit.SECONDS).isEmpty()); // Cuenta de menos, sin esperar.
             permitirEscritura.countDown();
-            assertEquals("A", lectura.get(1, TimeUnit.SECONDS).get(0).getIdentificador());
+            archivo.esperarEscrituras();
+            assertEquals("A", archivo.leerRegistros().get(0).getIdentificador()); // Próximo ciclo.
         } finally {
             permitirEscritura.countDown();
-            archivo.esperarEscrituras(); lector.join(1000);
+            archivo.esperarEscrituras();
         }
     }
 

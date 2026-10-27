@@ -19,7 +19,8 @@ public class Estomago {
     private final String rutaArchivo;
     private final Semaphore mutex = new Semaphore(1, true);
     private final Object controlEscrituras = new Object();
-    // Coordinación de trabajo pendiente; NO es la cantidad de Lobitos capturados.
+    // Escritores en curso, para el apagado ordenado (esperarEscrituras); NO es la cantidad de Lobitos
+    // capturados ni da prioridad a las escrituras sobre las lecturas.
     private int escriturasPendientes;
 
     public Estomago(String rutaArchivo) {
@@ -79,11 +80,10 @@ public class Estomago {
     }
 
     public List<Captura> leerRegistros() throws IOException, InterruptedException {
-        synchronized (controlEscrituras) {
-            while (escriturasPendientes > 0) controlEscrituras.wait();
-            // La admisión y la toma del permiso son atómicas respecto a nuevos avisos.
-            mutex.acquire();
-        }
+        // Lecturas y escrituras comparten el mismo mutex justo (FIFO): el auditor espera a lo sumo las
+        // escrituras que ya estaban en cola, nunca queda postergado. Si lee entre dos escrituras cuenta de
+        // menos y vuelve a verificar en el proximo ciclo; no hay inconsistencia porque el archivo es la autoridad.
+        mutex.acquire();
         try {
             return leerDelArchivo();
         } finally {
