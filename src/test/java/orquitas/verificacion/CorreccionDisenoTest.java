@@ -251,27 +251,33 @@ public class CorreccionDisenoTest {
         } finally { rx.detener(); servidor.join(1000); estomago.esperarEscrituras(); auditor.detener(); auditor.join(1000); }
     }
 
-    @Test public void telemetriaSumaLosCuatroSectoresFrontales() {
-        assertEquals(4 + 5 + 6 + 7, new Telemetria(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11).sumarFrente(), 0);
+    @Test public void libreAvanzaEnAmbosModos() throws Exception {
+        double[] libre = new double[12]; Arrays.fill(libre, 2500);
+        Navegacion navegacion = navegacion();
+        assertEquals(Movimiento.AVANZAR, navegacion.determinarMovimiento(new Telemetria(libre)));
+        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
+        assertEquals(Movimiento.AVANZAR, navegacion.determinarMovimiento(new Telemetria(libre)));
     }
 
-    @Test public void escapeAvanzaConFrenteAbiertoAunqueBusquedaGire() throws Exception {
-        // Objeto frontal angosto: BUSQUEDA lo evita, ESCAPE sigue hacia el espacio abierto.
-        Telemetria t = new Telemetria(400, 400, 400, 400, 120, 150, 2200, 2200, 2500, 2500, 2500, 2500);
-        Navegacion navegacion = navegacion();
-        assertEquals(Movimiento.GIRAR_IZQ, navegacion.determinarMovimiento(t));
+    @Test public void objetoFrenaEnBusquedaYSeEsquivaEnEscape() throws Exception {
+        // La red clasifica ambos como OBJETO (frente cercano); el modo cambia la meta, no la clasificacion.
+        Telemetria izquierdaAbierta = new Telemetria(400, 400, 400, 400, 120, 150, 2200, 2200, 2500, 2500, 2500, 2500);
+        Telemetria derechaAbierta = new Telemetria(2500, 2500, 2500, 2500, 2200, 2200, 150, 120, 400, 400, 400, 400);
+        RedNeuronal red = ModeloPrueba.red();
+        assertEquals(EntornoClasificado.OBJETO, red.clasificarEntorno(izquierdaAbierta));
+        assertEquals(EntornoClasificado.OBJETO, red.clasificarEntorno(derechaAbierta));
+        Navegacion navegacion = new Navegacion(red);
+        assertEquals(Movimiento.DETENER, navegacion.determinarMovimiento(izquierdaAbierta)); // Busqueda evalua.
         navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
-        assertEquals(Movimiento.AVANZAR, navegacion.determinarMovimiento(t)); // El modo tiene efecto.
+        assertEquals(Movimiento.GIRAR_IZQ, navegacion.determinarMovimiento(izquierdaAbierta)); // El modo tiene efecto.
+        assertEquals(Movimiento.GIRAR_DER, navegacion.determinarMovimiento(derechaAbierta));
     }
 
-    @Test public void escapeConFrenteBloqueadoGiraHaciaElLadoMasAbierto() throws Exception {
-        Navegacion navegacion = navegacion();
-        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
-        assertEquals(Movimiento.GIRAR_DER, navegacion.determinarMovimiento(
-                new Telemetria(2500, 2500, 2500, 2500, 100, 100, 100, 100, 300, 300, 300, 300)));
-        assertEquals(Movimiento.GIRAR_IZQ, navegacion.determinarMovimiento(
-                new Telemetria(300, 300, 300, 300, 100, 100, 100, 100, 2500, 2500, 2500, 2500)));
+    @Test public void escapeEncerradaSeDetiene() throws Exception {
         double[] encerrado = new double[12]; Arrays.fill(encerrado, 80);
+        Navegacion navegacion = navegacion();
+        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
+        assertEquals(EntornoClasificado.OBJETO, ModeloPrueba.red().clasificarEntorno(new Telemetria(encerrado)));
         assertEquals(Movimiento.DETENER, navegacion.determinarMovimiento(new Telemetria(encerrado)));
     }
 

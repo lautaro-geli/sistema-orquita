@@ -17,5 +17,4 @@ public final class Telemetria {
     }
     public double sumarDerecha() { double s=0; for(int i=0;i<6;i++) s+=distancias[i]; return s; }
     public double sumarIzquierda() { double s=0; for(int i=6;i<12;i++) s+=distancias[i]; return s; }
-    public double sumarFrente() { double s=0; for(int i=4;i<8;i++) s+=distancias[i]; return s; }
 }

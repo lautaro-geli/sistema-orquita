@@ -53,6 +53,9 @@ public class HitoDosTest {
     @Test public void decideAvanceAmbosGirosYDetencionConModeloReal() {
         Navegacion n=new Navegacion(new RedNeuronal(modelo));
         assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(uniforme(2500)));
+        assertEquals(Movimiento.DETENER,n.determinarMovimiento(new Telemetria(400,400,400,400,120,150,2200,2200,2500,2500,2500,2500))); // Busqueda evalua.
+        n.establecerModoOperativo(ModoOperativo.ESCAPE); // Los giros son de la politica de escape.
+        assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(uniforme(2500)));
         assertEquals(Movimiento.GIRAR_IZQ,n.determinarMovimiento(new Telemetria(400,400,400,400,120,150,2200,2200,2500,2500,2500,2500)));
         assertEquals(Movimiento.GIRAR_DER,n.determinarMovimiento(new Telemetria(2500,2500,2500,2500,2200,2200,150,120,400,400,400,400)));
         assertEquals(Movimiento.DETENER,n.determinarMovimiento(uniforme(80)));
