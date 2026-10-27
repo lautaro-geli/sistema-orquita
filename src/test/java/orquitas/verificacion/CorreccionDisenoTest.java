@@ -250,4 +250,28 @@ public class CorreccionDisenoTest {
             }
         } finally { rx.detener(); servidor.join(1000); estomago.esperarEscrituras(); auditor.detener(); auditor.join(1000); }
     }
+
+    @Test public void telemetriaSumaLosCuatroSectoresFrontales() {
+        assertEquals(4 + 5 + 6 + 7, new Telemetria(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11).sumarFrente(), 0);
+    }
+
+    @Test public void escapeAvanzaConFrenteAbiertoAunqueBusquedaGire() throws Exception {
+        // Objeto frontal angosto: BUSQUEDA lo evita, ESCAPE sigue hacia el espacio abierto.
+        Telemetria t = new Telemetria(400, 400, 400, 400, 120, 150, 2200, 2200, 2500, 2500, 2500, 2500);
+        Navegacion navegacion = navegacion();
+        assertEquals(Movimiento.GIRAR_IZQ, navegacion.determinarMovimiento(t));
+        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
+        assertEquals(Movimiento.AVANZAR, navegacion.determinarMovimiento(t)); // El modo tiene efecto.
+    }
+
+    @Test public void escapeConFrenteBloqueadoGiraHaciaElLadoMasAbierto() throws Exception {
+        Navegacion navegacion = navegacion();
+        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
+        assertEquals(Movimiento.GIRAR_DER, navegacion.determinarMovimiento(
+                new Telemetria(2500, 2500, 2500, 2500, 100, 100, 100, 100, 300, 300, 300, 300)));
+        assertEquals(Movimiento.GIRAR_IZQ, navegacion.determinarMovimiento(
+                new Telemetria(300, 300, 300, 300, 100, 100, 100, 100, 2500, 2500, 2500, 2500)));
+        double[] encerrado = new double[12]; Arrays.fill(encerrado, 80);
+        assertEquals(Movimiento.DETENER, navegacion.determinarMovimiento(new Telemetria(encerrado)));
+    }
 }

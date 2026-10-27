@@ -27,7 +27,9 @@ Servidor: `[puerto] [archivoEstomago] [modelo]`. Cliente de telemetría: `[host]
 
 - RECOPILACION con 12 distancias en mm: `EnlaceOrquita` la decodifica con `Recopilacion.decodificar`; si es válida, `Recopilacion.procesar` registra la captura opcional (`Estomago.registrarCaptura`) y pide el movimiento a `Navegacion`, y la ORDEN vuelve por el mismo socket. Si no es válida: `ERROR|TRAMA_INVALIDA`.
 - MLP 12-6-2 sigmoid con MomentumBackpropagation real; guarda/carga el modelo. Clasifica LIBRE/OBJETO.
-- Frente: sectores 4..7. Derecha: 0..5; izquierda: 6..11. LIBRE → AVANZAR. OBJETO → girar hacia la suma mayor; empate a izquierda; ambas sumas menores a 1200 mm → DETENER.
+- Frente: sectores 4..7. Derecha: 0..5; izquierda: 6..11.
+- BUSQUEDA: LIBRE → AVANZAR. OBJETO → girar hacia la suma lateral mayor; empate a izquierda; ambas sumas menores a 1200 mm → DETENER.
+- ESCAPE (heurística preliminar hacia el espacio abierto, sin evaluar objetos): suma frontal ≥ 800 mm → AVANZAR; si no, girar hacia el lado más abierto; DETENER solo si frente < 800 mm y ambos lados < 1200 mm.
 - El mensaje legado `CAPTURA|...` fue eliminado: la captura viaja como id opcional de RECOPILACION.
 - Un hilo `Escritor` por captura y un hilo `Auditor` periódico, semáforo justo `Semaphore(1, true)` y prioridad de escrituras pendientes. `estomago.txt` es la única fuente del conteo. Con tres capturas válidas únicas el Auditor notifica a `ModoEscape`, que pasa `Navegacion` a ESCAPE una sola vez; la Orquita lo recibe como `ESTADO|ESCAPE` antes de la siguiente orden.
 - CU-12: sin tramas durante `TIMEOUT_MAXIMO` (5 s) se registra la falla y se envía `ESTADO|RECONECTAR` hasta recibir tráfico o cerrar a los 30 s. CU-08: reintento acotado (3 intentos) de una respuesta que no se pudo enviar.
@@ -52,7 +54,7 @@ Clases del módulo servidor: `EnlaceOrquita`, `Recopilacion`, `Telemetria`, `Nav
 
 ## Alcance y pendientes reales
 
-Esta es una **demostración preliminar con datos ficticios**, no el robot final ni una entrega docente completa. BUSQUEDA y ESCAPE comparten evitación: ESCAPE no localiza la salida todavía. No distingue pared/lobito/obstáculo/salida. Mensajes de estado implementados: `ESTADO|ESCAPE` / `ESTADO|BUSQUEDA` (cambio de modo, enviado con la siguiente RECOPILACION) y `ESTADO|RECONECTAR` (CU-12). Bluetooth, actuadores y Safe Mode físico quedan pendientes. La detección de pérdida de comunicación solo envía la señal de reconexión y cierra la conexión; no equivale a detener motores.
+Esta es una **demostración preliminar con datos ficticios**, no el robot final ni una entrega docente completa. ESCAPE cambia la política de navegación (prioriza avanzar hacia lo abierto) pero no localiza la salida de la bahía: no hay sensor de posición ni rumbo en este hito. Al usar sumas, un objeto angosto con el resto del frente libre no detiene el avance en ESCAPE. No distingue pared/lobito/obstáculo/salida. Mensajes de estado implementados: `ESTADO|ESCAPE` / `ESTADO|BUSQUEDA` (cambio de modo, enviado con la siguiente RECOPILACION) y `ESTADO|RECONECTAR` (CU-12). Bluetooth, actuadores y Safe Mode físico quedan pendientes. La detección de pérdida de comunicación solo envía la señal de reconexión y cierra la conexión; no equivale a detener motores.
 
 La consigna de La Orquita Pensante exige ejemplos de sensor real y éxito en campo: faltan esas mediciones. Los 12 sectores representan una convención simulada de 180°, centros 7,5°+15°i; no afirman que un sensor real tenga esa geometría. Antes de conectar hardware hay que calibrar cobertura, rango y errores. La red aprende del generador con ruido ±5 % y no fue validada con hardware. No se presenta la simulación como evidencia de campo.
 

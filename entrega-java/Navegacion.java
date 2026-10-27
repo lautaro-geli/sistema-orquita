@@ -15,11 +15,22 @@ public class Navegacion {
         movimientoDecidido = calcularMovimiento(entorno, telemetria);
         return movimientoDecidido;
     }
+    /** Por debajo de 200 mm promedio por sector se considera bloqueado. */
+    private static final double MINIMO_POR_SECTOR = 200;
+    private static final double UMBRAL_LADO = 6*MINIMO_POR_SECTOR;   // sectores 0..5 o 6..11
+    private static final double UMBRAL_FRENTE = 4*MINIMO_POR_SECTOR; // sectores 4..7
     private Movimiento calcularMovimiento(EntornoClasificado entorno, Telemetria telemetria) {
-        // Hito 2 preliminar: BUSQUEDA y ESCAPE (modoOperativo) comparten evitacion; no se localiza la salida.
-        if (entorno == EntornoClasificado.LIBRE) return Movimiento.AVANZAR;
         double derecha = telemetria.sumarDerecha(), izquierda = telemetria.sumarIzquierda();
-        if (derecha < 6*200 && izquierda < 6*200) return Movimiento.DETENER;
+        if (modoOperativo == ModoOperativo.ESCAPE) {
+            // Heuristica preliminar: ir hacia el espacio mas abierto y seguir avanzando, sin detenerse a
+            // evaluar objetos. NO localiza la salida de la bahia (no hay posicion ni rumbo en este hito).
+            if (telemetria.sumarFrente() >= UMBRAL_FRENTE) return Movimiento.AVANZAR;
+            if (derecha < UMBRAL_LADO && izquierda < UMBRAL_LADO) return Movimiento.DETENER; // Encerrado.
+            return izquierda >= derecha ? Movimiento.GIRAR_IZQ : Movimiento.GIRAR_DER;
+        }
+        // BUSQUEDA: evitar el objeto que detecta la red.
+        if (entorno == EntornoClasificado.LIBRE) return Movimiento.AVANZAR;
+        if (derecha < UMBRAL_LADO && izquierda < UMBRAL_LADO) return Movimiento.DETENER;
         return izquierda >= derecha ? Movimiento.GIRAR_IZQ : Movimiento.GIRAR_DER;
     }
     public synchronized Movimiento obtenerMovimientoDecidido() { return movimientoDecidido; }
