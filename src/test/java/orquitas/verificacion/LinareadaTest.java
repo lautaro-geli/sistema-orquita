@@ -7,6 +7,7 @@ import orquitas.servidor.comunicacion.CanalIngestaTCP;
 import orquitas.servidor.escape.*;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.persistencia.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import java.io.IOException;
@@ -21,6 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
 public class LinareadaTest {
+    /** Entrena el modelo compartido fuera de las pruebas con timeout (el orden de ejecucion varia). */
+    @BeforeClass public static void prepararModelo() throws IOException { ModeloPrueba.ruta(); }
+
     private static Captura captura(String id) {
         return new Captura(id, LocalDateTime.of(2026, 9, 30, 12, 0));
     }

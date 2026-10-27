@@ -1,6 +1,7 @@
 // Archivo de simulacion
 package orquitas.verificacion;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import java.io.*;
@@ -19,6 +20,9 @@ import orquitas.servidor.persistencia.*;
 
 /** Pruebas agregadas con la correccion de diseno v2: CU-08, CU-09, CU-11 y CU-12. */
 public class CorreccionDisenoTest {
+    /** Entrena el modelo compartido fuera de las pruebas con timeout (el orden de ejecucion varia). */
+    @BeforeClass public static void prepararModelo() throws IOException { ModeloPrueba.ruta(); }
+
     private static final String DISTANCIAS = String.join(";", Collections.nCopies(12, "2500"));
 
     private static String trama(String id) { return "RECOPILACION|2026-09-30T12:00|" + DISTANCIAS + "|" + id; }
