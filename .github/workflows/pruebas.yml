@@ -24,6 +24,13 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
       - run: mvn --batch-mode --no-transfer-progress clean verify
+      - name: Humo de preparar.ps1 y ejecutar.ps1 (nombres de clase actuales)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./preparar.ps1
+          ./ejecutar.ps1 entrenar
+          if ($LASTEXITCODE -ne 0) { throw "ejecutar.ps1 entrenar fallo" }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
