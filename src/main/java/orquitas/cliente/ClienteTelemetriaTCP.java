@@ -19,7 +19,8 @@ public class ClienteTelemetriaTCP {
             {400,400,400,400,120,150,2200,2200,2500,2500,2500,2500},
             {2500,2500,2500,2500,2200,2200,150,120,400,400,400,400},
             {80,80,80,80,80,80,80,80,80,80,80,80},
-            {3000,3000,3000,3000,3000,3000,3000,3000,3000,3000,3000,3000}};
+            {3000,3000,3000,3000,3000,3000,3000,3000,3000,3000,3000,3000},
+            {400,400,400,400,120,150,2200,2200,2500,2500,2500,2500}}; // Ya en ESCAPE: esquiva sin frenar.
         try(Socket socket=new Socket(host,puerto);
             BufferedReader entrada=new BufferedReader(new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8));
             BufferedWriter salida=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8))) {

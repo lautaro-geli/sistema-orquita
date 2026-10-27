@@ -5,7 +5,7 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "3.663"
+    "time": "3.474"
   },
   {
     "name": "orquitas.verificacion.HitoDosTest",
@@ -13,7 +13,7 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "19.962"
+    "time": "21.188"
   },
   {
     "name": "orquitas.verificacion.LinareadaTest",
@@ -21,7 +21,7 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "0.368"
+    "time": "0.334"
   },
   {
     "name": "orquitas.verificacion.RobustezHitoDosTest",
@@ -29,6 +29,6 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "0.809"
+    "time": "0.789"
   }
 ]

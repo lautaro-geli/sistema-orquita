@@ -41,7 +41,7 @@ Servidor: `[puerto] [archivoEstomago] [modelo]`. Cliente de telemetría: `[host]
 
 Modelo entregado: 2400 ejemplos ficticios de entrenamiento, 1000 de validación con otra semilla; **98,00 %** de exactitud sintética. Matriz: LIBRE 486 correctos / 14 errores; OBJETO 494 correctos / 6 errores. Una evaluación posterior con semilla nueva obtuvo 97,80 % (978/1000); en la frontera 300–500 mm obtuvo 90,625 % (3625/4000). La frontera usa un generador distinto. Las semillas de desarrollo no se presentan como evaluación final ciega. No es precisión del sensor ni una garantía ante toda lectura posible.
 
-`evidencias/` incluye la evaluación y la ejecución de servidor + simulador: seis órdenes correctas, tres registros y recuperación de ESCAPE al reiniciar. Los .log contienen datos de simulación.
+`evidencias/` incluye la evaluación y la ejecución de servidor + simulador: siete órdenes correctas, tres registros, `ESTADO|ESCAPE` recibido por el cliente y recuperación de ESCAPE al reiniciar. La misma escena con objeto frontal recibe DETENER en BUSQUEDA (DEMO1) y GIRAR_IZQ en ESCAPE (última recopilación). Los .log contienen datos de simulación.
 
 ## Documentación vigente
 

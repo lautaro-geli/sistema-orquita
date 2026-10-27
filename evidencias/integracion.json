@@ -2,10 +2,11 @@
   "ordenes": [
     "ORDEN|AVANZAR",
     "ORDEN|AVANZAR",
-    "ORDEN|GIRAR_IZQ",
-    "ORDEN|GIRAR_DER",
     "ORDEN|DETENER",
-    "ORDEN|AVANZAR"
+    "ORDEN|DETENER",
+    "ORDEN|DETENER",
+    "ORDEN|AVANZAR",
+    "ORDEN|GIRAR_IZQ"
   ],
   "capturas_persistidas": 3,
   "escape": true,
