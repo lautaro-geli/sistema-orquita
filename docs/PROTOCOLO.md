@@ -19,7 +19,10 @@ TCP es un flujo: puede haber varias tramas en una lectura y una trama repartida 
 | Orquita → servidor | `RECOPILACION\|fechaISO\|d0;d1;...;d11\|idOpcional` | `ORDEN\|...` si toda la trama es válida; `ERROR\|TRAMA_INVALIDA` si no |
 | Servidor → Orquita | `ORDEN\|AVANZAR`, `ORDEN\|GIRAR_IZQ`, `ORDEN\|GIRAR_DER`, `ORDEN\|DETENER` | — |
 | Servidor → Orquita | `ERROR\|TRAMA_INVALIDA` | — |
+| Servidor → Orquita | `ESTADO\|ESCAPE`, `ESTADO\|BUSQUEDA` | Cambio de estado (modo operativo) de la Orquita; ver abajo |
 | Servidor → Orquita | `ESTADO\|RECONECTAR` | La Orquita debe restablecer el enlace y volver a enviar RECOPILACION |
+
+Tipos de mensaje: **datos** (`RECOPILACION`, telemetría periódica), **órdenes** (`ORDEN`), **errores** (`ERROR`), **cambios de estado** (`ESTADO`) y **eventos**. El evento de captura de un Lobito no tiene un mensaje propio: viaja como `idOpcional` de la RECOPILACION en la que ocurrió.
 
 El mensaje legado `CAPTURA|id|fecha` **fue eliminado**: un aviso de captura viaja siempre como `idOpcional` de una RECOPILACION. Una línea que empiece con `CAPTURA` es un tipo desconocido.
 
@@ -33,6 +36,13 @@ Exactamente 4 campos.
 4. `idOpcional`: vacío (sin captura) o `[A-Za-z0-9_-]{1,64}` (aviso de captura). El separador `|` previo debe existir aunque el campo esté vacío.
 
 Toda RECOPILACION válida recibe una ORDEN (decisión C.1: la orden de navegación es la respuesta a cada recopilación; no hay mensaje de pedido aparte). La orden no confirma que la captura ya esté escrita: el Escritor de esa captura corre en su propio hilo. Un id repetido no agrega registros (decisión C.4) aunque sí produce otra orden.
+
+## Cambio de estado: ESTADO|ESCAPE y ESTADO|BUSQUEDA
+
+- Dirección: servidor → Orquita. Valores válidos: `ESCAPE` y `BUSQUEDA` (los nombres del enum `ModoOperativo`).
+- Cuándo: el modo cambia en el servidor (el Auditor detecta 3 capturas en `estomago.txt` y ModoEscape pasa Navegacion a ESCAPE). El aviso viaja por la conexión existente como respuesta a la **siguiente** RECOPILACION válida: primero `ESTADO|<modo>` y después la `ORDEN|…`, que ya fue calculada con el modo nuevo.
+- Se envía una sola vez por cambio y por conexión. Al conectarse no se envía nada: ambos extremos arrancan en BUSQUEDA. Una conexión nueva abierta cuando el servidor ya está en ESCAPE recibe `ESTADO|ESCAPE` con su primera RECOPILACION válida.
+- Qué hace el cliente: registra el cambio (`[Cliente] Cambio de estado: ESCAPE`) y sigue leyendo hasta la `ORDEN|…` de esa recopilación. Un ESTADO nunca reemplaza a la orden.
 
 ## Mensajes inválidos, incompletos y desconocidos
 
@@ -49,4 +59,4 @@ Toda RECOPILACION válida recibe una ORDEN (decisión C.1: la orden de navegaci�
 
 ## Alcance
 
-La conexión pertenece a una única Orquita: aceptar varias conexiones sirve para la simulación y para reconexiones, no convierte al servidor en multirrobot. Cada conexión tiene su propio `EnlaceOrquita`, de modo que cada respuesta vuelve por el socket que la pidió. El cambio a Modo Escape es interno (Auditor → ModoEscape → Navegacion); no viaja como trama.
+La conexión pertenece a una única Orquita: aceptar varias conexiones sirve para la simulación y para reconexiones, no convierte al servidor en multirrobot. Cada conexión tiene su propio `EnlaceOrquita`, de modo que cada respuesta vuelve por el socket que la pidió. La decisión de pasar a Modo Escape es interna (Auditor → ModoEscape → Navegacion); a la Orquita solo le llega el resultado como `ESTADO|ESCAPE`.

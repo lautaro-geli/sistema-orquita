@@ -205,4 +205,49 @@ public class CorreccionDisenoTest {
         navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
         assertEquals(Movimiento.AVANZAR, navegacion.determinarMovimiento(null));
     }
+
+    @Test public void cambioDeModoSeInformaUnaVezAntesDeLaOrden() throws Exception {
+        StringWriter salida = new StringWriter();
+        Navegacion navegacion = navegacion();
+        EnlaceOrquita enlace = new EnlaceOrquita(new Estomago(archivoNuevo().toString()), navegacion, salida);
+        enlace.enviarRecopilacion(trama(""));
+        assertEquals("ORDEN|AVANZAR\n", salida.toString()); // Estado inicial: ningun ESTADO|.
+        navegacion.establecerModoOperativo(ModoOperativo.ESCAPE);
+        enlace.enviarRecopilacion(trama(""));
+        enlace.enviarRecopilacion(trama(""));
+        navegacion.establecerModoOperativo(ModoOperativo.BUSQUEDA);
+        enlace.enviarRecopilacion(trama(""));
+        assertEquals("ORDEN|AVANZAR\nESTADO|ESCAPE\nORDEN|AVANZAR\nORDEN|AVANZAR\nESTADO|BUSQUEDA\nORDEN|AVANZAR\n",
+                salida.toString());
+    }
+
+    @Test(timeout = 15000) public void tresCapturasPorTcpEmitenEstadoEscapeEnLaSiguienteRecopilacion() throws Exception {
+        Estomago estomago = new Estomago(archivoNuevo().toString());
+        Navegacion navegacion = navegacion();
+        Auditor auditor = new Auditor(estomago, new ModoEscape(navegacion), 20);
+        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, estomago, navegacion);
+        Thread servidor = new Thread(rx::iniciar);
+        auditor.start(); servidor.start();
+        try {
+            long limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+            while (rx.obtenerPuerto() < 0 && System.nanoTime() < limite) Thread.sleep(5);
+            try (Socket s = new Socket("127.0.0.1", rx.obtenerPuerto())) {
+                s.setSoTimeout(3000);
+                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8));
+                Writer out = new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8);
+                for (String id : List.of("E1", "E2", "E3")) {
+                    out.write(trama(id) + "\n"); out.flush();
+                    assertEquals("ORDEN|AVANZAR", in.readLine()); // Sin ESTADO| mientras se busca.
+                }
+                limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+                while (navegacion.getModoOperativo() != ModoOperativo.ESCAPE && System.nanoTime() < limite) Thread.sleep(10);
+                assertEquals(ModoOperativo.ESCAPE, navegacion.getModoOperativo());
+                out.write(trama("") + "\n"); out.flush();
+                assertEquals("ESTADO|ESCAPE", in.readLine());
+                assertEquals("ORDEN|AVANZAR", in.readLine());
+                out.write(trama("") + "\n"); out.flush();
+                assertEquals("ORDEN|AVANZAR", in.readLine()); // No se repite el estado.
+            }
+        } finally { rx.detener(); servidor.join(1000); estomago.esperarEscrituras(); auditor.detener(); auditor.join(1000); }
+    }
 }

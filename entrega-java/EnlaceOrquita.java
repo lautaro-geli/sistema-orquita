@@ -2,6 +2,7 @@ package orquitas.servidor.comunicacion;
 
 import java.io.*;
 import orquitas.servidor.captura.Recopilacion;
+import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.Navegacion;
 import orquitas.servidor.persistencia.Estomago;
@@ -22,6 +23,8 @@ public class EnlaceOrquita {
     private volatile long tiempoUltimaRecepcion = System.nanoTime();
     private volatile boolean conexionActiva = true;
     private String tramaPendiente;
+    /** Ultimo modo informado a la Orquita; ambos arrancan en BUSQUEDA, asi que al inicio no se envia ESTADO. */
+    private ModoOperativo modoNotificado = ModoOperativo.BUSQUEDA;
     public EnlaceOrquita(Estomago estomago, Navegacion navegacion, Writer salida) {
         this.estomago=estomago; this.navegacion=navegacion; this.salida=salida;
     }
@@ -37,7 +40,18 @@ public class EnlaceOrquita {
             enviarErrorTrama(); return;
         }
         // C.1: la orden de navegacion es la respuesta a cada RECOPILACION valida.
-        enviarOrdenNavegacion(recopilacion.procesar(estomago, navegacion));
+        Movimiento movimiento=recopilacion.procesar(estomago, navegacion);
+        // El cambio de estado viaja por la conexion existente, antes de la orden que ya lo tiene en cuenta.
+        ModoOperativo modoActual=navegacion.getModoOperativo();
+        if(modoActual!=modoNotificado) {
+            enviarCambioEstado(modoActual);
+            modoNotificado=modoActual;
+        }
+        enviarOrdenNavegacion(movimiento);
+    }
+    /** Informa a la Orquita su modo operativo: ESTADO|ESCAPE o ESTADO|BUSQUEDA. */
+    public void enviarCambioEstado(ModoOperativo modo) throws IOException {
+        transmitir("ESTADO|"+modo.name()+"\n");
     }
     /** Respuesta acotada: no refleja contenido recibido ni confirma una captura. */
     public void enviarErrorTrama() throws IOException {

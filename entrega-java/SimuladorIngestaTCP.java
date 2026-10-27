@@ -65,7 +65,12 @@ public class SimuladorIngestaTCP {
             out.println(mensaje);
             if (out.checkError()) throw new IOException("Falló el envío TCP");
             // Se consume la respuesta antes de cerrar (ORDEN|... o ERROR|TRAMA_INVALIDA).
-            System.out.println("[SimuladorIngestaTCP] Enviado: " + mensaje + " -> " + in.readLine());
+            String respuesta = in.readLine();
+            while (respuesta != null && respuesta.startsWith("ESTADO|")) {
+                System.out.println("[Cliente] Cambio de estado: " + respuesta.substring("ESTADO|".length()));
+                respuesta = in.readLine();
+            }
+            System.out.println("[SimuladorIngestaTCP] Enviado: " + mensaje + " -> " + respuesta);
         } catch (IOException e) {
             System.err.println("[SimuladorIngestaTCP] No se pudo enviar el mensaje '" + mensaje
                     + "': " + e.getMessage());
