@@ -1,21 +1,21 @@
 {
   "src/main/java/orquitas/cliente/ClienteIngestaTCP.java": "4aa7130bdc9f9f5bda886bfb63d725c52b1d8c6091de54e5ca89f055174b83df",
-  "src/main/java/orquitas/cliente/ClienteTelemetriaTCP.java": "90d82875d4679767dfed26f1bad1e708fa09041c1f3cc8635ed1fe601f4d419d",
+  "src/main/java/orquitas/cliente/ClienteTelemetriaTCP.java": "33b22148fbfb164c2d9398f6dcc6e241d4cf79edeaa277ea4655db7d295128a7",
   "src/main/java/orquitas/servidor/ServidorOrquita.java": "84330b9d72aa7dc99e8f5fad2a8a045e090c0be41b7778ed5b167d4512144d7d",
   "src/main/java/orquitas/servidor/captura/Captura.java": "789513513835d0c375cd50bd12b880ea7337995b898d6a6a945b3b895445eeea",
   "src/main/java/orquitas/servidor/captura/Recopilacion.java": "656ecf57cd47e5c9a324c37b9663290158c613966edf17bce11d70c497cb3edf",
   "src/main/java/orquitas/servidor/comunicacion/CanalIngestaTCP.java": "5dbc6d300a872c6b366e323f9ebedea82a22b4f970952b83805cd94a41ebcdb6",
   "src/main/java/orquitas/servidor/comunicacion/EnlaceOrquita.java": "9f1949677a3705baac0f34f5e3a76fc4ce67c55c5c5de83ba0415a6052227a46",
   "src/main/java/orquitas/servidor/escape/ModoEscape.java": "265fa02161816794614ee34bd4ef439976a1838411063f94477702ca7a4ec6a2",
-  "src/main/java/orquitas/servidor/navegacion/EntornoClasificado.java": "2cab45023175ae11e4317318465eb82be3861576d38a150d30ede4299b715a94",
+  "src/main/java/orquitas/servidor/navegacion/EntornoClasificado.java": "71194bfee56f190e4c0d95efc321a3a12081897e50136e9fef845cbf843aa150",
   "src/main/java/orquitas/servidor/navegacion/ModoOperativo.java": "5f7062405d9c6cfbe56cb338ab79cb82954359d1eb28faece1880f924e4bdf1f",
   "src/main/java/orquitas/servidor/navegacion/Movimiento.java": "9ef1af58952971db365ed7e7d574b27f637c0cf717a6684231ebd18726d82e35",
-  "src/main/java/orquitas/servidor/navegacion/Navegacion.java": "3e33e5b171d39aa59a26c2505cd0fce66d9c770f14544084a615e3f6d03bf755",
-  "src/main/java/orquitas/servidor/navegacion/RedNeuronal.java": "67170f5f3c038b9a36b226f3c2a36bcff6c17a15c770df7e9d9b0b39c0100a2f",
-  "src/main/java/orquitas/servidor/navegacion/Telemetria.java": "49a8e547d8241c6e41bbce2c06b20af19e6e8d68220a448093a5253254d6536a",
+  "src/main/java/orquitas/servidor/navegacion/Navegacion.java": "610292821cc2ed2b35b8d591e998b6f2cb70761cfeeebbdce02846bef7d54f02",
+  "src/main/java/orquitas/servidor/navegacion/RedNeuronal.java": "e914e5fceded0d2ded404240f8eb060db65b6a77bedcf609afc45752d886ef8b",
+  "src/main/java/orquitas/servidor/navegacion/Telemetria.java": "06c61f6385ac78e69006fcaeaefd95acee4eb82be932ab1d4be53a09bfa1e2bb",
   "src/main/java/orquitas/servidor/persistencia/Auditor.java": "bab97e82bcddd04728f83503471f2f8e52bcbf3fab8a3375b29568a196cdee03",
   "src/main/java/orquitas/servidor/persistencia/Escritor.java": "47428e4b1b117335f8843b59d085f7c11a9092ee32c8ca02323e94e3e42f3eb0",
   "src/main/java/orquitas/servidor/persistencia/Estomago.java": "93cb850c8a4431bea6f405df095c0c510f4b19052de3c0014d5c9e5f33afdde5",
-  "src/main/java/orquitas/simulacion/EntrenamientoDemostracion.java": "ff1203d756ad65bd37fe45f5605f35b0f37598f79f1244ef2dcda960ec584c7e",
-  "src/main/java/orquitas/simulacion/EvaluacionDemostracion.java": "eabbc20580b11935cca67bea28666b87d0bda4453167639e55c461823b1907c2"
+  "src/main/java/orquitas/simulacion/EntrenamientoDemostracion.java": "3894557f2c0955c747d3c5b9438a716aa9858ae49ce0f587b9e3709895d41220",
+  "src/main/java/orquitas/simulacion/EvaluacionDemostracion.java": "72768b8569d000740cb44c136b33e2b62fda0a9bdb42b7a91e85a1750a6feae9"
 }

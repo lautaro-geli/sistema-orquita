@@ -17,10 +17,12 @@ TCP es un flujo: puede haber varias tramas en una lectura y una trama repartida 
 | Dirección | Formato | Respuesta |
 |---|---|---|
 | Orquita → servidor | `RECOPILACION\|fechaISO\|d0;d1;...;d11\|idOpcional` | `ORDEN\|...` si toda la trama es válida; `ERROR\|TRAMA_INVALIDA` si no |
-| Servidor → Orquita | `ORDEN\|AVANZAR`, `ORDEN\|GIRAR_IZQ`, `ORDEN\|GIRAR_DER`, `ORDEN\|DETENER` | — |
+| Servidor → Orquita | `ORDEN\|AVANZAR`, `ORDEN\|GIRAR_IZQ`, `ORDEN\|GIRAR_DER`, `ORDEN\|DETENER` | Siempre una de estas 4 (ver nota) |
 | Servidor → Orquita | `ERROR\|TRAMA_INVALIDA` | — |
 | Servidor → Orquita | `ESTADO\|ESCAPE`, `ESTADO\|BUSQUEDA` | Cambio de estado (modo operativo) de la Orquita; ver abajo |
 | Servidor → Orquita | `ESTADO\|RECONECTAR` | La Orquita debe restablecer el enlace y volver a enviar RECOPILACION |
+
+Nota: la clasificación del entorno (LIBRE, OBJETO, LOBITO) es interna del servidor y **no viaja** en el protocolo. A la Orquita solo le llega la orden resultante: por ejemplo, perseguir un lobito a la derecha llega como `ORDEN|GIRAR_DER`.
 
 Tipos de mensaje: **datos** (`RECOPILACION`, telemetría periódica), **órdenes** (`ORDEN`), **errores** (`ERROR`), **cambios de estado** (`ESTADO`) y **eventos**. El evento de captura de un Lobito no tiene un mensaje propio: viaja como `idOpcional` de la RECOPILACION en la que ocurrió.
 

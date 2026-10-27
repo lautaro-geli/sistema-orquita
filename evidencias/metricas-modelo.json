@@ -1,136 +1,400 @@
 {
+  "_descripcion": "Filas de 'matriz' = clase real, columnas = prediccion. umbral_todos_los_sectores usa como referencia 1050 mm (medio de la franja 900-1200 mm sin entrenar); mide donde cae el cambio, no un error de clasificacion.",
+  "_modelo": "MLP 12-6-3, entrada cercania clamp((1500-d)/1500,0,1)",
   "general_202": {
     "n": 1000,
-    "aciertos": 980,
-    "exactitud": 98.0,
-    "objeto_como_libre": 6,
-    "libre_como_objeto": 14
+    "aciertos": 989,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 328,
+        "OBJETO": 0,
+        "LOBITO": 6
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 331,
+        "LOBITO": 2
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 2,
+        "LOBITO": 330
+      }
+    },
+    "exactitud": 98.9
   },
   "general_1000": {
     "n": 1000,
-    "aciertos": 975,
-    "exactitud": 97.5,
-    "objeto_como_libre": 7,
-    "libre_como_objeto": 18
+    "aciertos": 984,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 323,
+        "OBJETO": 0,
+        "LOBITO": 11
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 332,
+        "LOBITO": 1
+      },
+      "LOBITO": {
+        "LIBRE": 3,
+        "OBJETO": 1,
+        "LOBITO": 329
+      }
+    },
+    "exactitud": 98.4
   },
   "general_1001": {
     "n": 1000,
-    "aciertos": 970,
-    "exactitud": 97.0,
-    "objeto_como_libre": 9,
-    "libre_como_objeto": 21
+    "aciertos": 983,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 332,
+        "LOBITO": 1
+      },
+      "LOBITO": {
+        "LIBRE": 3,
+        "OBJETO": 5,
+        "LOBITO": 325
+      }
+    },
+    "exactitud": 98.3
   },
   "general_1002": {
     "n": 1000,
-    "aciertos": 970,
-    "exactitud": 97.0,
-    "objeto_como_libre": 9,
-    "libre_como_objeto": 21
+    "aciertos": 988,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 1,
+        "LOBITO": 332
+      }
+    },
+    "exactitud": 98.8
   },
   "general_1003": {
     "n": 1000,
-    "aciertos": 975,
-    "exactitud": 97.5,
-    "objeto_como_libre": 5,
-    "libre_como_objeto": 20
+    "aciertos": 982,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 327,
+        "LOBITO": 6
+      },
+      "LOBITO": {
+        "LIBRE": 2,
+        "OBJETO": 2,
+        "LOBITO": 329
+      }
+    },
+    "exactitud": 98.2
   },
   "general_1004": {
     "n": 1000,
-    "aciertos": 979,
-    "exactitud": 97.9,
-    "objeto_como_libre": 6,
-    "libre_como_objeto": 15
+    "aciertos": 975,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 320,
+        "OBJETO": 0,
+        "LOBITO": 14
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 328,
+        "LOBITO": 5
+      },
+      "LOBITO": {
+        "LIBRE": 2,
+        "OBJETO": 4,
+        "LOBITO": 327
+      }
+    },
+    "exactitud": 97.5
   },
   "general_1005": {
     "n": 1000,
-    "aciertos": 975,
-    "exactitud": 97.5,
-    "objeto_como_libre": 5,
-    "libre_como_objeto": 20
+    "aciertos": 985,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 323,
+        "OBJETO": 0,
+        "LOBITO": 11
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 1,
+        "LOBITO": 332
+      }
+    },
+    "exactitud": 98.5
   },
   "general_1006": {
     "n": 1000,
-    "aciertos": 966,
-    "exactitud": 96.6,
-    "objeto_como_libre": 10,
-    "libre_como_objeto": 24
+    "aciertos": 981,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 330,
+        "OBJETO": 0,
+        "LOBITO": 4
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 327,
+        "LOBITO": 6
+      },
+      "LOBITO": {
+        "LIBRE": 3,
+        "OBJETO": 6,
+        "LOBITO": 324
+      }
+    },
+    "exactitud": 98.1
   },
   "general_1007": {
     "n": 1000,
-    "aciertos": 982,
-    "exactitud": 98.2,
-    "objeto_como_libre": 6,
-    "libre_como_objeto": 12
+    "aciertos": 978,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 318,
+        "OBJETO": 0,
+        "LOBITO": 16
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 331,
+        "LOBITO": 2
+      },
+      "LOBITO": {
+        "LIBRE": 3,
+        "OBJETO": 1,
+        "LOBITO": 329
+      }
+    },
+    "exactitud": 97.8
   },
   "general_1008": {
     "n": 1000,
-    "aciertos": 968,
-    "exactitud": 96.8,
-    "objeto_como_libre": 8,
-    "libre_como_objeto": 24
+    "aciertos": 986,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 2,
+        "LOBITO": 330
+      }
+    },
+    "exactitud": 98.6
   },
   "general_1009": {
     "n": 1000,
-    "aciertos": 965,
-    "exactitud": 96.5,
-    "objeto_como_libre": 8,
-    "libre_como_objeto": 27
+    "aciertos": 982,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 324,
+        "OBJETO": 0,
+        "LOBITO": 10
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 329,
+        "LOBITO": 4
+      },
+      "LOBITO": {
+        "LIBRE": 2,
+        "OBJETO": 2,
+        "LOBITO": 329
+      }
+    },
+    "exactitud": 98.2
   },
   "general_424242": {
     "n": 1000,
-    "aciertos": 978,
-    "exactitud": 97.8,
-    "objeto_como_libre": 2,
-    "libre_como_objeto": 20
+    "aciertos": 986,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 329,
+        "OBJETO": 0,
+        "LOBITO": 5
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3
+      },
+      "LOBITO": {
+        "LIBRE": 2,
+        "OBJETO": 4,
+        "LOBITO": 327
+      }
+    },
+    "exactitud": 98.6
   },
   "frontera_7": {
     "n": 4000,
-    "aciertos": 3585,
-    "exactitud": 89.625,
-    "objeto_como_libre": 110,
-    "libre_como_objeto": 305
+    "aciertos": 3909,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 2012,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 91,
+        "OBJETO": 0,
+        "LOBITO": 1897
+      }
+    },
+    "exactitud": 97.72
   },
   "frontera_987654": {
     "n": 4000,
-    "aciertos": 3625,
-    "exactitud": 90.625,
-    "objeto_como_libre": 86,
-    "libre_como_objeto": 289
+    "aciertos": 3899,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 1976,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 101,
+        "OBJETO": 0,
+        "LOBITO": 1923
+      }
+    },
+    "exactitud": 97.47
+  },
+  "ancho_8": {
+    "n": 4000,
+    "aciertos": 3817,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 1816,
+        "LOBITO": 162
+      },
+      "LOBITO": {
+        "LIBRE": 9,
+        "OBJETO": 12,
+        "LOBITO": 2001
+      }
+    },
+    "exactitud": 95.42
+  },
+  "ancho_24680": {
+    "n": 4000,
+    "aciertos": 3815,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 1839,
+        "LOBITO": 161
+      },
+      "LOBITO": {
+        "LIBRE": 12,
+        "OBJETO": 12,
+        "LOBITO": 1976
+      }
+    },
+    "exactitud": 95.38
   },
   "ejemplo": {
-    "n": 6,
-    "aciertos": 6,
-    "exactitud": 100.0,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 0
+    "n": 7,
+    "aciertos": 7,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 2,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 4,
+        "LOBITO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 1
+      }
+    },
+    "exactitud": 100.0
   },
-  "umbral_4": {
-    "n": 51,
-    "aciertos": 44,
-    "exactitud": 86.27450980392157,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 7
-  },
-  "umbral_5": {
-    "n": 51,
-    "aciertos": 49,
-    "exactitud": 96.07843137254902,
-    "objeto_como_libre": 2,
-    "libre_como_objeto": 0
-  },
-  "umbral_6": {
-    "n": 51,
-    "aciertos": 51,
-    "exactitud": 100.0,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 0
-  },
-  "umbral_7": {
-    "n": 51,
-    "aciertos": 49,
-    "exactitud": 96.07843137254902,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 2
-  },
-  "modelo_sha256": "15f312013f62ed4c846399f364cece623bcc81963321cb403f324ce32ef5dde5"
+  "umbral_todos_los_sectores": {
+    "n": 1692,
+    "aciertos": 1321,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 852,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 371,
+        "OBJETO": 0,
+        "LOBITO": 469
+      }
+    },
+    "exactitud": 78.07
+  }
 }

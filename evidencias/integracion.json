@@ -1,10 +1,12 @@
 {
   "ordenes": [
     "ORDEN|AVANZAR",
+    "ORDEN|GIRAR_IZQ",
+    "ORDEN|GIRAR_DER",
     "ORDEN|AVANZAR",
+    "ORDEN|GIRAR_IZQ",
     "ORDEN|DETENER",
-    "ORDEN|DETENER",
-    "ORDEN|DETENER",
+    "ORDEN|AVANZAR",
     "ORDEN|AVANZAR",
     "ORDEN|GIRAR_IZQ"
   ],
@@ -12,7 +14,7 @@
   "escape": true,
   "reinicio_sin_nuevos_mensajes": true,
   "datos": "ficticios",
-  "modelo_sha256": "15f312013f62ed4c846399f364cece623bcc81963321cb403f324ce32ef5dde5",
+  "modelo_sha256": "e81a950b93d0af6ead34758bb2d6c30ce4b8613dbb015279e6d72d90b122f3c1",
   "cierre_demo": "terminacion del proceso despues de verificar persistencia; cierre normal cubierto por pruebas",
   "estado_escape_emitido": true
 }
