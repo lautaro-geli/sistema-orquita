@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** Adaptador TCP de La Linareada; será reemplazado por Bluetooth. */
-public class ReceptorIngestaTCP {
+public class CanalIngestaTCP {
     /** Sin trafico durante este multiplo de TIMEOUT_MAXIMO (5 s -> 30 s) se cierra la conexion. */
     private static final int FACTOR_CIERRE_DURO = 6;
     private final int puerto;
@@ -26,12 +26,12 @@ public class ReceptorIngestaTCP {
     private volatile boolean activo = true;
     private volatile ServerSocket servidor;
 
-    public ReceptorIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion) {
+    public CanalIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion) {
         this(puerto, estomago, navegacion, EnlaceOrquita.TIMEOUT_MAXIMO);
     }
 
     /** timeoutMaximo en ms; parametro para pruebas, debe ser menor a los 10 s del reglamento. */
-    public ReceptorIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion, long timeoutMaximo) {
+    public CanalIngestaTCP(int puerto, Estomago estomago, Navegacion navegacion, long timeoutMaximo) {
         if (timeoutMaximo <= 0 || timeoutMaximo >= 10000)
             throw new IllegalArgumentException("TIMEOUT_MAXIMO debe estar entre 1 y 9999 ms");
         this.puerto = puerto;
@@ -43,19 +43,19 @@ public class ReceptorIngestaTCP {
     public void iniciar() {
         try (ServerSocket abierto = new ServerSocket(puerto)) {
             servidor = abierto;
-            System.out.println("[ReceptorIngestaTCP] Puerto " + abierto.getLocalPort());
+            System.out.println("[CanalIngestaTCP] Puerto " + abierto.getLocalPort());
             while (activo) {
                 Socket cliente = abierto.accept();
                 synchronized (clientes) {
                     if (!activo) { cliente.close(); break; }
                     clientes.add(cliente);
-                    Thread manejador = new Thread(() -> manejarCliente(cliente), "ReceptorCapturaTCP");
+                    Thread manejador = new Thread(() -> manejarCliente(cliente), "ConexionOrquita");
                     manejadores.add(manejador);
                     manejador.start();
                 }
             }
         } catch (IOException e) {
-            if (activo) System.err.println("[ReceptorIngestaTCP] " + e.getMessage());
+            if (activo) System.err.println("[CanalIngestaTCP] " + e.getMessage());
         } finally {
             detener();
         }
@@ -75,13 +75,13 @@ public class ReceptorIngestaTCP {
         try {
             if (servidor != null) servidor.close();
         } catch (IOException e) {
-            System.err.println("[ReceptorIngestaTCP] " + e.getMessage());
+            System.err.println("[CanalIngestaTCP] " + e.getMessage());
         }
         Thread[] porEsperar;
         synchronized (clientes) {
             for (Socket cliente : clientes) {
                 try { cliente.close(); } catch (IOException e) {
-                    System.err.println("[ReceptorIngestaTCP] " + e.getMessage());
+                    System.err.println("[CanalIngestaTCP] " + e.getMessage());
                 }
             }
             porEsperar = manejadores.toArray(new Thread[0]);
@@ -120,7 +120,7 @@ public class ReceptorIngestaTCP {
                     caracter = entrada.read();
                 } catch (SocketTimeoutException sinDatos) {
                     if (verificarRecepcion(enlace)) continue;
-                    System.err.println("[ReceptorIngestaTCP] Cierre duro: sin trafico tras las senales de reconexion");
+                    System.err.println("[CanalIngestaTCP] Cierre duro: sin trafico tras las senales de reconexion");
                     break;
                 }
                 if (caracter == -1) break;
@@ -142,7 +142,7 @@ public class ReceptorIngestaTCP {
             }
             // EOF sin '\n': trama incompleta; nunca se acepta como captura.
         } catch (IOException e) {
-            if (activo) System.err.println("[ReceptorIngestaTCP] Conexión interrumpida: " + e.getMessage());
+            if (activo) System.err.println("[CanalIngestaTCP] Conexión interrumpida: " + e.getMessage());
         } finally {
             synchronized (clientes) {
                 clientes.remove(cliente);

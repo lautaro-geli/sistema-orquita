@@ -6,6 +6,6 @@ Validación independiente: 1000 muestras, semilla 202, 98.00 % de exactitud (des
 
 La distribución sintética incluye frente despejado, paredes laterales, objeto estrecho, todo cercano, todo lejano y casos de frontera 330–500 mm; ruido uniforme ±5 %. Se etiqueta OBJETO si alguna distancia frontal (4..7) es <400 mm. Esa regla solo genera etiquetas: la inferencia usa exclusivamente la red. No hay garantía del 95 % fuera de esta distribución, especialmente cerca de los 400 mm.
 
-Para entrenar otro modelo sin sobreescribir el entregado: ejecutar EntrenadorDemostracion con una ruta inexistente. Si existe, se carga y evalúa. Las semillas permiten reproducir el conjunto; generar(cantidad,semilla) define los datos.
+Para entrenar otro modelo sin sobreescribir el entregado: ejecutar EntrenamientoDemostracion con una ruta inexistente. Si existe, se carga y evalúa. Las semillas permiten reproducir el conjunto; generar(cantidad,semilla) define los datos.
 
 SHA-256 del modelo entregado: 15f312013f62ed4c846399f364cece623bcc81963321cb403f324ce32ef5dde5

@@ -7,7 +7,7 @@ import java.util.*;
 import orquitas.servidor.navegacion.*;
 
 /** Exporta predicciones reproducibles. No usa la etiqueta de referencia para decidir. */
-public class EvaluadorDemostracion {
+public class EvaluacionDemostracion {
     private static void registrar(Writer salida, RedNeuronal red, String grupo, int caso,
                                   double[] d, EntornoClasificado esperado) throws IOException {
         Telemetria t=new Telemetria(d);
@@ -26,7 +26,7 @@ public class EvaluadorDemostracion {
             csv.write("grupo;caso;esperado;predicho;orden;d0;d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11\n");
             for(long semilla:new long[]{202,1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,424242}) {
                 int i=0;
-                for(var m:EntrenadorDemostracion.generar(1000,semilla))
+                for(var m:EntrenamientoDemostracion.generar(1000,semilla))
                     registrar(csv,red,"general_"+semilla,i++,m.telemetria().getDistancias(),m.etiqueta());
             }
             // Distribución de frontera independiente del generador de entrenamiento.

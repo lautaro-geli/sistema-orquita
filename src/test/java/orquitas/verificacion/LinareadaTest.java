@@ -3,7 +3,7 @@ package orquitas.verificacion;
 
 import orquitas.servidor.captura.*;
 import orquitas.servidor.comunicacion.EnlaceOrquita;
-import orquitas.servidor.comunicacion.ReceptorIngestaTCP;
+import orquitas.servidor.comunicacion.CanalIngestaTCP;
 import orquitas.servidor.escape.*;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.persistencia.*;
@@ -204,7 +204,7 @@ public class LinareadaTest {
         Estomago archivo = new Estomago(archivoNuevo().toString());
         Navegacion navegacion = navegacion();
         Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
-        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, archivo, navegacion);
+        CanalIngestaTCP entrada = new CanalIngestaTCP(0, archivo, navegacion);
         Thread servidor = new Thread(entrada::iniciar);
         lector.start(); servidor.start();
         try {
@@ -233,7 +233,7 @@ public class LinareadaTest {
     }
 
     @Test(timeout=5000) public void detenerCierraClientesQueNoEnvianNada() throws Exception {
-        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion());
+        CanalIngestaTCP entrada = new CanalIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion());
         Thread servidor = new Thread(entrada::iniciar); servidor.start();
         esperar(() -> entrada.obtenerPuerto()>0);
         try (Socket cliente = new Socket("127.0.0.1", entrada.obtenerPuerto())) {

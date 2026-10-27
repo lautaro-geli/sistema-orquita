@@ -43,7 +43,7 @@ public class CorreccionDisenoTest {
     }
 
     @Test(timeout = 15000) public void timeoutDisparaFallaSenalReconexionYCierreDuro() throws Exception {
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion(), 300);
+        CanalIngestaTCP rx = new CanalIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion(), 300);
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         try {
             long limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
@@ -89,7 +89,7 @@ public class CorreccionDisenoTest {
 
     @Test public void timeoutMaximoQuedaPorDebajoDelReglamento() throws Exception {
         assertTrue(EnlaceOrquita.TIMEOUT_MAXIMO > 0 && EnlaceOrquita.TIMEOUT_MAXIMO < 10000);
-        try { new ReceptorIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion(), 10000); fail("Acepto 10 s"); }
+        try { new CanalIngestaTCP(0, new Estomago(archivoNuevo().toString()), navegacion(), 10000); fail("Acepto 10 s"); }
         catch (IllegalArgumentException esperado) { }
     }
 
@@ -225,7 +225,7 @@ public class CorreccionDisenoTest {
         Estomago estomago = new Estomago(archivoNuevo().toString());
         Navegacion navegacion = navegacion();
         Auditor auditor = new Auditor(estomago, new ModoEscape(navegacion), 20);
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, estomago, navegacion);
+        CanalIngestaTCP rx = new CanalIngestaTCP(0, estomago, navegacion);
         Thread servidor = new Thread(rx::iniciar);
         auditor.start(); servidor.start();
         try {

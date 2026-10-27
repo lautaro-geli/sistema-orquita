@@ -1,7 +1,7 @@
 // Archivo de simulacion
 package orquitas.servidor;
 
-import orquitas.servidor.comunicacion.ReceptorIngestaTCP;
+import orquitas.servidor.comunicacion.CanalIngestaTCP;
 import orquitas.servidor.escape.ModoEscape;
 import orquitas.servidor.navegacion.Navegacion;
 import orquitas.servidor.navegacion.RedNeuronal;
@@ -24,7 +24,7 @@ public class ServidorOrquita {
         Navegacion navegacion = new Navegacion(new RedNeuronal(modelo));
         ModoEscape modoEscape = new ModoEscape(navegacion);
         Auditor auditor = new Auditor(estomago, modoEscape, 500);
-        ReceptorIngestaTCP entrada = new ReceptorIngestaTCP(puerto, estomago, navegacion);
+        CanalIngestaTCP entrada = new CanalIngestaTCP(puerto, estomago, navegacion);
 
         auditor.start(); // JVM invoca run() en el hilo auditor independiente.
         Runnable apagar = () -> {

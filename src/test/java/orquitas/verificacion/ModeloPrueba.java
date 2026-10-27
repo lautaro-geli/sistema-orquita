@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import orquitas.servidor.navegacion.RedNeuronal;
-import orquitas.simulacion.EntrenadorDemostracion;
+import orquitas.simulacion.EntrenamientoDemostracion;
 
 /** Modelo temporal compartido: se entrena una sola vez por JVM de pruebas. */
 final class ModeloPrueba {
@@ -16,7 +16,7 @@ final class ModeloPrueba {
     static synchronized Path ruta() throws IOException {
         if (ruta == null) {
             Path nueva = Files.createTempDirectory("orquita-red-").resolve("red.nnet");
-            EntrenadorDemostracion.entrenarSiFalta(nueva);
+            EntrenamientoDemostracion.entrenarSiFalta(nueva);
             ruta = nueva;
         }
         return ruta;

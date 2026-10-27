@@ -14,7 +14,7 @@ import orquitas.servidor.captura.*;
 import orquitas.servidor.comunicacion.*;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.persistencia.*;
-import orquitas.simulacion.EntrenadorDemostracion;
+import orquitas.simulacion.EntrenamientoDemostracion;
 
 /** Pruebas adicionales del Hito 2: umbral, frontera, parser estricto, respuesta ERROR y concurrencia. */
 public class RobustezHitoDosTest {
@@ -26,7 +26,7 @@ public class RobustezHitoDosTest {
     private static double[] todas(double v) { double[] d = new double[12]; Arrays.fill(d, v); return d; }
     private static String trama(String distancias, String id) { return "RECOPILACION|2026-09-30T12:00|" + distancias + "|" + id; }
 
-    private static void esperarArranque(ReceptorIngestaTCP rx) throws InterruptedException {
+    private static void esperarArranque(CanalIngestaTCP rx) throws InterruptedException {
         long limite = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
         while(rx.obtenerPuerto()<0 && System.nanoTime()<limite) Thread.sleep(5);
         assertTrue("Servidor no arranco",rx.obtenerPuerto()>0);
@@ -66,7 +66,7 @@ public class RobustezHitoDosTest {
     @Test public void exactitudConOtrasSemillasSupera95() throws Exception {
         RedNeuronal c = new RedNeuronal(modelo);
         for (long semilla = 1000; semilla < 1004; semilla++) {
-            int ok = 0; var muestras = EntrenadorDemostracion.generar(1000, semilla);
+            int ok = 0; var muestras = EntrenamientoDemostracion.generar(1000, semilla);
             for (var m : muestras) if (c.clasificarEntorno(m.telemetria()) == m.etiqueta()) ok++;
             assertTrue("semilla " + semilla + ": " + ok, ok >= 950);
         }
@@ -81,7 +81,7 @@ public class RobustezHitoDosTest {
     @Test(timeout = 15000) public void tramaInvalidaDeRecopilacionRecibeErrorYLaConexionSigue() throws Exception {
         Path estomago = Files.createTempDirectory("orquita-err-").resolve("estomago.txt");
         Estomago archivo = new Estomago(estomago.toString());
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, archivo, new Navegacion(new RedNeuronal(modelo)));
+        CanalIngestaTCP rx = new CanalIngestaTCP(0, archivo, new Navegacion(new RedNeuronal(modelo)));
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         try {
             esperarArranque(rx);
@@ -103,7 +103,7 @@ public class RobustezHitoDosTest {
     @Test(timeout = 30000) public void variosClientesRecibenSuPropiaOrdenYLasCapturasSonUnicas() throws Exception {
         Path estomago = Files.createTempDirectory("orquita-conc-").resolve("estomago.txt");
         Estomago archivo = new Estomago(estomago.toString());
-        ReceptorIngestaTCP rx = new ReceptorIngestaTCP(0, archivo, new Navegacion(new RedNeuronal(modelo)));
+        CanalIngestaTCP rx = new CanalIngestaTCP(0, archivo, new Navegacion(new RedNeuronal(modelo)));
         Thread servidor = new Thread(rx::iniciar); servidor.start();
         AtomicInteger errores = new AtomicInteger();
         ExecutorService pool = Executors.newFixedThreadPool(6);

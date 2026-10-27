@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 
 /**
- * Simulador de ingesta de Lobitos por socket TCP.
+ * Cliente simulado de ingesta de Lobitos por socket TCP.
  *
  * Según la consigna del hito, el simulador NO requiere documentación
  * (no tiene diseño POO ni UML asociado): es una rutina simple que abre
@@ -22,14 +22,14 @@ import java.util.Collections;
  * Protocolo de mensajes: RECOPILACION|&lt;fecha ISO-8601&gt;|d0;...;d11|&lt;idCaptura&gt;
  *
  * Uso:
- *   java orquitas.cliente.SimuladorIngestaTCP [host] [puerto] [cantidadCapturas] [delayMs]
+ *   java orquitas.cliente.ClienteIngestaTCP [host] [puerto] [cantidadCapturas] [delayMs]
  *
  * Por defecto: host=localhost, puerto=5000, cantidadCapturas=3, delayMs=1000.
  * Cada captura se envía en una conexión TCP nueva y separada, para además
  * ejercitar la concurrencia del lado del Servidor (varias conexiones
  * entrantes pudiendo solaparse en el tiempo).
  */
-public class SimuladorIngestaTCP {
+public class ClienteIngestaTCP {
 
     private static final String DISTANCIAS = String.join(";", Collections.nCopies(12, "2500"));
 
@@ -39,7 +39,7 @@ public class SimuladorIngestaTCP {
         int cantidadCapturas = args.length > 2 ? Integer.parseInt(args[2]) : 3;
         long delayMs = args.length > 3 ? Long.parseLong(args[3]) : 1000;
 
-        System.out.println("[SimuladorIngestaTCP] Enviando " + cantidadCapturas
+        System.out.println("[ClienteIngestaTCP] Enviando " + cantidadCapturas
                 + " captura(s) simulada(s) a " + host + ":" + puerto);
 
         for (int i = 1; i <= cantidadCapturas; i++) {
@@ -54,7 +54,7 @@ public class SimuladorIngestaTCP {
             }
         }
 
-        System.out.println("[SimuladorIngestaTCP] Simulación finalizada.");
+        System.out.println("[ClienteIngestaTCP] Simulación finalizada.");
     }
 
     private static void enviarMensaje(String host, int puerto, String mensaje) {
@@ -70,9 +70,9 @@ public class SimuladorIngestaTCP {
                 System.out.println("[Cliente] Cambio de estado: " + respuesta.substring("ESTADO|".length()));
                 respuesta = in.readLine();
             }
-            System.out.println("[SimuladorIngestaTCP] Enviado: " + mensaje + " -> " + respuesta);
+            System.out.println("[ClienteIngestaTCP] Enviado: " + mensaje + " -> " + respuesta);
         } catch (IOException e) {
-            System.err.println("[SimuladorIngestaTCP] No se pudo enviar el mensaje '" + mensaje
+            System.err.println("[ClienteIngestaTCP] No se pudo enviar el mensaje '" + mensaje
                     + "': " + e.getMessage());
         }
     }

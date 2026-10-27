@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 /** Cada lectura es ficticia. Recibe una orden por lectura por el mismo socket. */
-public class SimuladorTelemetriaTCP {
+public class ClienteTelemetriaTCP {
     public static void main(String[] args) throws Exception {
         String host=args.length>0?args[0]:"localhost";
         int puerto=args.length>1?Integer.parseInt(args[1]):5000;

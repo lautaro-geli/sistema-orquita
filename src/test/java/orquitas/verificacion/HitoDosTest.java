@@ -12,7 +12,7 @@ import orquitas.servidor.captura.*;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.comunicacion.*;
 import orquitas.servidor.persistencia.*;
-import orquitas.simulacion.EntrenadorDemostracion;
+import orquitas.simulacion.EntrenamientoDemostracion;
 
 public class HitoDosTest {
     private static Path modelo;
@@ -24,14 +24,14 @@ public class HitoDosTest {
         return "RECOPILACION|2026-09-30T12:00|"+String.join(";",Collections.nCopies(12,Double.toString(valor)))+"|"+id;
     }
     @Test public void validacionIndependienteSupera95PorCiento() throws Exception {
-        assertTrue(EntrenadorDemostracion.evaluar(modelo,modelo.resolveSibling("evaluacion.txt"))>=95);
+        assertTrue(EntrenamientoDemostracion.evaluar(modelo,modelo.resolveSibling("evaluacion.txt"))>=95);
     }
     @Test public void reinicioCargaModeloSinVolverAEntrenar() throws Exception {
         byte[] antes=Files.readAllBytes(modelo);
-        EntrenadorDemostracion.entrenarSiFalta(modelo);
+        EntrenamientoDemostracion.entrenarSiFalta(modelo);
         assertArrayEquals(antes,Files.readAllBytes(modelo));
         RedNeuronal a=new RedNeuronal(modelo), b=new RedNeuronal(modelo);
-        for(var m:EntrenadorDemostracion.generar(40,909))
+        for(var m:EntrenamientoDemostracion.generar(40,909))
             assertEquals(a.clasificarEntorno(m.telemetria()),b.clasificarEntorno(m.telemetria()));
     }
     @Test public void telemetriaRechazaNoFinitosDimensionesYRangosYEsInmutable() {
@@ -81,7 +81,7 @@ public class HitoDosTest {
     @Test(timeout=10000) public void tcpRespondePorSocketCorrectoFragmentaAgrupaYReconecta() throws Exception {
         Estomago archivo=new Estomago(Files.createTempDirectory("orquita-e2e-").resolve("estomago.txt").toString());
         Navegacion n=new Navegacion(new RedNeuronal(modelo));
-        ReceptorIngestaTCP receptor=new ReceptorIngestaTCP(0,archivo,n);
+        CanalIngestaTCP receptor=new CanalIngestaTCP(0,archivo,n);
         Thread servidor=new Thread(receptor::iniciar); servidor.start();
         try {
             long limite=System.nanoTime()+2_000_000_000L;

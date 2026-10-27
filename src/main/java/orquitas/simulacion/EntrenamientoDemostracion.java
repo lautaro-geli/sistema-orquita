@@ -11,7 +11,7 @@ import org.neuroph.util.TransferFunctionType;
 import orquitas.servidor.navegacion.*;
 
 /** Datos ficticios reproducibles. La regla de etiquetado se usa SOLO para entrenar/evaluar. */
-public class EntrenadorDemostracion {
+public class EntrenamientoDemostracion {
     public record Muestra(Telemetria telemetria, EntornoClasificado etiqueta) { }
     public static List<Muestra> generar(int cantidad, long semilla) {
         Random azar=new Random(semilla);

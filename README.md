@@ -4,7 +4,7 @@ Implementación Java 17 / Maven / NetBeans sobre la Linareada del ZIP recibido.
 
 ## Abrir y ejecutar
 
-Abrir esta carpeta (la que contiene pom.xml) como proyecto Maven en NetBeans. Elegir JDK 17 o posterior. Clean and Build ejecuta las pruebas. Ejecutar `orquitas.servidor.ServidorOrquita` y, en otra ejecución, `orquitas.cliente.SimuladorTelemetriaTCP`. El servidor usa puerto 5000, estomago.txt y modelos/entorno-demo.nnet. El modelo incluido ya está entrenado. El servidor **no entrena**: si falta el modelo termina con un mensaje que indica ejecutar `./ejecutar.ps1 entrenar`. Un modelo ilegible o incompatible produce un error: no se sustituye silenciosamente.
+Abrir esta carpeta (la que contiene pom.xml) como proyecto Maven en NetBeans. Elegir JDK 17 o posterior. Clean and Build ejecuta las pruebas. Ejecutar `orquitas.servidor.ServidorOrquita` y, en otra ejecución, `orquitas.cliente.ClienteTelemetriaTCP`. El servidor usa puerto 5000, estomago.txt y modelos/entorno-demo.nnet. El modelo incluido ya está entrenado. El servidor **no entrena**: si falta el modelo termina con un mensaje que indica ejecutar `./ejecutar.ps1 entrenar`. Un modelo ilegible o incompatible produce un error: no se sustituye silenciosamente.
 
 En PowerShell, desde esta carpeta, con Java y Maven instalados:
 
@@ -16,12 +16,12 @@ java -cp "target/classes;target/dependency/*" orquitas.servidor.ServidorOrquita 
 En otra terminal:
 
 ```powershell
-java -cp "target/classes;target/dependency/*" orquitas.cliente.SimuladorTelemetriaTCP localhost 5000 DEMO
+java -cp "target/classes;target/dependency/*" orquitas.cliente.ClienteTelemetriaTCP localhost 5000 DEMO
 ```
 
 También se incluyen `preparar.ps1` y `ejecutar.ps1 servidor|simulador|entrenar`. En Linux/macOS cambiar `;` por `:` en el classpath. Maven descarga dependencias en el primer uso; se verificó aquí con las dependencias locales. El JAR por sí solo no contiene Neuroph: usar el classpath indicado.
 
-Servidor: `[puerto] [archivoEstomago] [modelo]`. Simulador: `[host] [puerto] [prefijoCapturas]`. Repetir el mismo prefijo no suma duplicados. Usar un archivo nuevo para demostrar una misión desde cero. Ctrl+C detiene la recepción, espera a los hilos Escritor en curso y detiene el Auditor. El tiempo máximo sin recepción se ajusta con `-Dorquitas.timeoutMaximoMs=...` (5000 por defecto, siempre menor a 10000). No iniciar varios servidores sobre el mismo archivo.
+Servidor: `[puerto] [archivoEstomago] [modelo]`. Cliente de telemetría: `[host] [puerto] [prefijoCapturas]`. Repetir el mismo prefijo no suma duplicados. Usar un archivo nuevo para demostrar una misión desde cero. Ctrl+C detiene la recepción, espera a los hilos Escritor en curso y detiene el Auditor. El tiempo máximo sin recepción se ajusta con `-Dorquitas.timeoutMaximoMs=...` (5000 por defecto, siempre menor a 10000). No iniciar varios servidores sobre el mismo archivo.
 
 ## Qué funciona
 
@@ -48,7 +48,7 @@ Modelo entregado: 2400 ejemplos ficticios de entrenamiento, 1000 de validación 
 - `docs/historico/`: DCU, secuencias, clases y diagramas del Hito 2 rechazado (generados desde el código). No usar como versión actual.
 - `docs/historico-linareada/` conserva lo recibido de La Linareada.
 
-Clases del módulo servidor: `EnlaceOrquita`, `Recopilacion`, `Telemetria`, `Navegacion`, `RedNeuronal`, `Estomago`, `Captura`, `Escritor`, `Auditor`, `ModoEscape` y los enum `Movimiento`, `ModoOperativo`, `EntornoClasificado`. `ReceptorIngestaTCP`, los simuladores y las clases de `orquitas.simulacion` son de simulación (marcados con `// Archivo de simulacion`).
+Clases del módulo servidor: `EnlaceOrquita`, `Recopilacion`, `Telemetria`, `Navegacion`, `RedNeuronal`, `Estomago`, `Captura`, `Escritor`, `Auditor`, `ModoEscape` y los enum `Movimiento`, `ModoOperativo`, `EntornoClasificado`. `CanalIngestaTCP`, los simuladores y las clases de `orquitas.simulacion` son de simulación (marcados con `// Archivo de simulacion`).
 
 ## Alcance y pendientes reales
 
@@ -62,6 +62,6 @@ La publicación del código en GitHub no reemplaza la entrega docente. No se pub
 
 Las distancias admiten dígitos y punto decimal, sin signos, exponentes, hexadecimales ni espacios. Una trama completa inválida o excesiva recibe `ERROR|TRAMA_INVALIDA`; no produce captura ni orden. EOF sin LF se descarta. Leer también ERROR en los clientes evita dejar respuestas pendientes antes de cerrar el socket. El simulador interrumpe su ejecución ante un error; no mueve motores.
 
-El entrenamiento conserva 12-6-2 y añade casos de frontera. Usa 4000 iteraciones máximas y error objetivo 0.003; esta ejecución alcanzó el límite de iteraciones con error 0.005529142110638303, no el error objetivo. EvaluadorDemostracion exporta predicciones de validación, frontera y ejemplos a evidencias/predicciones.csv. Los resultados se pueden recalcular desde ese CSV. La red aproxima una regla sintética; no se afirma que mejore a una regla determinista ni que identifique objetos reales.
+El entrenamiento conserva 12-6-2 y añade casos de frontera. Usa 4000 iteraciones máximas y error objetivo 0.003; esta ejecución alcanzó el límite de iteraciones con error 0.005529142110638303, no el error objetivo. EvaluacionDemostracion exporta predicciones de validación, frontera y ejemplos a evidencias/predicciones.csv. Los resultados se pueden recalcular desde ese CSV. La red aproxima una regla sintética; no se afirma que mejore a una regla determinista ni que identifique objetos reales.
 
 GitHub Actions verifica Linux/JDK 21 y Windows/JDK 17; el estado de cada ejecución está en el pull request. No confundir una configuración de CI con un resultado aprobado.

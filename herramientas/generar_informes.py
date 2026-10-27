@@ -98,7 +98,7 @@ p(d,'Una trama completa inválida o excesiva recibe ERROR|TRAMA_INVALIDA y no ge
 d.add_heading('Pendientes del proyecto físico',1)
 p(d,'El usuario autorizó trabajar con valores ficticios. La consigna docente exige además lecturas reales y porcentaje de éxito en campo: esa evidencia sigue pendiente y no puede reemplazarse con estos resultados. También faltan Bluetooth, Safe Mode físico, identificación de las categorías finales, búsqueda de salida y comunicación de estados. El DCU en Word puede importarse a Google Docs; no se publicó un Google Doc desde esta tarea.')
 d.add_heading('Archivos para comprobar los resultados',1)
-p(d,'evidencias/metricas-modelo.json contiene los conteos; evidencias/predicciones.csv, cada vector, etiqueta y predicción. src/main/java/orquitas/simulacion/EvaluadorDemostracion.java reproduce la evaluación. modelos/entorno-demo.nnet es el modelo usado. El código de prueba está en src/test/java/orquitas/verificacion.')
+p(d,'evidencias/metricas-modelo.json contiene los conteos; evidencias/predicciones.csv, cada vector, etiqueta y predicción. src/main/java/orquitas/simulacion/EvaluacionDemostracion.java reproduce la evaluación. modelos/entorno-demo.nnet es el modelo usado. El código de prueba está en src/test/java/orquitas/verificacion.')
 p(d,'SHA 256 del modelo')
 para=p(d,M['modelo_sha256']);para.runs[0].font.name='Consolas';para.runs[0].font.size=Pt(9)
 p(d,'Referencias de alcance: HITO 2 Proyecto Orquitas La Orquita Pensante, página 1; Proyecto Orquitas Reglas Técnicas de Programación Sobre Redes, páginas 1 y 2. Los datos numéricos de este informe provienen exclusivamente de las ejecuciones locales registradas.')
