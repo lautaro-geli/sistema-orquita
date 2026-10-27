@@ -1,7 +1,6 @@
-[ReceptorIngestaTCP] Puerto 60671
-[ActualizadorEstomago] Registrada: DEMO1
-[ActualizadorEstomago] Registrada: DEMO2
-[ActualizadorEstomago] Registrada: DEMO3
-[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -> ESCAPE
-[Navegador] Modo operativo actualizado a: ESCAPE
-[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T18:52:22.354201800}
+[CanalIngestaTCP] Puerto 5091
+[Escritor] Registrada: DEMO1
+[Escritor] Registrada: DEMO2
+[Escritor] Registrada: DEMO3
+[Navegacion] Modo operativo actualizado a: ESCAPE
+[ModoEscape] ¡MODO ESCAPE ACTIVADO! capturas=3
