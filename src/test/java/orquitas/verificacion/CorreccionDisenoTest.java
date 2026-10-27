@@ -275,13 +275,17 @@ public class CorreccionDisenoTest {
         assertEquals(Movimiento.DETENER, navegacion.determinarMovimiento(new Telemetria(encerrado)));
     }
 
+    /** Sin bloqueo con carga concurrente; la no postergacion determinista la prueba LinareadaTest. */
     @Test(timeout = 15000) public void auditorLeeMientrasHayEscriturasConcurrentes() throws Exception {
         Estomago estomago = new Estomago(archivoNuevo().toString());
         AtomicInteger siguiente = new AtomicInteger();
         java.util.concurrent.atomic.AtomicBoolean seguir = new java.util.concurrent.atomic.AtomicBoolean(true);
         List<Thread> productores = new ArrayList<>();
-        for (int p = 0; p < 4; p++) { // Flujo continuo de capturas mientras el auditor lee.
-            Thread t = new Thread(() -> { while (seguir.get()) estomago.registrarCaptura(captura("S" + siguiente.getAndIncrement())); });
+        for (int p = 0; p < 4; p++) { // Flujo continuo (acotado) de capturas mientras el auditor lee.
+            Thread t = new Thread(() -> {
+                int id;
+                while (seguir.get() && (id = siguiente.getAndIncrement()) < 400) estomago.registrarCaptura(captura("S" + id));
+            });
             productores.add(t); t.start();
         }
         try {
@@ -299,6 +303,6 @@ public class CorreccionDisenoTest {
             for (Thread t : productores) t.join(2000);
             estomago.esperarEscrituras();
         }
-        assertEquals(siguiente.get(), estomago.contarRegistrosValidos(estomago.leerRegistros()));
+        assertEquals(Math.min(siguiente.get(), 400), estomago.contarRegistrosValidos(estomago.leerRegistros()));
     }
 }
