@@ -1,0 +1,79 @@
+// Archivo de simulacion
+package orquitas.cliente;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Collections;
+
+/**
+ * Cliente simulado de ingesta de Lobitos por socket TCP.
+ *
+ * Según la consigna del hito, el simulador NO requiere documentación
+ * (no tiene diseño POO ni UML asociado): es una rutina simple que abre
+ * una conexión TCP hacia el Servidor y envía una RECOPILACION con aviso de
+ * captura según el protocolo acordado, simulando lo que en el sistema final
+ * haría la Orquita real vía Bluetooth.
+ *
+ * Protocolo de mensajes: RECOPILACION|&lt;fecha ISO-8601&gt;|d0;...;d11|&lt;idCaptura&gt;
+ *
+ * Uso:
+ *   java orquitas.cliente.ClienteIngestaTCP [host] [puerto] [cantidadCapturas] [delayMs]
+ *
+ * Por defecto: host=localhost, puerto=5000, cantidadCapturas=3, delayMs=1000.
+ * Cada captura se envía en una conexión TCP nueva y separada, para además
+ * ejercitar la concurrencia del lado del Servidor (varias conexiones
+ * entrantes pudiendo solaparse en el tiempo).
+ */
+public class ClienteIngestaTCP {
+
+    private static final String DISTANCIAS = String.join(";", Collections.nCopies(12, "2500"));
+
+    public static void main(String[] args) throws InterruptedException {
+        String host = args.length > 0 ? args[0] : "localhost";
+        int puerto = args.length > 1 ? Integer.parseInt(args[1]) : 5000;
+        int cantidadCapturas = args.length > 2 ? Integer.parseInt(args[2]) : 3;
+        long delayMs = args.length > 3 ? Long.parseLong(args[3]) : 1000;
+
+        System.out.println("[ClienteIngestaTCP] Enviando " + cantidadCapturas
+                + " captura(s) simulada(s) a " + host + ":" + puerto);
+
+        for (int i = 1; i <= cantidadCapturas; i++) {
+            String idCaptura = String.format("%03d", i);
+            String fecha = LocalDateTime.now().toString();
+            String mensaje = "RECOPILACION|" + fecha + "|" + DISTANCIAS + "|" + idCaptura;
+
+            enviarMensaje(host, puerto, mensaje);
+
+            if (i < cantidadCapturas) {
+                Thread.sleep(delayMs);
+            }
+        }
+
+        System.out.println("[ClienteIngestaTCP] Simulación finalizada.");
+    }
+
+    private static void enviarMensaje(String host, int puerto, String mensaje) {
+        try (Socket socket = new Socket(host, puerto);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8))) {
+            socket.setSoTimeout(5000);
+            out.println(mensaje);
+            if (out.checkError()) throw new IOException("Falló el envío TCP");
+            // Se consume la respuesta antes de cerrar (ORDEN|... o ERROR|TRAMA_INVALIDA).
+            String respuesta = in.readLine();
+            while (respuesta != null && respuesta.startsWith("ESTADO|")) {
+                System.out.println("[Cliente] Cambio de estado: " + respuesta.substring("ESTADO|".length()));
+                respuesta = in.readLine();
+            }
+            System.out.println("[ClienteIngestaTCP] Enviado: " + mensaje + " -> " + respuesta);
+        } catch (IOException e) {
+            System.err.println("[ClienteIngestaTCP] No se pudo enviar el mensaje '" + mensaje
+                    + "': " + e.getMessage());
+        }
+    }
+}

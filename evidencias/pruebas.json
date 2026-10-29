@@ -1,11 +1,19 @@
 [
   {
+    "name": "orquitas.verificacion.CorreccionDisenoTest",
+    "tests": "20",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "3.526"
+  },
+  {
     "name": "orquitas.verificacion.HitoDosTest",
     "tests": "9",
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "9.642"
+    "time": "23.672"
   },
   {
     "name": "orquitas.verificacion.LinareadaTest",
@@ -13,7 +21,7 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "0.453"
+    "time": "0.345"
   },
   {
     "name": "orquitas.verificacion.RobustezHitoDosTest",
@@ -21,6 +29,6 @@
     "failures": "0",
     "errors": "0",
     "skipped": "0",
-    "time": "10.292"
+    "time": "0.805"
   }
 ]

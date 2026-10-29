@@ -1,7 +1,6 @@
-[ReceptorIngestaTCP] Puerto 60671
-[ActualizadorEstomago] Registrada: DEMO1
-[ActualizadorEstomago] Registrada: DEMO2
-[ActualizadorEstomago] Registrada: DEMO3
-[ActivadorModoEscape] Cambiando modo operativo: BUSQUEDA -> ESCAPE
-[Navegador] Modo operativo actualizado a: ESCAPE
-[ActivadorModoEscape] ¡MODO ESCAPE ACTIVADO! EventoModoEscape{tipoEvento='MODO_ESCAPE_ACTIVADO', cantidadCapturas=3, timestamp=2026-09-30T18:52:22.354201800}
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=45025 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+[CanalIngestaTCP] Puerto 5097
+[Escritor] Registrada: DEMO1
+[Escritor] Registrada: DEMO2
+[Escritor] Registrada: DEMO3
+[Navegacion] Modo operativo actualizado a: ESCAPE

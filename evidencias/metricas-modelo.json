@@ -1,136 +1,454 @@
 {
+  "_descripcion": "Filas de 'matriz' = clase real, columnas = prediccion; NO_RECONOCIDO = salida ganadora bajo el umbral de confianza (50 %). umbral_todos_los_sectores usa como referencia 1050 mm (medio de la franja 900-1200 mm sin ejemplos de entrenamiento); mide donde cae el cambio, no un error de clasificacion.",
+  "_modelo": "MLP 12-6-3, entrada cercania clamp((1500-d)/1500,0,1), umbral de confianza 0.5",
   "general_202": {
     "n": 1000,
-    "aciertos": 980,
-    "exactitud": 98.0,
-    "objeto_como_libre": 6,
-    "libre_como_objeto": 14
+    "aciertos": 988,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 328,
+        "OBJETO": 0,
+        "LOBITO": 6,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 331,
+        "LOBITO": 2,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 2,
+        "LOBITO": 329,
+        "NO_RECONOCIDO": 2
+      }
+    },
+    "exactitud": 98.8
   },
   "general_1000": {
     "n": 1000,
-    "aciertos": 975,
-    "exactitud": 97.5,
-    "objeto_como_libre": 7,
-    "libre_como_objeto": 18
+    "aciertos": 983,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 323,
+        "OBJETO": 0,
+        "LOBITO": 11,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 332,
+        "LOBITO": 1,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 1,
+        "LOBITO": 328,
+        "NO_RECONOCIDO": 3
+      }
+    },
+    "exactitud": 98.3
   },
   "general_1001": {
     "n": 1000,
-    "aciertos": 970,
-    "exactitud": 97.0,
-    "objeto_como_libre": 9,
-    "libre_como_objeto": 21
+    "aciertos": 982,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 332,
+        "LOBITO": 1,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 4,
+        "LOBITO": 324,
+        "NO_RECONOCIDO": 4
+      }
+    },
+    "exactitud": 98.2
   },
   "general_1002": {
     "n": 1000,
-    "aciertos": 970,
-    "exactitud": 97.0,
-    "objeto_como_libre": 9,
-    "libre_como_objeto": 21
+    "aciertos": 986,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 1,
+        "LOBITO": 330,
+        "NO_RECONOCIDO": 2
+      }
+    },
+    "exactitud": 98.6
   },
   "general_1003": {
     "n": 1000,
-    "aciertos": 975,
-    "exactitud": 97.5,
-    "objeto_como_libre": 5,
-    "libre_como_objeto": 20
+    "aciertos": 980,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 327,
+        "LOBITO": 6,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 1,
+        "LOBITO": 327,
+        "NO_RECONOCIDO": 4
+      }
+    },
+    "exactitud": 98.0
   },
   "general_1004": {
     "n": 1000,
-    "aciertos": 979,
-    "exactitud": 97.9,
-    "objeto_como_libre": 6,
-    "libre_como_objeto": 15
+    "aciertos": 974,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 320,
+        "OBJETO": 0,
+        "LOBITO": 14,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 328,
+        "LOBITO": 5,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 4,
+        "LOBITO": 326,
+        "NO_RECONOCIDO": 3
+      }
+    },
+    "exactitud": 97.4
   },
   "general_1005": {
     "n": 1000,
-    "aciertos": 975,
-    "exactitud": 97.5,
-    "objeto_como_libre": 5,
-    "libre_como_objeto": 20
+    "aciertos": 984,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 323,
+        "OBJETO": 0,
+        "LOBITO": 11,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 1,
+        "LOBITO": 331,
+        "NO_RECONOCIDO": 1
+      }
+    },
+    "exactitud": 98.4
   },
   "general_1006": {
     "n": 1000,
-    "aciertos": 966,
-    "exactitud": 96.6,
-    "objeto_como_libre": 10,
-    "libre_como_objeto": 24
+    "aciertos": 979,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 330,
+        "OBJETO": 0,
+        "LOBITO": 4,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 327,
+        "LOBITO": 6,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 6,
+        "LOBITO": 322,
+        "NO_RECONOCIDO": 4
+      }
+    },
+    "exactitud": 97.9
   },
   "general_1007": {
     "n": 1000,
-    "aciertos": 982,
-    "exactitud": 98.2,
-    "objeto_como_libre": 6,
-    "libre_como_objeto": 12
+    "aciertos": 977,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 318,
+        "OBJETO": 0,
+        "LOBITO": 16,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 331,
+        "LOBITO": 2,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 1,
+        "LOBITO": 328,
+        "NO_RECONOCIDO": 3
+      }
+    },
+    "exactitud": 97.7
   },
   "general_1008": {
     "n": 1000,
-    "aciertos": 968,
-    "exactitud": 96.8,
-    "objeto_como_libre": 8,
-    "libre_como_objeto": 24
+    "aciertos": 984,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 325,
+        "OBJETO": 0,
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 1
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 2,
+        "LOBITO": 329,
+        "NO_RECONOCIDO": 2
+      }
+    },
+    "exactitud": 98.4
   },
   "general_1009": {
     "n": 1000,
-    "aciertos": 965,
-    "exactitud": 96.5,
-    "objeto_como_libre": 8,
-    "libre_como_objeto": 27
+    "aciertos": 982,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 324,
+        "OBJETO": 0,
+        "LOBITO": 10,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 329,
+        "LOBITO": 4,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 2,
+        "LOBITO": 329,
+        "NO_RECONOCIDO": 1
+      }
+    },
+    "exactitud": 98.2
   },
   "general_424242": {
     "n": 1000,
-    "aciertos": 978,
-    "exactitud": 97.8,
-    "objeto_como_libre": 2,
-    "libre_como_objeto": 20
+    "aciertos": 985,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 329,
+        "OBJETO": 0,
+        "LOBITO": 5,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 4,
+        "LOBITO": 326,
+        "NO_RECONOCIDO": 2
+      }
+    },
+    "exactitud": 98.5
   },
   "frontera_7": {
     "n": 4000,
-    "aciertos": 3585,
-    "exactitud": 89.625,
-    "objeto_como_libre": 110,
-    "libre_como_objeto": 305
+    "aciertos": 3853,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 2012,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 25,
+        "OBJETO": 0,
+        "LOBITO": 1841,
+        "NO_RECONOCIDO": 122
+      }
+    },
+    "exactitud": 96.33
   },
   "frontera_987654": {
     "n": 4000,
-    "aciertos": 3625,
-    "exactitud": 90.625,
-    "objeto_como_libre": 86,
-    "libre_como_objeto": 289
+    "aciertos": 3858,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 1976,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 30,
+        "OBJETO": 0,
+        "LOBITO": 1882,
+        "NO_RECONOCIDO": 112
+      }
+    },
+    "exactitud": 96.45
+  },
+  "ancho_8": {
+    "n": 4000,
+    "aciertos": 3813,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 1816,
+        "LOBITO": 158,
+        "NO_RECONOCIDO": 4
+      },
+      "LOBITO": {
+        "LIBRE": 4,
+        "OBJETO": 11,
+        "LOBITO": 1997,
+        "NO_RECONOCIDO": 10
+      }
+    },
+    "exactitud": 95.33
+  },
+  "ancho_24680": {
+    "n": 4000,
+    "aciertos": 3803,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 1833,
+        "LOBITO": 152,
+        "NO_RECONOCIDO": 15
+      },
+      "LOBITO": {
+        "LIBRE": 4,
+        "OBJETO": 12,
+        "LOBITO": 1970,
+        "NO_RECONOCIDO": 14
+      }
+    },
+    "exactitud": 95.08
   },
   "ejemplo": {
-    "n": 6,
-    "aciertos": 6,
-    "exactitud": 100.0,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 0
+    "n": 7,
+    "aciertos": 7,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 2,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 4,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 1,
+        "NO_RECONOCIDO": 0
+      }
+    },
+    "exactitud": 100.0
   },
-  "umbral_4": {
-    "n": 51,
-    "aciertos": 44,
-    "exactitud": 86.27450980392157,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 7
-  },
-  "umbral_5": {
-    "n": 51,
-    "aciertos": 49,
-    "exactitud": 96.07843137254902,
-    "objeto_como_libre": 2,
-    "libre_como_objeto": 0
-  },
-  "umbral_6": {
-    "n": 51,
-    "aciertos": 51,
-    "exactitud": 100.0,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 0
-  },
-  "umbral_7": {
-    "n": 51,
-    "aciertos": 49,
-    "exactitud": 96.07843137254902,
-    "objeto_como_libre": 0,
-    "libre_como_objeto": 2
-  },
-  "modelo_sha256": "15f312013f62ed4c846399f364cece623bcc81963321cb403f324ce32ef5dde5"
+  "umbral_todos_los_sectores": {
+    "n": 1692,
+    "aciertos": 1300,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 852,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 0,
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 334,
+        "OBJETO": 0,
+        "LOBITO": 448,
+        "NO_RECONOCIDO": 58
+      }
+    },
+    "exactitud": 76.83
+  }
 }

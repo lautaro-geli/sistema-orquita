@@ -1,3 +1,3 @@
 package orquitas.servidor.navegacion;
-/** Categorias preliminares; no distingue pared, lobito ni salida. */
-public enum EntornoClasificado { LIBRE, OBJETO }
+/** Categorias preliminares por ancho de la banda cercana: LOBITO ocupa un sector, OBJETO un bloque contiguo. */
+public enum EntornoClasificado { LIBRE, OBJETO, LOBITO }

@@ -12,27 +12,26 @@ import orquitas.servidor.captura.*;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.comunicacion.*;
 import orquitas.servidor.persistencia.*;
-import orquitas.simulacion.EntrenadorDemostracion;
+import orquitas.simulacion.EntrenamientoDemostracion;
 
 public class HitoDosTest {
     private static Path modelo;
     @BeforeClass public static void prepararModelo() throws Exception {
-        modelo=Files.createTempDirectory("orquita-red-").resolve("red.nnet");
-        EntrenadorDemostracion.entrenarSiFalta(modelo);
+        modelo=ModeloPrueba.ruta();
     }
     private static Telemetria uniforme(double valor) { double[] d=new double[12]; Arrays.fill(d,valor); return new Telemetria(d); }
     private static String trama(String id, double valor) {
         return "RECOPILACION|2026-09-30T12:00|"+String.join(";",Collections.nCopies(12,Double.toString(valor)))+"|"+id;
     }
     @Test public void validacionIndependienteSupera95PorCiento() throws Exception {
-        assertTrue(EntrenadorDemostracion.evaluar(modelo,modelo.resolveSibling("evaluacion.txt"))>=95);
+        assertTrue(EntrenamientoDemostracion.evaluar(modelo,modelo.resolveSibling("evaluacion.txt"))>=95);
     }
     @Test public void reinicioCargaModeloSinVolverAEntrenar() throws Exception {
         byte[] antes=Files.readAllBytes(modelo);
-        EntrenadorDemostracion.entrenarSiFalta(modelo);
+        EntrenamientoDemostracion.entrenarSiFalta(modelo);
         assertArrayEquals(antes,Files.readAllBytes(modelo));
-        ClasificadorEntorno a=new ClasificadorEntorno(modelo), b=new ClasificadorEntorno(modelo);
-        for(var m:EntrenadorDemostracion.generar(40,909))
+        RedNeuronal a=new RedNeuronal(modelo), b=new RedNeuronal(modelo);
+        for(var m:EntrenamientoDemostracion.generar(40,909))
             assertEquals(a.clasificarEntorno(m.telemetria()),b.clasificarEntorno(m.telemetria()));
     }
     @Test public void telemetriaRechazaNoFinitosDimensionesYRangosYEsInmutable() {
@@ -44,43 +43,50 @@ public class HitoDosTest {
         Telemetria t=new Telemetria(datos); datos[0]=0; t.getDistancias()[0]=0;
         assertEquals(1234,t.getDistancias()[0],0);
     }
-    @Test public void frenteLibreConParedLateralNoSeConfundeConObjetoFrontal() {
-        ClasificadorEntorno c=new ClasificadorEntorno(modelo);
-        double[] d=uniforme(2500).getDistancias(); Arrays.fill(d,0,4,100);
-        assertEquals(EntornoClasificado.LIBRE,c.clasificarEntorno(new Telemetria(d)));
-        d[5]=100;
+    @Test public void clasificaPorAnchoDeLaBandaCercana() {
+        // 1 sector cercano = lobito (17 mm < 15 grados); bloque contiguo = objeto; todo lejos = libre.
+        RedNeuronal c=new RedNeuronal(modelo);
+        assertEquals(EntornoClasificado.LIBRE,c.clasificarEntorno(uniforme(2500)));
+        double[] d=uniforme(2500).getDistancias(); d[5]=300;
+        assertEquals(EntornoClasificado.LOBITO,c.clasificarEntorno(new Telemetria(d)));
+        d[4]=300;
+        assertEquals(EntornoClasificado.OBJETO,c.clasificarEntorno(new Telemetria(d)));
+        Arrays.fill(d,0,4,100); // Pared lateral ancha.
         assertEquals(EntornoClasificado.OBJETO,c.clasificarEntorno(new Telemetria(d)));
     }
     @Test public void decideAvanceAmbosGirosYDetencionConModeloReal() {
-        Navegador n=new Navegador(new ClasificadorEntorno(modelo));
+        // BUSQUEDA ante OBJETO esquiva hacia lo abierto y solo se detiene encerrada.
+        Navegacion n=new Navegacion(new RedNeuronal(modelo));
         assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(uniforme(2500)));
         assertEquals(Movimiento.GIRAR_IZQ,n.determinarMovimiento(new Telemetria(400,400,400,400,120,150,2200,2200,2500,2500,2500,2500)));
         assertEquals(Movimiento.GIRAR_DER,n.determinarMovimiento(new Telemetria(2500,2500,2500,2500,2200,2200,150,120,400,400,400,400)));
         assertEquals(Movimiento.DETENER,n.determinarMovimiento(uniforme(80)));
     }
     @Test public void faltaDeClasificacionConservaUltimaDecisionYModoEscapeSeMantiene() {
-        Navegador n=new Navegador(new ClasificadorEntorno(modelo));
+        Navegacion n=new Navegacion(new RedNeuronal(modelo));
         assertEquals(Movimiento.DETENER,n.determinarMovimiento(null));
         n.determinarMovimiento(uniforme(2500)); n.establecerModoOperativo(ModoOperativo.ESCAPE);
         assertEquals(Movimiento.AVANZAR,n.determinarMovimiento(null));
         assertEquals(ModoOperativo.ESCAPE,n.getModoOperativo());
-        assertEquals(Movimiento.DETENER,n.determinarMovimiento(uniforme(80)));
+        assertEquals(Movimiento.GIRAR_IZQ,n.determinarMovimiento(uniforme(80))); // Escape nunca se detiene.
     }
     @Test public void tramaInvalidaConCapturaNoProduceEfectosParciales() throws Exception {
-        ArchivoEstomago archivo=new ArchivoEstomago(Files.createTempDirectory("orquita-parser-").resolve("estomago.txt").toString());
-        ActualizadorEstomago escritor=new ActualizadorEstomago(archivo); escritor.start();
-        try {
-            Recopilador r=new Recopilador(new ReceptorCapturas(escritor),new Navegador(new ClasificadorEntorno(modelo)));
-            for(String t:List.of(trama("A",Double.NaN),trama("B",-1),trama("C",5000),trama("D",100).replace("2026-09-30T12:00","mal"),trama("E;X",100),"RECOPILACION|2026-09-30T12:00|1;2|F"))
-                assertFalse(r.procesarRecopilacion(t));
-        } finally { escritor.detener(); escritor.join(1000); }
+        Estomago archivo=new Estomago(Files.createTempDirectory("orquita-parser-").resolve("estomago.txt").toString());
+        StringWriter respuestas=new StringWriter();
+        EnlaceOrquita enlace=new EnlaceOrquita(archivo,new Navegacion(new RedNeuronal(modelo)),respuestas);
+        List<String> invalidas=List.of(trama("A",Double.NaN),trama("B",-1),trama("C",5000),trama("D",100).replace("2026-09-30T12:00","mal"),trama("E;X",100),"RECOPILACION|2026-09-30T12:00|1;2|F");
+        for(String t:invalidas) {
+            assertFalse(Recopilacion.decodificar(t).esValida());
+            enlace.enviarRecopilacion(t);
+        }
+        assertEquals("ERROR|TRAMA_INVALIDA\n".repeat(invalidas.size()),respuestas.toString());
+        archivo.esperarEscrituras();
         assertTrue(archivo.leerRegistros().isEmpty());
     }
     @Test(timeout=10000) public void tcpRespondePorSocketCorrectoFragmentaAgrupaYReconecta() throws Exception {
-        ArchivoEstomago archivo=new ArchivoEstomago(Files.createTempDirectory("orquita-e2e-").resolve("estomago.txt").toString());
-        ActualizadorEstomago escritor=new ActualizadorEstomago(archivo); escritor.start();
-        Navegador n=new Navegador(new ClasificadorEntorno(modelo));
-        ReceptorIngestaTCP receptor=new ReceptorIngestaTCP(0,new Recopilador(new ReceptorCapturas(escritor),n));
+        Estomago archivo=new Estomago(Files.createTempDirectory("orquita-e2e-").resolve("estomago.txt").toString());
+        Navegacion n=new Navegacion(new RedNeuronal(modelo));
+        CanalIngestaTCP receptor=new CanalIngestaTCP(0,archivo,n);
         Thread servidor=new Thread(receptor::iniciar); servidor.start();
         try {
             long limite=System.nanoTime()+2_000_000_000L;
@@ -107,12 +113,14 @@ public class HitoDosTest {
                 c.getOutputStream().write((trama("",2500)+"\n").getBytes(StandardCharsets.UTF_8));
                 assertEquals("ORDEN|AVANZAR",new BufferedReader(new InputStreamReader(c.getInputStream())).readLine());
             }
-        } finally { receptor.detener(); servidor.join(1000); escritor.detener(); escritor.join(1000); }
+        } finally { receptor.detener(); servidor.join(1000); archivo.esperarEscrituras(); }
         assertEquals(3,archivo.leerRegistros().size());
     }
     @Test public void modeloIncompatibleSeRechaza() throws Exception {
         Path ruta=modelo.resolveSibling("incompatible.nnet");
         new org.neuroph.nnet.MultiLayerPerceptron(3,2).save(ruta.toString());
-        try { new ClasificadorEntorno(ruta); fail("Acepto otra dimension"); } catch(IllegalArgumentException esperado) { }
+        try { new RedNeuronal(ruta); fail("Acepto otra dimension"); } catch(IllegalArgumentException esperado) { }
+        new org.neuroph.nnet.MultiLayerPerceptron(12,6,2).save(ruta.toString()); // Modelo viejo de 2 clases.
+        try { new RedNeuronal(ruta); fail("Acepto un modelo de 2 clases"); } catch(IllegalArgumentException esperado) { }
     }
 }
