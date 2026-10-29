@@ -1,6 +1,7 @@
 // Archivo de simulacion
 package orquitas.servidor.comunicacion;
 
+import orquitas.servidor.captura.Recopilacion;
 import orquitas.servidor.navegacion.Navegacion;
 import orquitas.servidor.persistencia.Estomago;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Adaptador TCP de La Linareada; será reemplazado por Bluetooth. */
+/** Adaptador TCP del Servidor: arma las tramas, vigila la inactividad y cierra la conexión; será reemplazado por Bluetooth. */
 public class CanalIngestaTCP {
     /** Sin trafico durante este multiplo de TIMEOUT_MAXIMO (5 s -> 30 s) se cierra la conexion. */
     private static final int FACTOR_CIERRE_DURO = 6;
@@ -134,7 +135,7 @@ public class CanalIngestaTCP {
                     }
                     mensaje.setLength(0);
                     excesivo = false;
-                } else if (mensaje.length() < 256) {
+                } else if (mensaje.length() < Recopilacion.LARGO_MAXIMO) {
                     mensaje.append((char) caracter);
                 } else {
                     excesivo = true;

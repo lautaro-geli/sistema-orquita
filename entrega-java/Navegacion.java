@@ -2,7 +2,7 @@ package orquitas.servidor.navegacion;
 
 import java.util.Objects;
 
-/** CU-07. Decide el movimiento con la RedNeuronal y el modo operativo propio. */
+/** CU-07 y CU-11. Decide el movimiento con la RedNeuronal según el modo operativo, y pasa a ESCAPE cuando el Auditor lo pide. */
 public class Navegacion {
     private volatile ModoOperativo modoOperativo = ModoOperativo.BUSQUEDA;
     private Movimiento movimientoDecidido = Movimiento.DETENER;
@@ -40,6 +40,11 @@ public class Navegacion {
         return Movimiento.AVANZAR;
     }
     public synchronized Movimiento obtenerMovimientoDecidido() { return movimientoDecidido; }
+    /** CU-11. Idempotente: el Auditor lo invoca en cada ciclo y el cambio a ESCAPE ocurre una sola vez. */
+    public synchronized void activarModoEscape() {
+        if (modoOperativo == ModoOperativo.ESCAPE) return;
+        establecerModoOperativo(ModoOperativo.ESCAPE);
+    }
     public void establecerModoOperativo(ModoOperativo modo) {
         modoOperativo = Objects.requireNonNull(modo);
         System.out.println("[Navegacion] Modo operativo actualizado a: " + modo);

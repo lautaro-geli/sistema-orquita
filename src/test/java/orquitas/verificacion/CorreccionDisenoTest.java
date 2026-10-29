@@ -12,13 +12,16 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.neuroph.core.Connection;
+import org.neuroph.core.Neuron;
+import org.neuroph.nnet.MultiLayerPerceptron;
+import org.neuroph.util.TransferFunctionType;
 import orquitas.servidor.captura.*;
 import orquitas.servidor.comunicacion.*;
-import orquitas.servidor.escape.ModoEscape;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.persistencia.*;
 
-/** Pruebas agregadas con la correccion de diseno v2: CU-08, CU-09, CU-11 y CU-12. */
+/** Pruebas de CU-06, CU-08, CU-09, CU-11 y CU-12, del umbral de confianza de la red y del reinicio del estomago. */
 public class CorreccionDisenoTest {
     /** Entrena el modelo compartido fuera de las pruebas con timeout (el orden de ejecucion varia). */
     @BeforeClass public static void prepararModelo() throws IOException { ModeloPrueba.ruta(); }
@@ -179,23 +182,49 @@ public class CorreccionDisenoTest {
         assertEquals(1, Files.readAllLines(ruta).size());
     }
 
-    @Test public void modoEscapeConDosCapturasNoActivaYConTresSi() throws Exception {
+    @Test public void activarModoEscapeEsIdempotente() throws Exception {
         AtomicInteger cambios = new AtomicInteger();
         Navegacion navegacion = new Navegacion(ModeloPrueba.red()) {
             @Override public void establecerModoOperativo(ModoOperativo modo) {
                 super.establecerModoOperativo(modo); cambios.incrementAndGet();
             }
         };
-        ModoEscape modoEscape = new ModoEscape(navegacion);
-        assertEquals(3, ModoEscape.UMBRAL_CAPTURAS);
-        modoEscape.notificarCapturasCompletas(2);
+        assertEquals(3, Auditor.UMBRAL_CAPTURAS);
         assertEquals(ModoOperativo.BUSQUEDA, navegacion.getModoOperativo());
-        modoEscape.notificarCapturasCompletas(3);
+        navegacion.activarModoEscape();
+        navegacion.activarModoEscape();
         assertEquals(ModoOperativo.ESCAPE, navegacion.getModoOperativo());
-        modoEscape.notificarCapturasCompletas(4);
-        assertEquals(1, cambios.get()); // activar() es idempotente.
-        try { modoEscape.notificarCapturasCompletas(-1); fail("Acepto cantidad negativa"); }
-        catch (IllegalArgumentException esperado) { }
+        assertEquals(1, cambios.get());
+    }
+
+    @Test public void reiniciarVaciaElEstomagoYPermiteEmpezarDeNuevo() throws Exception {
+        Path ruta = archivoNuevo();
+        Estomago estomago = new Estomago(ruta.toString());
+        estomago.reiniciar(); // Sin archivo previo: no falla.
+        for (String id : List.of("A", "B", "C")) assertTrue(estomago.escribirRegistro(captura(id)));
+        assertEquals(3, estomago.contarRegistrosValidos(estomago.leerRegistros()));
+        estomago.reiniciar();
+        assertFalse(Files.exists(ruta));
+        assertTrue(estomago.leerRegistros().isEmpty());
+        assertTrue(estomago.escribirRegistro(captura("A"))); // El mismo id vale en la misión nueva.
+        assertEquals(1, estomago.contarRegistrosValidos(estomago.leerRegistros()));
+    }
+
+    @Test public void salidaBajoElUmbralDeConfianzaNoReconoceElEntorno() throws Exception {
+        assertEquals(0.5, RedNeuronal.UMBRAL_CONFIANZA, 0.0);
+        MultiLayerPerceptron red = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 12, 6, 3);
+        Path ruta = Files.createTempDirectory("orquita-umbral-").resolve("red.nnet");
+        red.randomizeWeights(new Random(1));
+        // Pesos de salida negativos con salidas ocultas positivas: las tres salidas quedan por debajo de 0,5.
+        for (Neuron salida : red.getLayerAt(2).getNeurons())
+            for (Connection c : salida.getInputConnections()) c.getWeight().setValue(-5);
+        red.save(ruta.toString());
+        RedNeuronal bajoUmbral = new RedNeuronal(ruta);
+        double[] cercano = new double[12]; Arrays.fill(cercano, 2500); cercano[3] = 400;
+        assertNull(bajoUmbral.clasificarEntorno(new Telemetria(cercano)));
+        // Sin reconocimiento, la navegacion conserva la ultima decision.
+        Navegacion navegacion = new Navegacion(bajoUmbral);
+        assertEquals(Movimiento.DETENER, navegacion.determinarMovimiento(new Telemetria(cercano)));
     }
 
     @Test public void navegacionConservaElMovimientoDecidido() throws Exception {
@@ -228,7 +257,7 @@ public class CorreccionDisenoTest {
     @Test(timeout = 15000) public void tresCapturasPorTcpEmitenEstadoEscapeEnLaSiguienteRecopilacion() throws Exception {
         Estomago estomago = new Estomago(archivoNuevo().toString());
         Navegacion navegacion = navegacion();
-        Auditor auditor = new Auditor(estomago, new ModoEscape(navegacion), 20);
+        Auditor auditor = new Auditor(estomago, navegacion, 20);
         CanalIngestaTCP rx = new CanalIngestaTCP(0, estomago, navegacion);
         Thread servidor = new Thread(rx::iniciar);
         auditor.start(); servidor.start();

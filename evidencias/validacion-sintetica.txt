@@ -2,8 +2,8 @@ DATOS FICTICIOS - NO SON MEDICIONES DE CAMPO
 MLP 12-6-3 sigmoid / MomentumBackpropagation
 Entrenamiento: 2400 ejemplos, semilla 101; pesos: 20260930
 Validacion independiente: 1000 ejemplos, semilla 202
-Filas=real, columnas=prediccion [LIBRE, OBJETO, LOBITO]
-LIBRE: 328 0 6
-OBJETO: 0 331 2
-LOBITO: 1 2 330
-Exactitud sintetica: 98.90%
+Filas=real, columnas=prediccion [LIBRE, OBJETO, LOBITO, NO_RECONOCIDO]
+LIBRE: 328 0 6 0
+OBJETO: 0 331 2 0
+LOBITO: 0 2 329 2
+Exactitud sintetica: 98.80%

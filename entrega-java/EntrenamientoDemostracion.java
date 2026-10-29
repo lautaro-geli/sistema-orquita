@@ -71,30 +71,42 @@ public class EntrenamientoDemostracion {
     public static double evaluar(Path ruta, Path informe) throws IOException {
         RedNeuronal redNeuronal=new RedNeuronal(ruta);
         int n=EntornoClasificado.values().length, total=1000, aciertos=0;
-        int[][] matriz=new int[n][n];
+        int[][] matriz=new int[n][n+1]; // Ultima columna: entorno no reconocido (salida bajo el umbral).
         for(Muestra m:generar(total,202L)) {
             EntornoClasificado pred=redNeuronal.clasificarEntorno(m.telemetria());
-            matriz[m.etiqueta().ordinal()][pred.ordinal()]++;
+            matriz[m.etiqueta().ordinal()][pred==null?n:pred.ordinal()]++;
             if(pred==m.etiqueta()) aciertos++;
         }
         double precision=100.0*aciertos/total;
         StringBuilder filas=new StringBuilder();
         for(EntornoClasificado real:EntornoClasificado.values())
-            filas.append(String.format(Locale.ROOT,"%s: %d %d %d%n",real,
-                matriz[real.ordinal()][0],matriz[real.ordinal()][1],matriz[real.ordinal()][2]));
+            filas.append(String.format(Locale.ROOT,"%s: %d %d %d %d%n",real,
+                matriz[real.ordinal()][0],matriz[real.ordinal()][1],matriz[real.ordinal()][2],matriz[real.ordinal()][3]));
         String texto=String.format(Locale.ROOT,
             "DATOS FICTICIOS - NO SON MEDICIONES DE CAMPO%nMLP 12-6-3 sigmoid / MomentumBackpropagation%n"+
             "Entrenamiento: 2400 ejemplos, semilla 101; pesos: 20260930%n"+
             "Validacion independiente: 1000 ejemplos, semilla 202%n"+
-            "Filas=real, columnas=prediccion [LIBRE, OBJETO, LOBITO]%n%sExactitud sintetica: %.2f%%%n",
+            "Filas=real, columnas=prediccion [LIBRE, OBJETO, LOBITO, NO_RECONOCIDO]%n%sExactitud sintetica: %.2f%%%n",
             filas,precision);
         Files.createDirectories(informe.toAbsolutePath().getParent()); Files.writeString(informe,texto);
         System.out.print(texto);
         return precision;
     }
+    /** Guarda los ejemplos de entrenamiento (semilla 101): numero;clase;d0..d11 en mm. */
+    public static void exportarEntrenamiento(Path csv) throws IOException {
+        StringBuilder texto=new StringBuilder("ejemplo;clase;d0;d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11\n");
+        int numero=1;
+        for(Muestra m:generar(2400,101L)) {
+            texto.append(numero++).append(';').append(m.etiqueta());
+            for(double d:m.telemetria().getDistancias()) texto.append(String.format(Locale.ROOT,";%.1f",d));
+            texto.append('\n');
+        }
+        Files.createDirectories(csv.toAbsolutePath().getParent()); Files.writeString(csv,texto.toString());
+    }
     public static void main(String[] args) throws Exception {
         Path ruta=Path.of(args.length>0?args[0]:"modelos/entorno-demo.nnet");
         entrenarSiFalta(ruta);
+        exportarEntrenamiento(Path.of("evidencias/datos-entrenamiento.csv"));
         double exactitud=evaluar(ruta,Path.of("evidencias/validacion-sintetica.txt"));
         for(Muestra m:generar(6,303L)) {
             System.out.println(Arrays.toString(m.telemetria().getDistancias())+" esperado="+m.etiqueta()+

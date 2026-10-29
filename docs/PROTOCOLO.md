@@ -42,7 +42,7 @@ Toda RECOPILACION válida recibe una ORDEN (decisión C.1: la orden de navegaci�
 ## Cambio de estado: ESTADO|ESCAPE y ESTADO|BUSQUEDA
 
 - Dirección: servidor → Orquita. Valores válidos: `ESCAPE` y `BUSQUEDA` (los nombres del enum `ModoOperativo`).
-- Cuándo: el modo cambia en el servidor (el Auditor detecta 3 capturas en `estomago.txt` y ModoEscape pasa Navegacion a ESCAPE). El aviso viaja por la conexión existente como respuesta a la **siguiente** RECOPILACION válida: primero `ESTADO|<modo>` y después la `ORDEN|…`, que ya fue calculada con el modo nuevo.
+- Cuándo: el modo cambia en el servidor (el Auditor detecta 3 capturas en `estomago.txt` y llama a `Navegacion.activarModoEscape()`). El aviso viaja por la conexión existente como respuesta a la **siguiente** RECOPILACION válida: primero `ESTADO|<modo>` y después la `ORDEN|…`, que ya fue calculada con el modo nuevo.
 - Se envía una sola vez por cambio y por conexión. Al conectarse no se envía nada: ambos extremos arrancan en BUSQUEDA. Una conexión nueva abierta cuando el servidor ya está en ESCAPE recibe `ESTADO|ESCAPE` con su primera RECOPILACION válida.
 - Qué hace el cliente: registra el cambio (`[Cliente] Cambio de estado: ESCAPE`) y sigue leyendo hasta la `ORDEN|…` de esa recopilación. Un ESTADO nunca reemplaza a la orden.
 
@@ -61,4 +61,4 @@ Toda RECOPILACION válida recibe una ORDEN (decisión C.1: la orden de navegaci�
 
 ## Alcance
 
-La conexión pertenece a una única Orquita: aceptar varias conexiones sirve para la simulación y para reconexiones, no convierte al servidor en multirrobot. Cada conexión tiene su propio `EnlaceOrquita`, de modo que cada respuesta vuelve por el socket que la pidió. La decisión de pasar a Modo Escape es interna (Auditor → ModoEscape → Navegacion); a la Orquita solo le llega el resultado como `ESTADO|ESCAPE`.
+La conexión pertenece a una única Orquita: aceptar varias conexiones sirve para la simulación y para reconexiones, no convierte al servidor en multirrobot. Cada conexión tiene su propio `EnlaceOrquita`, de modo que cada respuesta vuelve por el socket que la pidió. La decisión de pasar a Modo Escape es interna (Auditor → Navegacion); a la Orquita solo le llega el resultado como `ESTADO|ESCAPE`.

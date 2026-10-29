@@ -30,7 +30,7 @@ public class Estomago {
     /** CU-09. Un hilo Escritor por captura; la recepción no espera al disco. */
     public void registrarCaptura(Captura captura) {
         Escritor escritor = new Escritor(this, Objects.requireNonNull(captura));
-        anunciarEscritura(); // Desde aquí las nuevas lecturas esperan.
+        anunciarEscritura();
         try {
             escritor.start(); // JVM invoca run() en el hilo escritor.
         } catch (RuntimeException | Error e) {
@@ -67,7 +67,7 @@ public class Estomago {
             for (Captura registrada : leerDelArchivo()) {
                 if (registrada.getIdentificador().equals(captura.getIdentificador())) return false;
             }
-            // BufferedWriter propaga errores de escritura/cierre; PrintWriter los ocultaba.
+            // BufferedWriter propaga los errores de escritura y de cierre.
             try (BufferedWriter salida = Files.newBufferedWriter(Path.of(rutaArchivo),
                     StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
                 salida.write(captura.aLinea());
@@ -91,10 +91,19 @@ public class Estomago {
         }
     }
 
-    /** Cantidad de capturas distintas y bien formadas; la única fuente es el archivo leído. */
+    /** Vacía estomago.txt: una misión nueva empieza sin capturas. Entra en la misma sección crítica que lecturas y escrituras. */
+    public void reiniciar() throws IOException, InterruptedException {
+        mutex.acquire();
+        try {
+            Files.deleteIfExists(Path.of(rutaArchivo));
+        } finally {
+            mutex.release();
+        }
+    }
+
+    /** Cantidad de capturas de una lista obtenida con leerRegistros(), que ya trae solo las bien formadas y sin repetir. */
     public int contarRegistrosValidos(List<Captura> registros) {
-        return (int) registros.stream().filter(Objects::nonNull)
-                .map(Captura::getIdentificador).distinct().count();
+        return registros.size();
     }
 
     private List<Captura> leerDelArchivo() throws IOException {

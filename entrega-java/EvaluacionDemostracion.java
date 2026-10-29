@@ -13,7 +13,7 @@ public class EvaluacionDemostracion {
         Telemetria t=new Telemetria(d);
         EntornoClasificado predicho=red.clasificarEntorno(t);
         Movimiento orden=new Navegacion(red).determinarMovimiento(t);
-        salida.write(grupo+";"+caso+";"+esperado+";"+predicho+";"+orden);
+        salida.write(grupo+";"+caso+";"+esperado+";"+(predicho==null?"NO_RECONOCIDO":predicho)+";"+orden);
         for(double v:d) salida.write(String.format(Locale.ROOT,";%.6f",v));
         salida.write("\n");
     }

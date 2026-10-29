@@ -5,12 +5,6 @@ import java.time.format.DateTimeParseException;
 
 /**
  * Registro de una captura, tal como queda persistido en estomago.txt.
- *
- * Se mantiene deliberadamente mínimo (solo lo necesario para poder contar
- * capturas válidas y probar la concurrencia lector/escritor), tal como se
- * definió en la revisión: "lo más simple y corto posible, lo importante es
- * la concurrencia".
- *
  * Formato de línea en el archivo: identificador;marcaTiempo
  */
 public class Captura {

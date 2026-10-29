@@ -28,18 +28,18 @@ public class EnlaceOrquita {
     public EnlaceOrquita(Estomago estomago, Navegacion navegacion, Writer salida) {
         this.estomago=estomago; this.navegacion=navegacion; this.salida=salida;
     }
-    public void enviarRecopilacion(String linea) throws IOException {
+    public void enviarRecopilacion(String trama) throws IOException {
         tiempoUltimaRecepcion=System.nanoTime();
         if(!conexionActiva) {
             conexionActiva=true;
             System.out.println("[EnlaceOrquita] Trafico recibido: conexion restablecida");
         }
-        Recopilacion recopilacion=Recopilacion.decodificar(linea);
+        Recopilacion recopilacion=Recopilacion.decodificar(trama);
         if(!recopilacion.esValida()) {
             System.err.println("[EnlaceOrquita] Trama invalida: descartada");
             enviarErrorTrama(); return;
         }
-        // C.1: la orden de navegacion es la respuesta a cada RECOPILACION valida.
+        // La orden de navegacion es la respuesta a cada RECOPILACION valida.
         Movimiento movimiento=recopilacion.procesar(estomago, navegacion);
         // El cambio de estado viaja por la conexion existente, antes de la orden que ya lo tiene en cuenta.
         ModoOperativo modoActual=navegacion.getModoOperativo();

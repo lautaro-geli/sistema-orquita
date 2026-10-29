@@ -4,7 +4,6 @@ package orquitas.verificacion;
 import orquitas.servidor.captura.*;
 import orquitas.servidor.comunicacion.EnlaceOrquita;
 import orquitas.servidor.comunicacion.CanalIngestaTCP;
-import orquitas.servidor.escape.*;
 import orquitas.servidor.navegacion.*;
 import orquitas.servidor.persistencia.*;
 import org.junit.BeforeClass;
@@ -166,7 +165,7 @@ public class LinareadaTest {
                 super.establecerModoOperativo(modo); activaciones.incrementAndGet();
             }
         };
-        Auditor lector = new Auditor(new Estomago(ruta.toString()), new ModoEscape(navegacion), 20);
+        Auditor lector = new Auditor(new Estomago(ruta.toString()), navegacion, 20);
         lector.start();
         try {
             esperar(() -> navegacion.getModoOperativo()==ModoOperativo.ESCAPE);
@@ -178,7 +177,7 @@ public class LinareadaTest {
         Estomago archivo = new Estomago(archivoNuevo().toString());
         archivo.escribirRegistro(captura("A")); archivo.escribirRegistro(captura("B"));
         Navegacion navegacion = navegacion();
-        Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
+        Auditor lector = new Auditor(archivo, navegacion, 20);
         lector.start();
         try {
             Thread.sleep(100); assertEquals(ModoOperativo.BUSQUEDA, navegacion.getModoOperativo());
@@ -207,7 +206,7 @@ public class LinareadaTest {
     @Test(timeout=5000) public void tcpRealTramasInvalidasFragmentadasReconectarYTresCapturas() throws Exception {
         Estomago archivo = new Estomago(archivoNuevo().toString());
         Navegacion navegacion = navegacion();
-        Auditor lector = new Auditor(archivo, new ModoEscape(navegacion), 20);
+        Auditor lector = new Auditor(archivo, navegacion, 20);
         CanalIngestaTCP entrada = new CanalIngestaTCP(0, archivo, navegacion);
         Thread servidor = new Thread(entrada::iniciar);
         lector.start(); servidor.start();

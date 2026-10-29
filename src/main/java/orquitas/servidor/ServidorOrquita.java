@@ -2,18 +2,18 @@
 package orquitas.servidor;
 
 import orquitas.servidor.comunicacion.CanalIngestaTCP;
-import orquitas.servidor.escape.ModoEscape;
 import orquitas.servidor.navegacion.Navegacion;
 import orquitas.servidor.navegacion.RedNeuronal;
 import orquitas.servidor.persistencia.Auditor;
 import orquitas.servidor.persistencia.Estomago;
 
-/** Arranque del Hito 2 simulado. No borra capturas al reiniciar. */
+/** Arranque del Hito 2 simulado. Cada arranque empieza una misión nueva: vacía estomago.txt. */
 public class ServidorOrquita {
-    public static void main(String[] args) throws java.io.IOException {
+    public static void main(String[] args) throws java.io.IOException, InterruptedException {
         int puerto = args.length > 0 ? Integer.parseInt(args[0]) : 5000;
         String ruta = args.length > 1 ? args[1] : "estomago.txt";
         Estomago estomago = new Estomago(ruta);
+        estomago.reiniciar();
         java.nio.file.Path modelo = java.nio.file.Path.of(args.length > 2 ? args[2] : "modelos/entorno-demo.nnet");
         if (!java.nio.file.Files.isRegularFile(modelo)) {
             // El servidor no entrena: el modelo se genera aparte y se versiona.
@@ -22,8 +22,7 @@ public class ServidorOrquita {
             System.exit(1);
         }
         Navegacion navegacion = new Navegacion(new RedNeuronal(modelo));
-        ModoEscape modoEscape = new ModoEscape(navegacion);
-        Auditor auditor = new Auditor(estomago, modoEscape, 500);
+        Auditor auditor = new Auditor(estomago, navegacion, 500);
         CanalIngestaTCP entrada = new CanalIngestaTCP(puerto, estomago, navegacion);
 
         auditor.start(); // JVM invoca run() en el hilo auditor independiente.

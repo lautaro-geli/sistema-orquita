@@ -1,225 +1,255 @@
 {
-  "_descripcion": "Filas de 'matriz' = clase real, columnas = prediccion. umbral_todos_los_sectores usa como referencia 1050 mm (medio de la franja 900-1200 mm sin entrenar); mide donde cae el cambio, no un error de clasificacion.",
-  "_modelo": "MLP 12-6-3, entrada cercania clamp((1500-d)/1500,0,1)",
+  "_descripcion": "Filas de 'matriz' = clase real, columnas = prediccion; NO_RECONOCIDO = salida ganadora bajo el umbral de confianza (50 %). umbral_todos_los_sectores usa como referencia 1050 mm (medio de la franja 900-1200 mm sin ejemplos de entrenamiento); mide donde cae el cambio, no un error de clasificacion.",
+  "_modelo": "MLP 12-6-3, entrada cercania clamp((1500-d)/1500,0,1), umbral de confianza 0.5",
   "general_202": {
-    "n": 1000,
-    "aciertos": 989,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 328,
-        "OBJETO": 0,
-        "LOBITO": 6
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 331,
-        "LOBITO": 2
-      },
-      "LOBITO": {
-        "LIBRE": 1,
-        "OBJETO": 2,
-        "LOBITO": 330
-      }
-    },
-    "exactitud": 98.9
-  },
-  "general_1000": {
-    "n": 1000,
-    "aciertos": 984,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 323,
-        "OBJETO": 0,
-        "LOBITO": 11
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 332,
-        "LOBITO": 1
-      },
-      "LOBITO": {
-        "LIBRE": 3,
-        "OBJETO": 1,
-        "LOBITO": 329
-      }
-    },
-    "exactitud": 98.4
-  },
-  "general_1001": {
-    "n": 1000,
-    "aciertos": 983,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 326,
-        "OBJETO": 0,
-        "LOBITO": 8
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 332,
-        "LOBITO": 1
-      },
-      "LOBITO": {
-        "LIBRE": 3,
-        "OBJETO": 5,
-        "LOBITO": 325
-      }
-    },
-    "exactitud": 98.3
-  },
-  "general_1002": {
     "n": 1000,
     "aciertos": 988,
     "matriz": {
       "LIBRE": {
-        "LIBRE": 326,
+        "LIBRE": 328,
         "OBJETO": 0,
-        "LOBITO": 8
+        "LOBITO": 6,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
-        "OBJETO": 330,
-        "LOBITO": 3
+        "OBJETO": 331,
+        "LOBITO": 2,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
         "LIBRE": 0,
-        "OBJETO": 1,
-        "LOBITO": 332
+        "OBJETO": 2,
+        "LOBITO": 329,
+        "NO_RECONOCIDO": 2
       }
     },
     "exactitud": 98.8
   },
-  "general_1003": {
+  "general_1000": {
+    "n": 1000,
+    "aciertos": 983,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 323,
+        "OBJETO": 0,
+        "LOBITO": 11,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 332,
+        "LOBITO": 1,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 1,
+        "LOBITO": 328,
+        "NO_RECONOCIDO": 3
+      }
+    },
+    "exactitud": 98.3
+  },
+  "general_1001": {
     "n": 1000,
     "aciertos": 982,
     "matriz": {
       "LIBRE": {
         "LIBRE": 326,
         "OBJETO": 0,
-        "LOBITO": 8
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
-        "OBJETO": 327,
-        "LOBITO": 6
+        "OBJETO": 332,
+        "LOBITO": 1,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 2,
-        "OBJETO": 2,
-        "LOBITO": 329
+        "LIBRE": 1,
+        "OBJETO": 4,
+        "LOBITO": 324,
+        "NO_RECONOCIDO": 4
       }
     },
     "exactitud": 98.2
   },
-  "general_1004": {
-    "n": 1000,
-    "aciertos": 975,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 320,
-        "OBJETO": 0,
-        "LOBITO": 14
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 328,
-        "LOBITO": 5
-      },
-      "LOBITO": {
-        "LIBRE": 2,
-        "OBJETO": 4,
-        "LOBITO": 327
-      }
-    },
-    "exactitud": 97.5
-  },
-  "general_1005": {
-    "n": 1000,
-    "aciertos": 985,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 323,
-        "OBJETO": 0,
-        "LOBITO": 11
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 330,
-        "LOBITO": 3
-      },
-      "LOBITO": {
-        "LIBRE": 0,
-        "OBJETO": 1,
-        "LOBITO": 332
-      }
-    },
-    "exactitud": 98.5
-  },
-  "general_1006": {
-    "n": 1000,
-    "aciertos": 981,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 330,
-        "OBJETO": 0,
-        "LOBITO": 4
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 327,
-        "LOBITO": 6
-      },
-      "LOBITO": {
-        "LIBRE": 3,
-        "OBJETO": 6,
-        "LOBITO": 324
-      }
-    },
-    "exactitud": 98.1
-  },
-  "general_1007": {
-    "n": 1000,
-    "aciertos": 978,
-    "matriz": {
-      "LIBRE": {
-        "LIBRE": 318,
-        "OBJETO": 0,
-        "LOBITO": 16
-      },
-      "OBJETO": {
-        "LIBRE": 0,
-        "OBJETO": 331,
-        "LOBITO": 2
-      },
-      "LOBITO": {
-        "LIBRE": 3,
-        "OBJETO": 1,
-        "LOBITO": 329
-      }
-    },
-    "exactitud": 97.8
-  },
-  "general_1008": {
+  "general_1002": {
     "n": 1000,
     "aciertos": 986,
     "matriz": {
       "LIBRE": {
         "LIBRE": 326,
         "OBJETO": 0,
-        "LOBITO": 8
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 330,
-        "LOBITO": 3
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 1,
-        "OBJETO": 2,
-        "LOBITO": 330
+        "LIBRE": 0,
+        "OBJETO": 1,
+        "LOBITO": 330,
+        "NO_RECONOCIDO": 2
       }
     },
     "exactitud": 98.6
+  },
+  "general_1003": {
+    "n": 1000,
+    "aciertos": 980,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 326,
+        "OBJETO": 0,
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 327,
+        "LOBITO": 6,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 1,
+        "LOBITO": 327,
+        "NO_RECONOCIDO": 4
+      }
+    },
+    "exactitud": 98.0
+  },
+  "general_1004": {
+    "n": 1000,
+    "aciertos": 974,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 320,
+        "OBJETO": 0,
+        "LOBITO": 14,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 328,
+        "LOBITO": 5,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 4,
+        "LOBITO": 326,
+        "NO_RECONOCIDO": 3
+      }
+    },
+    "exactitud": 97.4
+  },
+  "general_1005": {
+    "n": 1000,
+    "aciertos": 984,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 323,
+        "OBJETO": 0,
+        "LOBITO": 11,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 1,
+        "LOBITO": 331,
+        "NO_RECONOCIDO": 1
+      }
+    },
+    "exactitud": 98.4
+  },
+  "general_1006": {
+    "n": 1000,
+    "aciertos": 979,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 330,
+        "OBJETO": 0,
+        "LOBITO": 4,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 327,
+        "LOBITO": 6,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 6,
+        "LOBITO": 322,
+        "NO_RECONOCIDO": 4
+      }
+    },
+    "exactitud": 97.9
+  },
+  "general_1007": {
+    "n": 1000,
+    "aciertos": 977,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 318,
+        "OBJETO": 0,
+        "LOBITO": 16,
+        "NO_RECONOCIDO": 0
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 331,
+        "LOBITO": 2,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 1,
+        "OBJETO": 1,
+        "LOBITO": 328,
+        "NO_RECONOCIDO": 3
+      }
+    },
+    "exactitud": 97.7
+  },
+  "general_1008": {
+    "n": 1000,
+    "aciertos": 984,
+    "matriz": {
+      "LIBRE": {
+        "LIBRE": 325,
+        "OBJETO": 0,
+        "LOBITO": 8,
+        "NO_RECONOCIDO": 1
+      },
+      "OBJETO": {
+        "LIBRE": 0,
+        "OBJETO": 330,
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
+      },
+      "LOBITO": {
+        "LIBRE": 0,
+        "OBJETO": 2,
+        "LOBITO": 329,
+        "NO_RECONOCIDO": 2
+      }
+    },
+    "exactitud": 98.4
   },
   "general_1009": {
     "n": 1000,
@@ -228,130 +258,148 @@
       "LIBRE": {
         "LIBRE": 324,
         "OBJETO": 0,
-        "LOBITO": 10
+        "LOBITO": 10,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 329,
-        "LOBITO": 4
+        "LOBITO": 4,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 2,
+        "LIBRE": 1,
         "OBJETO": 2,
-        "LOBITO": 329
+        "LOBITO": 329,
+        "NO_RECONOCIDO": 1
       }
     },
     "exactitud": 98.2
   },
   "general_424242": {
     "n": 1000,
-    "aciertos": 986,
+    "aciertos": 985,
     "matriz": {
       "LIBRE": {
         "LIBRE": 329,
         "OBJETO": 0,
-        "LOBITO": 5
+        "LOBITO": 5,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 330,
-        "LOBITO": 3
+        "LOBITO": 3,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 2,
+        "LIBRE": 1,
         "OBJETO": 4,
-        "LOBITO": 327
+        "LOBITO": 326,
+        "NO_RECONOCIDO": 2
       }
     },
-    "exactitud": 98.6
+    "exactitud": 98.5
   },
   "frontera_7": {
     "n": 4000,
-    "aciertos": 3909,
+    "aciertos": 3853,
     "matriz": {
       "LIBRE": {
         "LIBRE": 2012,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 91,
+        "LIBRE": 25,
         "OBJETO": 0,
-        "LOBITO": 1897
+        "LOBITO": 1841,
+        "NO_RECONOCIDO": 122
       }
     },
-    "exactitud": 97.72
+    "exactitud": 96.33
   },
   "frontera_987654": {
     "n": 4000,
-    "aciertos": 3899,
+    "aciertos": 3858,
     "matriz": {
       "LIBRE": {
         "LIBRE": 1976,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 101,
+        "LIBRE": 30,
         "OBJETO": 0,
-        "LOBITO": 1923
+        "LOBITO": 1882,
+        "NO_RECONOCIDO": 112
       }
     },
-    "exactitud": 97.47
+    "exactitud": 96.45
   },
   "ancho_8": {
     "n": 4000,
-    "aciertos": 3817,
+    "aciertos": 3813,
     "matriz": {
       "LIBRE": {
         "LIBRE": 0,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 1816,
-        "LOBITO": 162
+        "LOBITO": 158,
+        "NO_RECONOCIDO": 4
       },
       "LOBITO": {
-        "LIBRE": 9,
-        "OBJETO": 12,
-        "LOBITO": 2001
+        "LIBRE": 4,
+        "OBJETO": 11,
+        "LOBITO": 1997,
+        "NO_RECONOCIDO": 10
       }
     },
-    "exactitud": 95.42
+    "exactitud": 95.33
   },
   "ancho_24680": {
     "n": 4000,
-    "aciertos": 3815,
+    "aciertos": 3803,
     "matriz": {
       "LIBRE": {
         "LIBRE": 0,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
-        "OBJETO": 1839,
-        "LOBITO": 161
+        "OBJETO": 1833,
+        "LOBITO": 152,
+        "NO_RECONOCIDO": 15
       },
       "LOBITO": {
-        "LIBRE": 12,
+        "LIBRE": 4,
         "OBJETO": 12,
-        "LOBITO": 1976
+        "LOBITO": 1970,
+        "NO_RECONOCIDO": 14
       }
     },
-    "exactitud": 95.38
+    "exactitud": 95.08
   },
   "ejemplo": {
     "n": 7,
@@ -360,41 +408,47 @@
       "LIBRE": {
         "LIBRE": 2,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 4,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
         "LIBRE": 0,
         "OBJETO": 0,
-        "LOBITO": 1
+        "LOBITO": 1,
+        "NO_RECONOCIDO": 0
       }
     },
     "exactitud": 100.0
   },
   "umbral_todos_los_sectores": {
     "n": 1692,
-    "aciertos": 1321,
+    "aciertos": 1300,
     "matriz": {
       "LIBRE": {
         "LIBRE": 852,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "OBJETO": {
         "LIBRE": 0,
         "OBJETO": 0,
-        "LOBITO": 0
+        "LOBITO": 0,
+        "NO_RECONOCIDO": 0
       },
       "LOBITO": {
-        "LIBRE": 371,
+        "LIBRE": 334,
         "OBJETO": 0,
-        "LOBITO": 469
+        "LOBITO": 448,
+        "NO_RECONOCIDO": 58
       }
     },
-    "exactitud": 78.07
+    "exactitud": 76.83
   }
 }
