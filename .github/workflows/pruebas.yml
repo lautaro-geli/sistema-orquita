@@ -1,6 +1,8 @@
 name: Pruebas Java
 on:
   pull_request:
+  push:
+    branches: [hito3-bluetooth]
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,13 +26,19 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
       - run: mvn --batch-mode --no-transfer-progress clean verify
-      - name: Humo de preparar.ps1 y ejecutar.ps1 (nombres de clase actuales)
+      - name: Humo de preparar.ps1 y ejecutar.ps1 (clases y argumentos del Hito 3)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           ./preparar.ps1
-          ./ejecutar.ps1 entrenar
-          if ($LASTEXITCODE -ne 0) { throw "ejecutar.ps1 entrenar fallo" }
+          ./ejecutar.ps1 provisional "$env:RUNNER_TEMP/entorno.nnet"
+          if ($LASTEXITCODE -ne 0) { throw "ejecutar.ps1 provisional fallo" }
+          # Sin robot: el Servidor debe recibir los argumentos y fallar con un mensaje claro al abrir el COM.
+          ./ejecutar.ps1 servidor COM99 --umbral=1 --estomago="$env:RUNNER_TEMP/estomago.txt" 2>&1 | Tee-Object -FilePath servidor.txt
+          if ($LASTEXITCODE -ne 1) { throw "ejecutar.ps1 servidor termino con $LASTEXITCODE (se esperaba 1)" }
+          if (-not (Select-String -Path servidor.txt -Pattern 'Umbral de capturas: 1')) { throw "no llego --umbral" }
+          if (-not (Select-String -Path servidor.txt -Pattern 'No se pudo abrir el puerto COM99')) { throw "falta el mensaje del puerto" }
+          exit 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
