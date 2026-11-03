@@ -1,0 +1,361 @@
+@startuml CU06_RecibirRecopilacion
+title CU-06 - Recibir Recopilación
+hide footbox
+
+actor Orquita
+participant EnlaceOrquita
+participant Estomago
+participant Navegacion
+
+Orquita -> EnlaceOrquita : recibirTrama(trama)
+activate EnlaceOrquita
+
+EnlaceOrquita -> EnlaceOrquita : decodificar(trama)
+EnlaceOrquita --> EnlaceOrquita : tipoTrama
+
+alt hay aviso de captura (la trama es una captura)
+    EnlaceOrquita -> Estomago : registrarCaptura(identificador)
+    activate Estomago
+    ref over EnlaceOrquita, Estomago : CU-09 Actualizar Estómago
+    Estomago --> EnlaceOrquita : registrada
+    deactivate Estomago
+
+    alt la captura quedó registrada
+        EnlaceOrquita -> EnlaceOrquita : enviarConfirmacion()
+        EnlaceOrquita --> Orquita : CONFIRMACION
+    else no se pudo registrar
+        EnlaceOrquita -> EnlaceOrquita : enviarRechazo()
+        EnlaceOrquita --> Orquita : RECHAZO
+    end
+
+else la trama es la telemetría
+    EnlaceOrquita -> EnlaceOrquita : enviarConfirmacion()
+    EnlaceOrquita --> Orquita : CONFIRMACION
+
+    EnlaceOrquita -> Navegacion : determinarMovimiento(telemetria)
+    ref over EnlaceOrquita, Navegacion : CU-07 Determinar Movimiento
+
+else la trama es inválida o hay un error
+    EnlaceOrquita -> EnlaceOrquita : enviarRechazo()
+    EnlaceOrquita --> Orquita : RECHAZO
+end
+
+deactivate EnlaceOrquita
+
+note right of EnlaceOrquita
+  decodificar() guarda en EnlaceOrquita lo que leyó (el
+  identificador de la captura o las 39 distancias) y devuelve
+  el tipo de trama: CAPTURA, TELEMETRIA o INVALIDA.
+  La CONFIRMACION de una captura sale después de que el Escritor
+  terminó de escribir (CU-09). La orden la envía CU-08.
+end note
+@enduml
+@startuml CU07_DeterminarMovimiento
+title CU-07 - Determinar Movimiento
+hide footbox
+
+participant EnlaceOrquita
+participant Navegacion
+participant RedNeuronal
+
+EnlaceOrquita -> Navegacion : determinarMovimiento(telemetria)
+activate Navegacion
+
+Navegacion -> RedNeuronal : clasificarEntorno(telemetria)
+activate RedNeuronal
+RedNeuronal -> RedNeuronal : normalizar(telemetria)
+RedNeuronal --> RedNeuronal : cercanias
+RedNeuronal --> Navegacion : entorno
+deactivate RedNeuronal
+
+alt entorno no reconocido
+    Navegacion -> Navegacion : resolverNoReconocido()
+    Navegacion --> Navegacion : movimiento
+
+else entorno reconocido
+    Navegacion -> Navegacion : calcularMovimiento(entorno, telemetria)
+
+    alt modo ESCAPE
+        Navegacion -> Navegacion : campoLibre(telemetria)
+        Navegacion --> Navegacion : libre
+
+        alt el campo está libre (la Orquita ya salió)
+            Navegacion -> Navegacion : establecerModoOperativo(LIBERADA)
+
+        else entorno SALIDA
+            Navegacion -> Navegacion : sectorMasAbierto(telemetria)
+            Navegacion --> Navegacion : sectorSalida
+            Navegacion -> Navegacion : movimientoHaciaSector(sectorSalida)
+            Navegacion --> Navegacion : movimiento
+
+        else entorno OBJETO
+            Navegacion -> Navegacion : sumarDerecha(telemetria)
+            Navegacion --> Navegacion : sumaDerecha
+            Navegacion -> Navegacion : sumarIzquierda(telemetria)
+            Navegacion --> Navegacion : sumaIzquierda
+        end
+
+    else modo BÚSQUEDA
+        alt entorno LOBITO
+            Navegacion -> Navegacion : sectorMasCercano(telemetria)
+            Navegacion --> Navegacion : sectorLobito
+            Navegacion -> Navegacion : movimientoHaciaSector(sectorLobito)
+            Navegacion --> Navegacion : movimiento
+
+        else entorno OBJETO
+            Navegacion -> Navegacion : sumarDerecha(telemetria)
+            Navegacion --> Navegacion : sumaDerecha
+            Navegacion -> Navegacion : sumarIzquierda(telemetria)
+            Navegacion --> Navegacion : sumaIzquierda
+        end
+    end
+
+    Navegacion --> Navegacion : movimiento
+end
+
+deactivate Navegacion
+
+note right of Navegacion
+  determinarMovimiento() deja el movimiento decidido guardado
+  en Navegacion; CU-08 lo toma y lo envía.
+  La red clasifica LIBRE, OBJETO, LOBITO o SALIDA. Si su
+  certeza no llega al 50 %, el entorno no se reconoce: DETENER y,
+  tras varias lecturas seguidas sin reconocer, RETROCEDER.
+  BÚSQUEDA: LOBITO -> hacia su sector; OBJETO -> girar hacia el
+  lado más abierto o RETROCEDER si está encerrada; LIBRE y
+  SALIDA -> AVANZAR.
+  ESCAPE: ignora al LOBITO; SALIDA -> hacia el sector más
+  abierto; OBJETO -> girar sin frenar; LIBRE -> AVANZAR.
+  Si el campo está libre, pasa a LIBERADA (DETENER); el cambio
+  de estado se informa en la consola del Servidor.
+  LIBERADA: DETENER.
+end note
+@enduml
+@startuml CU08_EnviarOrdenDeNavegacion
+title CU-08 - Enviar Orden de Navegación
+hide footbox
+
+actor Orquita
+participant EnlaceOrquita
+participant Navegacion
+
+note over Orquita, EnlaceOrquita
+  La orden es la respuesta a cada telemetría válida (no hay un
+  pedido aparte). Cuando se envía, el movimiento ya fue decidido
+  al procesar la telemetría (CU-06 y CU-07).
+end note
+
+Orquita -> EnlaceOrquita : recibirTrama(trama)
+activate EnlaceOrquita
+
+EnlaceOrquita -> Navegacion : obtenerMovimientoDecidido()
+activate Navegacion
+Navegacion --> EnlaceOrquita : movimiento
+deactivate Navegacion
+
+EnlaceOrquita -> EnlaceOrquita : enviarOrdenNavegacion(movimiento)
+EnlaceOrquita -> EnlaceOrquita : codificarOrden(movimiento)
+EnlaceOrquita --> EnlaceOrquita : orden
+EnlaceOrquita -> EnlaceOrquita : transmitir(orden)
+
+alt envío correcto
+    EnlaceOrquita --> Orquita : ORDEN|movimiento
+
+else falló el envío
+    EnlaceOrquita -> EnlaceOrquita : registrarFalla()
+    note right of EnlaceOrquita
+      La orden se descarta (queda vencida). registrarFalla() deja el
+      enlace en DESCONECTADO: se restablece a mano.
+    end note
+end
+
+deactivate EnlaceOrquita
+@enduml
+@startuml CU09_ActualizarEstomago
+title CU-09 - Actualizar Estómago
+hide footbox
+
+participant EnlaceOrquita
+participant Estomago
+participant Escritor
+
+note over EnlaceOrquita, Escritor
+  Se dispara desde CU-06 cuando llega un aviso de captura.
+  Estomago crea y arranca un Escritor (hilo de vida corta) por
+  cada captura y espera su resultado: la confirmación a la
+  Orquita sale recién cuando el Escritor terminó de escribir.
+  El Escritor corre en concurrencia con el hilo Auditor y ambos
+  acceden al archivo a través del mutex.
+end note
+
+EnlaceOrquita -> Estomago : registrarCaptura(identificador)
+activate Estomago
+
+create Escritor
+Estomago -> Escritor : «create» Escritor(estomago, identificador)
+Estomago -> Escritor : start()
+activate Escritor
+Estomago -> Escritor : esperarResultado()
+
+Escritor -> Escritor : run()
+Escritor -> Estomago : escribirRegistro(identificador)
+activate Estomago
+
+critical
+    Estomago -> Estomago : mutex.acquire()
+    Estomago -> Estomago : leerDelArchivo()
+    Estomago --> Estomago : lineasDelArchivo
+
+    alt el id ya está en el archivo
+        note right of Estomago : captura repetida, no se escribe
+
+    else id nuevo
+        Estomago -> Estomago : armarLinea(identificador)
+        Estomago --> Estomago : linea
+        note right of Estomago : agrega la línea al final del archivo
+    end
+
+    Estomago -> Estomago : mutex.release()
+end
+
+deactivate Estomago
+Escritor --> Estomago : registrada
+destroy Escritor
+
+Estomago --> EnlaceOrquita : registrada
+deactivate Estomago
+
+note right of Escritor
+  registrada = true si la captura quedó en el archivo (nueva o
+  repetida). Si falla la escritura, escribirRegistro propaga
+  IOException, el Escritor devuelve registrada = false y el
+  mutex se libera igual.
+end note
+@enduml
+@startuml CU10_LeerEstomago
+title CU-10 - Leer Estómago
+hide footbox
+
+participant Auditor
+participant Estomago
+participant Navegacion
+
+note over Auditor, Navegacion
+  Lo dispara el hilo Auditor, que arranca con el Servidor y corre
+  independiente de la recepción. Cada arranque del Servidor vació
+  antes el estómago (Estomago.reiniciar()): la misión empieza de
+  cero. El umbral de capturas es un parámetro del Auditor (3 en
+  el reglamento, 1 en la prueba de campo). La Orquita se asocia a
+  este caso de uso por otra vía: las capturas que se cuentan son
+  las que ella avisó (CU-06 y CU-09).
+end note
+
+[-> Auditor : start()
+activate Auditor
+Auditor -> Auditor : run()
+
+loop sistema activo
+    Auditor -> Estomago : contarRegistrosValidos()
+    activate Estomago
+
+    critical
+        Estomago -> Estomago : mutex.acquire()
+        Estomago -> Estomago : leerDelArchivo()
+        Estomago --> Estomago : lineasDelArchivo
+        note right of Estomago : cuenta solo las líneas con formato válido
+        Estomago -> Estomago : mutex.release()
+    end
+
+    Estomago --> Auditor : cantidadCapturas
+    deactivate Estomago
+
+    opt cantidadCapturas >= umbralCapturas
+        ref over Auditor, Navegacion : CU-11 Activar Modo Escape
+    end
+
+    Auditor -> Auditor : esperarProximoCiclo()
+end
+
+deactivate Auditor
+@enduml
+@startuml CU11_ActivarModoEscape
+title CU-11 - Activar Modo Escape
+hide footbox
+
+participant Auditor
+participant Navegacion
+
+note over Auditor, Navegacion
+  Se dispara desde CU-10 cuando el estómago alcanza el umbral de
+  capturas (3 en el reglamento, 1 en la prueba de campo). El
+  Auditor lo invoca en cada ciclo: la operación es idempotente y
+  el cambio a ESCAPE ocurre una sola vez. El nuevo modo no se
+  envía a la Orquita: Navegacion lo usa para decidir qué
+  movimiento ordenar (CU-07). El cambio de estado se informa en
+  la consola del Servidor.
+end note
+
+activate Auditor
+Auditor -> Navegacion : activarModoEscape()
+activate Navegacion
+
+opt el modo operativo es BÚSQUEDA
+    Navegacion -> Navegacion : establecerModoOperativo(ESCAPE)
+end
+
+deactivate Navegacion
+deactivate Auditor
+@enduml
+@startuml CU12_RestablecerConexion
+title CU-12 - Restablecer Conexión
+hide footbox
+
+actor Orquita
+participant EnlaceOrquita
+
+note over Orquita, EnlaceOrquita
+  Lo activa el silencio de la Orquita (o la falla del enlace
+  Bluetooth): el hilo EnlaceOrquita controla el tiempo sin
+  recibir datos. Si todo va bien, envía el LATIDO (cada 1 s), con
+  el que la Orquita sabe que el enlace sigue vivo. Si falla,
+  registra la falla y el Servidor se cierra de forma ordenada: el
+  emparejamiento del Bluetooth y la creación del puerto son
+  manuales, así que el enlace se restablece a mano (vincular de
+  nuevo y reiniciar el Servidor).
+end note
+
+[-> EnlaceOrquita : start()
+activate EnlaceOrquita
+EnlaceOrquita -> EnlaceOrquita : run()
+
+loop sistema activo
+    EnlaceOrquita -> EnlaceOrquita : leerTrama()
+    note right of EnlaceOrquita
+      Espera una trama hasta PERIODO_LATIDO_MS y anota la hora
+      de lo último recibido. Las tramas que llegan se procesan
+      aparte.
+    end note
+
+    EnlaceOrquita -> EnlaceOrquita : calcularTiempoSinRecepcion()
+    EnlaceOrquita --> EnlaceOrquita : tiempoSinRecepcion
+
+    alt pasó el tiempo máximo de espera o falló el enlace
+        EnlaceOrquita -> EnlaceOrquita : registrarFalla()
+        note right of EnlaceOrquita
+          Deja el enlace en DESCONECTADO y detiene el hilo
+          (termina el bucle).
+        end note
+
+    else dentro del tiempo esperado
+        EnlaceOrquita -> EnlaceOrquita : enviarLatido()
+        EnlaceOrquita --> Orquita : LATIDO
+    end
+end
+
+deactivate EnlaceOrquita
+
+note right of EnlaceOrquita
+  registrarFalla() también se llama cuando falla una escritura
+  al puerto (por ejemplo, si se apaga el Bluetooth de la PC).
+end note
+@enduml

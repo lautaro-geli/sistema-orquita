@@ -1,0 +1,185 @@
+@startuml Orquita_DiagramaClases_ModuloServidor
+title Diagrama de Clases - Módulo Servidor (Sistema Orquita)
+skinparam classAttributeIconSize 0
+hide empty members
+
+class Orquita <<actor externo>>
+
+' ---------------- Comunicación ----------------
+class EnlaceOrquita <<Thread>> {
+  {static} + TIMEOUT_MAXIMO_MS : long
+  {static} + PERIODO_LATIDO_MS : long
+  {static} + LARGO_MAXIMO : int
+  {static} + VALORES : int
+  {static} + SIN_ECO : int
+  {static} + ALCANCE_MM : int
+  - nombrePuerto : String
+  - entrada : InputStream
+  - salida : OutputStream
+  - estado : EstadoEnlace
+  - tiempoUltimaRecepcion : long
+  - identificadorCaptura : String
+  - telemetria : int[39]
+  - sistemaActivo : boolean
+  + EnlaceOrquita(nombrePuerto : String, estomago : Estomago, navegacion : Navegacion)
+  + run() : void
+  + recibirTrama(trama : String) : void
+  + decodificar(trama : String) : String
+  + enviarConfirmacion() : void
+  + enviarRechazo() : void
+  + enviarOrdenNavegacion(movimiento : Movimiento) : void
+  + enviarLatido() : void
+  + calcularTiempoSinRecepcion() : long
+  + registrarFalla() : void
+  + detener() : void
+  - leerTrama() : String
+  - codificarOrden(movimiento : Movimiento) : String
+  - transmitir(trama : String) : void
+}
+
+enum EstadoEnlace {
+  DESCONECTADO
+  CONECTADO
+}
+
+' ---------------- Navegación ----------------
+class Navegacion {
+  {static} - SECTORES : int
+  {static} - ROI_POR_SECTOR : int
+  {static} - UMBRAL_LADO_MM : double
+  {static} - ALCANCE_LIBRE_MM : double
+  {static} - MAX_NO_RECONOCIDAS : int
+  - modoOperativo : ModoOperativo
+  - movimientoDecidido : Movimiento
+  - lecturasNoReconocidas : int
+  + Navegacion(redNeuronal : RedNeuronal)
+  + determinarMovimiento(telemetria : int[]) : void
+  + obtenerMovimientoDecidido() : Movimiento
+  + activarModoEscape() : void
+  + establecerModoOperativo(modo : ModoOperativo) : void
+  - resolverNoReconocido() : Movimiento
+  - calcularMovimiento(entorno : EntornoClasificado, telemetria : int[]) : Movimiento
+  - campoLibre(telemetria : int[]) : boolean
+  - sumarDerecha(telemetria : int[]) : double
+  - sumarIzquierda(telemetria : int[]) : double
+  - sectorMasCercano(telemetria : int[]) : int
+  - sectorMasAbierto(telemetria : int[]) : int
+  - distanciaSector(telemetria : int[], sector : int) : double
+  - movimientoHaciaSector(sector : int) : Movimiento
+}
+
+class RedNeuronal {
+  {static} + UMBRAL_CONFIANZA : double
+  {static} - ALCANCE_CERCANIA_MM : double
+  - red : NeuralNetwork
+  + RedNeuronal(ruta : Path)
+  + clasificarEntorno(telemetria : int[]) : EntornoClasificado
+  - normalizar(telemetria : int[]) : double[]
+}
+
+enum Movimiento {
+  AVANZAR
+  RETROCEDER
+  GIRAR_IZQ
+  GIRAR_DER
+  DETENER
+}
+
+enum EntornoClasificado {
+  LIBRE
+  OBJETO
+  LOBITO
+  SALIDA
+}
+
+enum ModoOperativo {
+  BUSQUEDA
+  ESCAPE
+  LIBERADA
+}
+
+' ---------------- Estómago (persistencia y concurrencia) ----------------
+class Estomago {
+  - rutaArchivo : String
+  - mutex : Semaphore
+  + Estomago(rutaArchivo : String)
+  + registrarCaptura(identificador : String) : boolean
+  + escribirRegistro(identificador : String) : void
+  + contarRegistrosValidos() : int
+  + reiniciar() : void
+  - leerDelArchivo() : List<String>
+  - armarLinea(identificador : String) : String
+}
+
+class Escritor <<Thread>> {
+  - identificador : String
+  - registrada : boolean
+  ~ Escritor(estomago : Estomago, identificador : String)
+  + run() : void
+  + esperarResultado() : boolean
+}
+
+class Auditor <<Thread>> {
+  - intervaloAuditoria : long
+  - umbralCapturas : int
+  - sistemaActivo : boolean
+  + Auditor(estomago : Estomago, navegacion : Navegacion, intervaloAuditoria : long, umbralCapturas : int)
+  + run() : void
+  + detener() : void
+  - esperarProximoCiclo() : void
+}
+
+' ---------------- Relaciones (el rol es el nombre del atributo) ----------------
+Orquita ..> EnlaceOrquita : telemetría, captura (Bluetooth)
+
+EnlaceOrquita --> "1" Estomago : - estomago
+EnlaceOrquita --> "1" Navegacion : - navegacion
+EnlaceOrquita --> "1" EstadoEnlace : - estado
+EnlaceOrquita ..> Movimiento
+
+Navegacion --> "1" RedNeuronal : - redNeuronal
+Navegacion ..> Movimiento
+Navegacion ..> ModoOperativo
+RedNeuronal ..> EntornoClasificado
+
+Estomago ..> Escritor : «create»
+Escritor --> "1" Estomago : - estomago
+Auditor --> "1" Estomago : - estomago
+Auditor --> "1" Navegacion : - navegacion
+
+note right of EnlaceOrquita
+  Canal Bluetooth (RFCOMM/SPP): el emparejamiento y la
+  creación del puerto serie virtual son manuales (los hace el
+  sistema operativo); el programa solo abre el puerto ya
+  creado al iniciar. Mismo hilo para recibir y supervisar
+  (CU-12). El LATIDO sale cada PERIODO_LATIDO_MS. Si el enlace
+  falla, registrarFalla() lo deja DESCONECTADO y detiene el
+  hilo: se restablece a mano.
+  La orden, la confirmación y el rechazo viajan como texto.
+  decodificar() guarda la telemetría ya limpia: el -1 (sin
+  eco) se reemplaza por ALCANCE_MM.
+end note
+note right of Estomago
+  mutex: Semaphore(1, true) (justo). escribirRegistro()
+  no escribe si el id ya está en el archivo. El archivo
+  es la única fuente del conteo; guarda una línea por captura
+  (identificador y hora). registrarCaptura() espera al Escritor. reiniciar() lo vacía al
+  arrancar el Servidor (la misión empieza de cero).
+end note
+note bottom of Navegacion
+  La telemetría son 13 sectores (0° a 180°, cada 15°) × 3 ROI
+  (4x4, 8x8, 16x16), en orden de sector. Las decisiones usan el
+  ROI 16x16 en mm (distanciaSector). campoLibre(): ningún sector
+  ve un obstáculo dentro de ALCANCE_LIBRE_MM. determinarMovimiento()
+  deja el movimiento guardado en movimientoDecidido.
+  establecerModoOperativo() informa el cambio de modo en la
+  consola del Servidor (no hay mensaje ESTADO).
+end note
+note bottom of RedNeuronal
+  MLP de 39 entradas (Neuroph). normalizar() convierte cada
+  distancia en cercanía (0 lejos .. 1 pegado). Clasifica LIBRE,
+  OBJETO, LOBITO y SALIDA. Si la salida ganadora no llega a
+  UMBRAL_CONFIANZA (50 %), devuelve null: entorno no
+  reconocido.
+end note
+@enduml
