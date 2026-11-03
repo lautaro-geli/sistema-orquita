@@ -1,34 +1,41 @@
 package orquitas.servidor.persistencia;
 
-import orquitas.servidor.captura.Captura;
 import java.io.IOException;
 
-/** CU-09. Hilo de un solo uso: persiste una captura y termina. Lo crea Estomago.registrarCaptura. */
+/** CU-09. Hilo de vida corta: escribe una captura en el estómago y termina. Lo crea Estomago. */
 public class Escritor extends Thread {
     private final Estomago estomago;
-    private final Captura captura;
+    private final String identificador;
+    private volatile boolean registrada;
 
-    Escritor(Estomago estomago, Captura captura) {
-        super("Escritor-" + captura.getIdentificador());
+    Escritor(Estomago estomago, String identificador) {
+        super("Escritor-" + identificador);
         this.estomago = estomago;
-        this.captura = captura;
+        this.identificador = identificador;
     }
 
     @Override
     public void run() {
         try {
-            boolean nueva = estomago.escribirRegistro(captura);
-            System.out.println("[Escritor] " + (nueva ? "Registrada: " : "Duplicada omitida: ")
-                    + captura.getIdentificador());
+            estomago.escribirRegistro(identificador);
+            registrada = true; // Nueva o repetida: está en el archivo.
         } catch (IOException e) {
-            // El error de E/S se registra; no se propaga ni detiene la recepción.
-            System.err.println("[Escritor] Captura NO confirmada: "
-                    + captura.getIdentificador() + "; " + e.getMessage());
+            System.err.println("[Escritor] No se pudo anotar la captura " + identificador + ": " + e.getMessage());
+            registrada = false;
         } catch (InterruptedException e) {
-            System.err.println("[Escritor] Interrumpido antes de escribir: " + captura.getIdentificador());
             Thread.currentThread().interrupt();
-        } finally {
-            estomago.finalizarEscritura();
+            registrada = false;
+        }
+    }
+
+    /** Espera a que el hilo termine (join) y devuelve si la captura quedó registrada. */
+    public boolean esperarResultado() {
+        try {
+            join();
+            return registrada;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
         }
     }
 }

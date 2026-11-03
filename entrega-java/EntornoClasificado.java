@@ -1,3 +1,7 @@
 package orquitas.servidor.navegacion;
-/** Categorias preliminares por ancho de la banda cercana: LOBITO ocupa un sector, OBJETO un bloque contiguo. */
-public enum EntornoClasificado { LIBRE, OBJETO, LOBITO }
+
+/**
+ * Clases que reconoce la red neuronal. El orden coincide con las salidas de la red:
+ * LIBRE, OBJETO, LOBITO, SALIDA.
+ */
+public enum EntornoClasificado { LIBRE, OBJETO, LOBITO, SALIDA }

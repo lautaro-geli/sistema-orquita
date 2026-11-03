@@ -1,64 +1,54 @@
-# Protocolo de la demostración Hito 2
+# Protocolo v2 — Hito 3 (Bluetooth RFCOMM/SPP)
 
-Canal: TCP bidireccional (simula el enlace Bluetooth), texto UTF-8. Un mensaje por línea.
+Canal: Bluetooth clásico SPP entre el HC-06 del robot (esclavo, 9600 baudios) y la PC del Servidor (Windows). Windows crea un **puerto COM** al emparejar el HC-06; el Servidor solo lo abre (jSerialComm), no empareja ni crea el puerto.
 
-## Identificación y separadores
-
-| Separador | Uso |
-|---|---|
-| `\n` (LF) | Fin de mensaje. Se acepta `\r\n` (CRLF): el `\r` final se descarta. |
-| `\|` | Separa los campos de un mensaje. El **primer campo identifica el tipo** de mensaje. |
-| `;` | Separa las 12 distancias dentro del campo de telemetría. |
-
-TCP es un flujo: puede haber varias tramas en una lectura y una trama repartida entre lecturas; el LF es lo único que delimita un mensaje.
+Texto ASCII, **un mensaje por línea** terminada en `\n` (se acepta `\r\n`). El primer campo identifica el tipo; `|` separa el tipo de su contenido y `;` separa los valores de la telemetría.
 
 ## Mensajes
 
-| Dirección | Formato | Respuesta |
+| Sentido | Mensaje | Detalle |
 |---|---|---|
-| Orquita → servidor | `RECOPILACION\|fechaISO\|d0;d1;...;d11\|idOpcional` | `ORDEN\|...` si toda la trama es válida; `ERROR\|TRAMA_INVALIDA` si no |
-| Servidor → Orquita | `ORDEN\|AVANZAR`, `ORDEN\|GIRAR_IZQ`, `ORDEN\|GIRAR_DER`, `ORDEN\|DETENER` | Siempre una de estas 4 (ver nota) |
-| Servidor → Orquita | `ERROR\|TRAMA_INVALIDA` | — |
-| Servidor → Orquita | `ESTADO\|ESCAPE`, `ESTADO\|BUSQUEDA` | Cambio de estado (modo operativo) de la Orquita; ver abajo |
-| Servidor → Orquita | `ESTADO\|RECONECTAR` | La Orquita debe restablecer el enlace y volver a enviar RECOPILACION |
+| Orquita → Servidor | `TELEMETRIA\|v0;v1;...;v38` | 39 enteros, sin campo de secuencia. Para el sector 0..12 (0° a 180°, cada 15°), los tres ROI en orden 4x4, 8x8, 16x16: índice = sector × 3 + roi. Cada valor es una distancia en mm (0–4000) o `-1` = sin eco. |
+| Orquita → Servidor | `CAPTURA\|id` | `id` de 1 a 16 caracteres `[A-Za-z0-9_-]`. Lo genera el robot (1, 2, 3…). Se repite hasta recibir CONFIRMACION. |
+| Servidor → Orquita | `ORDEN\|movimiento` | `AVANZAR`, `RETROCEDER`, `GIRAR_IZQ`, `GIRAR_DER` o `DETENER`. Es la respuesta a cada TELEMETRIA válida. |
+| Servidor → Orquita | `CONFIRMACION` | Mensaje válido y procesado. Para CAPTURA sale **después** de que el Escritor terminó de escribir en `estomago.txt`. |
+| Servidor → Orquita | `RECHAZO` | Mensaje incompleto, inválido, desconocido, demasiado largo, o captura que no pudo anotarse. |
+| Servidor → Orquita | `LATIDO` | Cada 1 s (`PERIODO_LATIDO_MS`), haya o no tráfico. |
 
-Nota: la clasificación del entorno (LIBRE, OBJETO, LOBITO) es interna del servidor y **no viaja** en el protocolo. A la Orquita solo le llega la orden resultante: por ejemplo, perseguir un lobito a la derecha llega como `ORDEN|GIRAR_DER`.
+**Orden de las respuestas**
 
-Tipos de mensaje: **datos** (`RECOPILACION`, telemetría periódica), **órdenes** (`ORDEN`), **errores** (`ERROR`), **cambios de estado** (`ESTADO`) y **eventos**. El evento de captura de un Lobito no tiene un mensaje propio: viaja como `idOpcional` de la RECOPILACION en la que ocurrió.
+- TELEMETRIA válida → `CONFIRMACION` y luego `ORDEN|…`.
+- CAPTURA válida → el Escritor escribe → `CONFIRMACION`. Una captura repetida (mismo id) también se confirma, sin duplicar la línea.
+- Cualquier otra cosa → `RECHAZO`. La conexión sigue abierta.
 
-El mensaje legado `CAPTURA|id|fecha` **fue eliminado**: un aviso de captura viaja siempre como `idOpcional` de una RECOPILACION. Una línea que empiece con `CAPTURA` es un tipo desconocido.
+**Validación estricta** (`EnlaceOrquita.decodificar`):
 
-## Campos y valores válidos de RECOPILACION
+- TELEMETRIA lleva exactamente 39 enteros decimales sin signo, de 0 a 4000, o el `-1` exacto. No se aceptan `+`, espacios, decimales, exponentes, letras, campos vacíos ni campos de más.
+- CAPTURA lleva exactamente un id válido.
+- Tipo desconocido o línea vacía → `RECHAZO`.
+- `LARGO_MAXIMO` = 320 caracteres por línea. Una línea más larga se descarta hasta el próximo `\n` y se responde `RECHAZO`.
+- El Servidor reemplaza `-1` por `ALCANCE_MM` (4000) al decodificar; el resto del código no trata el `-1`.
+- Varias líneas en una misma lectura, o una línea repartida entre lecturas, se reconstruyen por `\n`.
 
-Exactamente 4 campos.
+**Hora de las capturas:** la pone el Servidor (el Arduino no tiene reloj). Línea en `estomago.txt`: `id;fechaISO`.
 
-1. `RECOPILACION` (literal).
-2. `fechaISO`: se interpreta con `LocalDateTime.parse`, sin zona (p. ej. `2026-09-30T12:00`).
-3. Telemetría: exactamente 12 distancias en mm separadas por `;`. Gramática decimal estricta `[0-9]+(?:\.[0-9]+)?`, rango 0–4000. Se admiten `0`, `2500` y `2500.5`; no se admiten exponentes (`1e3`), hexadecimales (`0x1p3`), signos (`+2500`), espacios, comas decimales, NaN ni infinito. Sectores de 15°: derecha 0..5, izquierda 6..11, frente 4..7. 0 significa proximidad en este simulador, no error de sensor.
-4. `idOpcional`: vacío (sin captura) o `[A-Za-z0-9_-]{1,64}` (aviso de captura). El separador `|` previo debe existir aunque el campo esté vacío.
+## Cambios de estado y falla del enlace
 
-Toda RECOPILACION válida recibe una ORDEN (decisión C.1: la orden de navegación es la respuesta a cada recopilación; no hay mensaje de pedido aparte). La orden no confirma que la captura ya esté escrita: el Escritor de esa captura corre en su propio hilo. Un id repetido no agrega registros (decisión C.4) aunque sí produce otra orden.
+- **No existe mensaje ESTADO.** Los cambios de estado (BUSQUEDA, APROXIMACION, CAPTURA, ESCAPE, FINALIZACION, ERROR_SEGURO) se informan en la consola del Servidor con el formato `[Estado] ANTERIOR -> NUEVO (motivo)`. El robot los percibe por la ORDEN que recibe.
+- **Servidor (CU-12):** si no recibe nada durante `TIMEOUT_MAXIMO_MS` = 8000 ms, o falla una escritura al puerto, registra la falla (`ERROR_SEGURO`), deja el enlace `DESCONECTADO`, termina el hilo y el Servidor se cierra con código ≠ 0. No reabre el puerto: el enlace se restablece a mano (vincular de nuevo el HC-06 y reiniciar el Servidor, lo que vacía el estómago).
+- **Robot (Safe Mode):** si no recibe nada del Servidor (ni LATIDO) durante 3000 ms, frena motores y colector de inmediato y espera; sale del Safe Mode al volver a recibir algo.
 
-## Cambio de estado: ESTADO|ESCAPE y ESTADO|BUSQUEDA
+## Trazabilidad Hito 2 (TCP) → Hito 3 (Bluetooth)
 
-- Dirección: servidor → Orquita. Valores válidos: `ESCAPE` y `BUSQUEDA` (los nombres del enum `ModoOperativo`).
-- Cuándo: el modo cambia en el servidor (el Auditor detecta 3 capturas en `estomago.txt` y llama a `Navegacion.activarModoEscape()`). El aviso viaja por la conexión existente como respuesta a la **siguiente** RECOPILACION válida: primero `ESTADO|<modo>` y después la `ORDEN|…`, que ya fue calculada con el modo nuevo.
-- Se envía una sola vez por cambio y por conexión. Al conectarse no se envía nada: ambos extremos arrancan en BUSQUEDA. Una conexión nueva abierta cuando el servidor ya está en ESCAPE recibe `ESTADO|ESCAPE` con su primera RECOPILACION válida.
-- Qué hace el cliente: registra el cambio (`[Cliente] Cambio de estado: ESCAPE`) y sigue leyendo hasta la `ORDEN|…` de esa recopilación. Un ESTADO nunca reemplaza a la orden.
-
-## Mensajes inválidos, incompletos y desconocidos
-
-- **Tipo desconocido** (primer campo distinto de `RECOPILACION`), cantidad de campos distinta, fecha inválida, distancias fuera de gramática o rango, id inválido: se descarta **toda** la trama, sin efectos parciales (ni captura ni orden), y el servidor responde `ERROR|TRAMA_INVALIDA` (decisión C.2). La conexión sigue abierta.
-- **Línea excesiva**: más de 256 caracteres antes del LF. Se descarta entera y al llegar el LF se responde `ERROR|TRAMA_INVALIDA`.
-- **Incompleto**: bytes sin LF final al cerrarse la conexión (EOF). Se descartan sin respuesta: nunca se acepta como captura.
-- El error no incluye el contenido recibido. El cliente debe consumir cada respuesta antes de enviar otra solicitud o cerrar.
-
-## Pérdida de comunicación (CU-12) y reintento (CU-08)
-
-- `TIMEOUT_MAXIMO` = 5 s por defecto (configurable con `-Dorquitas.timeoutMaximoMs=...`, siempre menor a 10 s). Es claramente menor a los 10 s sin comunicación que eliminan al robot según el reglamento.
-- El servidor lee con un plazo corto (TIMEOUT_MAXIMO/5, máximo 1 s) y en cada vencimiento calcula el tiempo sin recepción. Si alcanza TIMEOUT_MAXIMO registra la falla y envía `ESTADO|RECONECTAR` en cada vencimiento hasta recibir una trama completa (que restablece la conexión) o hasta el cierre duro a las 6 × TIMEOUT_MAXIMO (30 s por defecto). Los errores al enviar la señal se ignoran.
-- Si falla el envío de una respuesta, se reintenta hasta 3 veces con 100 ms de espera. Limitación de TCP: el servidor no puede volver a abrir la conexión hacia el robot, solo reintentar sobre el mismo socket; si los reintentos fallan, la conexión se cierra y el cliente debe abrir otra. La reconexión real Bluetooth queda fuera de este hito.
-
-## Alcance
-
-La conexión pertenece a una única Orquita: aceptar varias conexiones sirve para la simulación y para reconexiones, no convierte al servidor en multirrobot. Cada conexión tiene su propio `EnlaceOrquita`, de modo que cada respuesta vuelve por el socket que la pidió. La decisión de pasar a Modo Escape es interna (Auditor → Navegacion); a la Orquita solo le llega el resultado como `ESTADO|ESCAPE`.
+| Hito 2 (simulación TCP) | Hito 3 (Bluetooth) |
+|---|---|
+| `RECOPILACION\|fecha\|12 distancias\|idOpcional` | Se parte en `TELEMETRIA\|39 valores` y `CAPTURA\|id`. La fecha la pone el Servidor. |
+| 12 sectores × 1 distancia (`double`) | 13 sectores × 3 ROI = 39 enteros; `-1` = sin eco. |
+| `ERROR\|TRAMA_INVALIDA` | `RECHAZO` |
+| — (la orden era la única respuesta) | `CONFIRMACION` antes de cada ORDEN y como acuse de cada CAPTURA. |
+| `ESTADO\|ESCAPE`, `ESTADO\|BUSQUEDA`, `ESTADO\|RECONECTAR` | No hay mensaje ESTADO: los estados se informan por consola; `LATIDO` cada 1 s reemplaza la supervisión. |
+| Canal TCP (socket, puerto 5000) | Puerto COM del Bluetooth SPP (RFCOMM), 9600 baudios. |
+| Reintento acotado de escritura y `ESTADO\|RECONECTAR` | Restablecimiento manual: falla → `DESCONECTADO`, se vuelve a vincular y se reinicia el Servidor. Del lado del robot, Safe Mode. |
+| `LARGO_MAXIMO` = 256 | `LARGO_MAXIMO` = 320 (la telemetría ocupa hasta ~205 caracteres). |
+| `CanalIngestaTCP`, `ClienteTelemetriaTCP`, `ClienteIngestaTCP`, `Recopilacion`, `Telemetria`, `Captura` | Eliminadas. `EnlaceOrquita` abre el COM y procesa las tramas; la telemetría es `int[39]`; el formato de línea del estómago pasó a `Estomago`. |
+| Órdenes `AVANZAR`, `GIRAR_IZQ`, `GIRAR_DER`, `DETENER` | Se suma `RETROCEDER`. |

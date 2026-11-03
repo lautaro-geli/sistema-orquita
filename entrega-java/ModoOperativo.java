@@ -1,7 +1,4 @@
 package orquitas.servidor.navegacion;
 
-/** Modo en que el Servidor guía a la Orquita: busca presas (BUSQUEDA) o ya tiene las tres capturas (ESCAPE). */
-public enum ModoOperativo {
-    BUSQUEDA,
-    ESCAPE
-}
+/** Modo de la misión: busca Lobitos, escapa de la bahía o ya quedó liberada. */
+public enum ModoOperativo { BUSQUEDA, ESCAPE, LIBERADA }
