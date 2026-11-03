@@ -13,15 +13,27 @@ class EnlaceOrquita <<Thread>> {
   {static} + VALORES : int
   {static} + SIN_ECO : int
   {static} + ALCANCE_MM : int
+  {static} - CAPTURA : String
+  {static} - TELEMETRIA : String
+  {static} - INVALIDA : String
+  {static} - BAUDIOS : int
+  {static} - ESPERA_SONDEO_MS : long
   - nombrePuerto : String
+  - puerto : SerialPort
+  - timeoutMaximoMs : long
+  - periodoLatidoMs : long
   - entrada : InputStream
   - salida : OutputStream
   - estado : EstadoEnlace
   - tiempoUltimaRecepcion : long
+  - tiempoUltimoLatido : long
+  - lineaPendiente : StringBuilder
+  - causaFalla : String
   - identificadorCaptura : String
   - telemetria : int[39]
   - sistemaActivo : boolean
   + EnlaceOrquita(nombrePuerto : String, estomago : Estomago, navegacion : Navegacion)
+  ~ EnlaceOrquita(entrada : InputStream, salida : OutputStream, estomago : Estomago, navegacion : Navegacion, timeoutMaximoMs : long, periodoLatidoMs : long)
   + run() : void
   + recibirTrama(trama : String) : void
   + decodificar(trama : String) : String
@@ -32,6 +44,7 @@ class EnlaceOrquita <<Thread>> {
   + calcularTiempoSinRecepcion() : long
   + registrarFalla() : void
   + detener() : void
+  {static} - mensajeSinPuerto(nombrePuerto : String, causa : String) : String
   - leerTrama() : String
   - codificarOrden(movimiento : Movimiento) : String
   - transmitir(trama : String) : void
@@ -49,9 +62,14 @@ class Navegacion {
   {static} - UMBRAL_LADO_MM : double
   {static} - ALCANCE_LIBRE_MM : double
   {static} - MAX_NO_RECONOCIDAS : int
+  {static} - ROI_16X16 : int
+  {static} - PRIMER_SECTOR_FRENTE : int
+  {static} - ULTIMO_SECTOR_FRENTE : int
+  {static} - SECTORES_POR_LADO : int
   - modoOperativo : ModoOperativo
   - movimientoDecidido : Movimiento
   - lecturasNoReconocidas : int
+  - estadoInformado : String
   + Navegacion(redNeuronal : RedNeuronal)
   + determinarMovimiento(telemetria : int[]) : void
   + obtenerMovimientoDecidido() : Movimiento
@@ -59,6 +77,7 @@ class Navegacion {
   + establecerModoOperativo(modo : ModoOperativo) : void
   - resolverNoReconocido() : Movimiento
   - calcularMovimiento(entorno : EntornoClasificado, telemetria : int[]) : Movimiento
+  - girarHaciaLoAbierto(telemetria : int[]) : Movimiento
   - campoLibre(telemetria : int[]) : boolean
   - sumarDerecha(telemetria : int[]) : double
   - sumarIzquierda(telemetria : int[]) : double
@@ -66,15 +85,18 @@ class Navegacion {
   - sectorMasAbierto(telemetria : int[]) : int
   - distanciaSector(telemetria : int[], sector : int) : double
   - movimientoHaciaSector(sector : int) : Movimiento
+  - informarEstado(nuevo : String, motivo : String) : void
 }
 
 class RedNeuronal {
   {static} + UMBRAL_CONFIANZA : double
   {static} - ALCANCE_CERCANIA_MM : double
+  {static} - ENTRADAS : int
   - red : NeuralNetwork
   + RedNeuronal(ruta : Path)
+  # RedNeuronal()
   + clasificarEntorno(telemetria : int[]) : EntornoClasificado
-  - normalizar(telemetria : int[]) : double[]
+  {static} + normalizar(telemetria : int[]) : double[]
 }
 
 enum Movimiento {
@@ -109,6 +131,7 @@ class Estomago {
   + reiniciar() : void
   - leerDelArchivo() : List<String>
   - armarLinea(identificador : String) : String
+  {static} - identificadorDeLinea(linea : String) : String
 }
 
 class Escritor <<Thread>> {
@@ -123,6 +146,7 @@ class Auditor <<Thread>> {
   - intervaloAuditoria : long
   - umbralCapturas : int
   - sistemaActivo : boolean
+  - cantidadInformada : int
   + Auditor(estomago : Estomago, navegacion : Navegacion, intervaloAuditoria : long, umbralCapturas : int)
   + run() : void
   + detener() : void
@@ -157,14 +181,17 @@ note right of EnlaceOrquita
   hilo: se restablece a mano.
   La orden, la confirmación y el rechazo viajan como texto.
   decodificar() guarda la telemetría ya limpia: el -1 (sin
-  eco) se reemplaza por ALCANCE_MM.
+  eco) se reemplaza por ALCANCE_MM. El constructor de paquete
+  (con streams) es solo para las pruebas sin hardware.
 end note
 note right of Estomago
   mutex: Semaphore(1, true) (justo). escribirRegistro()
   no escribe si el id ya está en el archivo. El archivo
   es la única fuente del conteo; guarda una línea por captura
   (identificador y hora). registrarCaptura() espera al Escritor. reiniciar() lo vacía al
-  arrancar el Servidor (la misión empieza de cero).
+  arrancar el Servidor (la misión empieza de cero). escribirRegistro(),
+  contarRegistrosValidos() y reiniciar() lanzan IOException e
+  InterruptedException.
 end note
 note bottom of Navegacion
   La telemetría son 13 sectores (0° a 180°, cada 15°) × 3 ROI
@@ -172,8 +199,9 @@ note bottom of Navegacion
   ROI 16x16 en mm (distanciaSector). campoLibre(): ningún sector
   ve un obstáculo dentro de ALCANCE_LIBRE_MM. determinarMovimiento()
   deja el movimiento guardado en movimientoDecidido.
-  establecerModoOperativo() informa el cambio de modo en la
-  consola del Servidor (no hay mensaje ESTADO).
+  informarEstado() imprime en la consola del Servidor cada cambio
+  de estado (BUSQUEDA, APROXIMACION, CAPTURA, ESCAPE,
+  FINALIZACION, ERROR_SEGURO); no hay mensaje ESTADO.
 end note
 note bottom of RedNeuronal
   MLP de 39 entradas (Neuroph). normalizar() convierte cada
