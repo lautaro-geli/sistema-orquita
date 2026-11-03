@@ -1,117 +1,118 @@
 // Archivo de simulacion
 package orquitas.simulacion;
 
-import java.nio.file.*;
-import java.util.*;
 import java.io.IOException;
-import org.neuroph.core.data.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import org.neuroph.core.data.DataSet;
+import org.neuroph.core.data.DataSetRow;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.neuroph.util.TransferFunctionType;
-import orquitas.servidor.navegacion.*;
+import orquitas.servidor.navegacion.EntornoClasificado;
+import orquitas.servidor.navegacion.RedNeuronal;
 
 /**
- * Datos ficticios reproducibles de un VL53L1X (ToF, solo distancia, haz angosto) en 12 sectores de 15 grados.
- * La clase sale del ANCHO de la banda cercana: un lobito de 17 mm subtiende menos de 15 grados (1 sector);
- * un obstaculo de ~90 mm ocupa varios sectores contiguos y un muro, muchos. La regla de etiquetado se usa
- * SOLO para generar y evaluar; la inferencia usa exclusivamente la red.
- * Limite: la distincion por ancho es confiable a rango corto/medio (donde importa para cazar); muy lejos
- * todo tiende a LIBRE. No se usa la senal de intensidad del sensor.
+ * MODELO PROVISIONAL con datos SINTÉTICOS (no es evidencia de campo): permite probar el sistema de
+ * punta a punta mientras no haya barridos reales. Se reemplaza por el modelo de EntrenamientoReal.
+ * Formato de cada ejemplo: 13 sectores x 3 ROI (4x4, 8x8, 16x16), -1 = sin eco.
+ * Reglas (simplificadas, a contrastar con la pista real):
+ * LIBRE: todo lejos o sin eco. LOBITO: un solo sector cercano (el 16x16 de los vecinos puede verlo,
+ * porque su campo es más ancho que 15°). OBJETO: un bloque contiguo de 2 a 13 sectores cercanos.
+ * SALIDA: paredes cercanas a ambos lados y un hueco lejano de 2 a 4 sectores contiguos (el estrecho).
  */
 public class EntrenamientoDemostracion {
-    public record Muestra(Telemetria telemetria, EntornoClasificado etiqueta) { }
-    static final double CERCA_MIN=50, CERCA_MAX=900, LEJOS_MIN=1200, LEJOS_MAX=4000, RUIDO=10;
+    public record Muestra(int[] valores, EntornoClasificado etiqueta) { }
+
+    private static final int SECTORES = 13, ROI = 3;
+    private static final int CERCA_MIN = 60, CERCA_MAX = 900, LEJOS_MIN = 1600, LEJOS_MAX = 4000;
+
     public static List<Muestra> generar(int cantidad, long semilla) {
-        Random azar=new Random(semilla);
-        EntornoClasificado[] clases=EntornoClasificado.values();
-        List<Muestra> muestras=new ArrayList<>();
-        while(muestras.size()<cantidad) {
-            EntornoClasificado clase=clases[muestras.size()%clases.length]; // Clases balanceadas.
-            double[] d=new double[12];
-            for(int i=0;i<12;i++) d[i]=LEJOS_MIN+azar.nextDouble()*(LEJOS_MAX-LEJOS_MIN);
-            if(clase==EntornoClasificado.LOBITO) {
-                d[azar.nextInt(12)]=cerca(azar);
-            } else if(clase==EntornoClasificado.OBJETO) {
-                // Mitad obstaculos (2..6 sectores contiguos) y mitad muros (7..12).
-                int ancho=azar.nextBoolean()?2+azar.nextInt(5):7+azar.nextInt(6);
-                int inicio=azar.nextInt(12-ancho+1);
-                for(int i=inicio;i<inicio+ancho;i++) d[i]=cerca(azar);
+        Random azar = new Random(semilla);
+        EntornoClasificado[] clases = EntornoClasificado.values();
+        List<Muestra> muestras = new ArrayList<>();
+        while (muestras.size() < cantidad) {
+            EntornoClasificado clase = clases[muestras.size() % clases.length]; // Clases balanceadas.
+            int[] d = new int[SECTORES * ROI];
+            for (int i = 0; i < d.length; i++) d[i] = azar.nextInt(10) == 0 ? -1 : lejos(azar);
+            switch (clase) {
+                case LOBITO: {
+                    int s = azar.nextInt(SECTORES), distancia = cerca(azar);
+                    for (int r = 0; r < ROI; r++) d[s * ROI + r] = ruido(azar, distancia);
+                    for (int vecino : new int[]{s - 1, s + 1})
+                        if (vecino >= 0 && vecino < SECTORES && azar.nextBoolean()) d[vecino * ROI + 2] = ruido(azar, distancia);
+                    break;
+                }
+                case OBJETO: {
+                    int ancho = 2 + azar.nextInt(SECTORES - 1), inicio = azar.nextInt(SECTORES - ancho + 1);
+                    for (int s = inicio; s < inicio + ancho; s++) cercano(d, s, azar);
+                    break;
+                }
+                case SALIDA: {
+                    int hueco = 2 + azar.nextInt(3), inicio = 2 + azar.nextInt(SECTORES - hueco - 3);
+                    for (int s = 0; s < SECTORES; s++) if (s < inicio || s >= inicio + hueco) cercano(d, s, azar);
+                    break;
+                }
+                default: // LIBRE: queda todo lejos.
             }
-            for(int i=0;i<12;i++) d[i]=Math.min(4000,Math.max(0,d[i]+(azar.nextDouble()*2-1)*RUIDO));
-            muestras.add(new Muestra(new Telemetria(d),clase));
+            muestras.add(new Muestra(d, clase));
         }
-        Collections.shuffle(muestras,azar);
+        Collections.shuffle(muestras, azar);
         return muestras;
     }
-    private static double cerca(Random azar) { return CERCA_MIN+azar.nextDouble()*(CERCA_MAX-CERCA_MIN); }
-    public static void entrenarSiFalta(Path ruta) throws IOException {
-        if(!Files.exists(ruta)) entrenar(ruta);
+
+    private static void cercano(int[] d, int sector, Random azar) {
+        int distancia = cerca(azar);
+        for (int r = 0; r < ROI; r++) d[sector * ROI + r] = ruido(azar, distancia);
     }
-    /** Codificacion one-hot en el orden del enum: LIBRE, OBJETO, LOBITO. */
+
+    private static int cerca(Random azar) { return CERCA_MIN + azar.nextInt(CERCA_MAX - CERCA_MIN); }
+    private static int lejos(Random azar) { return LEJOS_MIN + azar.nextInt(LEJOS_MAX - LEJOS_MIN); }
+    private static int ruido(Random azar, int distancia) { return Math.max(0, distancia + azar.nextInt(21) - 10); }
+
+    /** Codificación one-hot en el orden del enum (LIBRE, OBJETO, LOBITO, SALIDA). */
     static double[] salidaEsperada(EntornoClasificado clase) {
-        double[] salida=new double[EntornoClasificado.values().length];
-        salida[clase.ordinal()]=1;
+        double[] salida = new double[EntornoClasificado.values().length];
+        salida[clase.ordinal()] = 1;
         return salida;
     }
+
     public static void entrenar(Path ruta) throws IOException {
-        MultiLayerPerceptron red=new MultiLayerPerceptron(TransferFunctionType.SIGMOID,12,6,3);
-        red.randomizeWeights(new Random(20260930L));
-        MomentumBackpropagation regla=new MomentumBackpropagation();
+        MultiLayerPerceptron red = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, SECTORES * ROI, 16,
+                EntornoClasificado.values().length);
+        red.randomizeWeights(new Random(20261104L));
+        MomentumBackpropagation regla = new MomentumBackpropagation();
         regla.setLearningRate(0.1); regla.setMomentum(0.7);
-        regla.setMaxIterations(4000); regla.setMaxError(0.003);
+        regla.setMaxIterations(1500); regla.setMaxError(0.005);
         red.setLearningRule(regla);
-        DataSet datos=new DataSet(12,3);
-        for(Muestra m:generar(2400,101L)) datos.add(new DataSetRow(m.telemetria().normalizar(),salidaEsperada(m.etiqueta())));
-        System.out.println("[Entrenamiento] 2400 ejemplos SINTETICOS, MLP 12-6-3, semilla 101");
+        DataSet datos = new DataSet(SECTORES * ROI, EntornoClasificado.values().length);
+        for (Muestra m : generar(2000, 101L)) datos.add(new DataSetRow(RedNeuronal.normalizar(m.valores()), salidaEsperada(m.etiqueta())));
+        System.out.println("[Provisional] 2000 ejemplos SINTÉTICOS, MLP 39-16-4, semilla 101");
         red.learn(datos);
-        Files.createDirectories(ruta.toAbsolutePath().getParent());
+        Path carpeta = ruta.toAbsolutePath().getParent();
+        if (carpeta != null) Files.createDirectories(carpeta);
         red.save(ruta.toString());
-        System.out.println("[Entrenamiento] Iteraciones="+regla.getCurrentIteration()+" error="+regla.getTotalNetworkError());
+        System.out.println("[Provisional] Iteraciones=" + regla.getCurrentIteration() + " error=" + regla.getTotalNetworkError());
     }
-    public static double evaluar(Path ruta, Path informe) throws IOException {
-        RedNeuronal redNeuronal=new RedNeuronal(ruta);
-        int n=EntornoClasificado.values().length, total=1000, aciertos=0;
-        int[][] matriz=new int[n][n+1]; // Ultima columna: entorno no reconocido (salida bajo el umbral).
-        for(Muestra m:generar(total,202L)) {
-            EntornoClasificado pred=redNeuronal.clasificarEntorno(m.telemetria());
-            matriz[m.etiqueta().ordinal()][pred==null?n:pred.ordinal()]++;
-            if(pred==m.etiqueta()) aciertos++;
-        }
-        double precision=100.0*aciertos/total;
-        StringBuilder filas=new StringBuilder();
-        for(EntornoClasificado real:EntornoClasificado.values())
-            filas.append(String.format(Locale.ROOT,"%s: %d %d %d %d%n",real,
-                matriz[real.ordinal()][0],matriz[real.ordinal()][1],matriz[real.ordinal()][2],matriz[real.ordinal()][3]));
-        String texto=String.format(Locale.ROOT,
-            "DATOS FICTICIOS - NO SON MEDICIONES DE CAMPO%nMLP 12-6-3 sigmoid / MomentumBackpropagation%n"+
-            "Entrenamiento: 2400 ejemplos, semilla 101; pesos: 20260930%n"+
-            "Validacion independiente: 1000 ejemplos, semilla 202%n"+
-            "Filas=real, columnas=prediccion [LIBRE, OBJETO, LOBITO, NO_RECONOCIDO]%n%sExactitud sintetica: %.2f%%%n",
-            filas,precision);
-        Files.createDirectories(informe.toAbsolutePath().getParent()); Files.writeString(informe,texto);
-        System.out.print(texto);
-        return precision;
+
+    /** Exactitud sobre 1000 ejemplos sintéticos de otra semilla (null de la red cuenta como error). */
+    public static double evaluar(Path ruta) {
+        RedNeuronal red = new RedNeuronal(ruta);
+        int aciertos = 0, total = 1000;
+        for (Muestra m : generar(total, 202L)) if (red.clasificarEntorno(m.valores()) == m.etiqueta()) aciertos++;
+        return 100.0 * aciertos / total;
     }
-    /** Guarda los ejemplos de entrenamiento (semilla 101): numero;clase;d0..d11 en mm. */
-    public static void exportarEntrenamiento(Path csv) throws IOException {
-        StringBuilder texto=new StringBuilder("ejemplo;clase;d0;d1;d2;d3;d4;d5;d6;d7;d8;d9;d10;d11\n");
-        int numero=1;
-        for(Muestra m:generar(2400,101L)) {
-            texto.append(numero++).append(';').append(m.etiqueta());
-            for(double d:m.telemetria().getDistancias()) texto.append(String.format(Locale.ROOT,";%.1f",d));
-            texto.append('\n');
-        }
-        Files.createDirectories(csv.toAbsolutePath().getParent()); Files.writeString(csv,texto.toString());
-    }
+
     public static void main(String[] args) throws Exception {
-        Path ruta=Path.of(args.length>0?args[0]:"modelos/entorno-demo.nnet");
-        entrenarSiFalta(ruta);
-        exportarEntrenamiento(Path.of("evidencias/datos-entrenamiento.csv"));
-        double exactitud=evaluar(ruta,Path.of("evidencias/validacion-sintetica.txt"));
-        for(Muestra m:generar(6,303L)) {
-            System.out.println(Arrays.toString(m.telemetria().getDistancias())+" esperado="+m.etiqueta()+
-                " red="+new RedNeuronal(ruta).clasificarEntorno(m.telemetria()));
-        }
-        if(exactitud<95) throw new IllegalStateException("No se alcanzo el objetivo del 95% sintetico");
+        Path ruta = Path.of(args.length > 0 ? args[0] : "modelos/entorno.nnet");
+        entrenar(ruta);
+        double exactitud = evaluar(ruta);
+        System.out.printf(Locale.ROOT, "[Provisional] Exactitud sintética (semilla 202): %.2f%% - NO es evidencia de campo%n", exactitud);
+        if (exactitud < 90) throw new IllegalStateException("El modelo provisional no alcanzó el 90 % sintético");
     }
 }

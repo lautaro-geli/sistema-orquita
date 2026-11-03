@@ -1,6 +1,5 @@
 package orquitas.servidor.persistencia;
 
-import orquitas.servidor.captura.Captura;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -8,116 +7,105 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
-/** CU-09/CU-10. Una única instancia compartida por escritor y lector. */
+/**
+ * CU-09 y CU-10. Archivo estomago.txt: una línea "identificador;fechaISO" por captura. Es la única
+ * fuente del conteo de capturas (nunca una variable en memoria). Escritores y Auditor acceden a él
+ * dentro de la sección crítica protegida por un semáforo justo.
+ */
 public class Estomago {
     private final String rutaArchivo;
     private final Semaphore mutex = new Semaphore(1, true);
-    private final Object controlEscrituras = new Object();
-    // Escritores en curso, para el apagado ordenado (esperarEscrituras); NO es la cantidad de Lobitos
-    // capturados ni da prioridad a las escrituras sobre las lecturas.
-    private int escriturasPendientes;
 
     public Estomago(String rutaArchivo) {
         this.rutaArchivo = rutaArchivo;
     }
 
-    /** CU-09. Un hilo Escritor por captura; la recepción no espera al disco. */
-    public void registrarCaptura(Captura captura) {
-        Escritor escritor = new Escritor(this, Objects.requireNonNull(captura));
-        anunciarEscritura();
-        try {
-            escritor.start(); // JVM invoca run() en el hilo escritor.
-        } catch (RuntimeException | Error e) {
-            finalizarEscritura();
-            throw e;
-        }
+    /**
+     * CU-09. Crea y arranca un Escritor para la captura y espera su resultado: devuelve true si la
+     * captura quedó en el archivo (nueva o repetida) y false si no se pudo escribir.
+     */
+    public boolean registrarCaptura(String identificador) {
+        Escritor escritor = new Escritor(this, identificador);
+        escritor.start();
+        return escritor.esperarResultado();
     }
 
-    /** Bloquea hasta que terminen todos los Escritor iniciados (apagado y pruebas). */
-    public void esperarEscrituras() throws InterruptedException {
-        synchronized (controlEscrituras) {
-            while (escriturasPendientes > 0) controlEscrituras.wait();
-        }
-    }
-
-    void anunciarEscritura() {
-        synchronized (controlEscrituras) {
-            escriturasPendientes++;
-        }
-    }
-
-    void finalizarEscritura() {
-        synchronized (controlEscrituras) {
-            if (escriturasPendientes <= 0) throw new IllegalStateException("Sin escritura pendiente");
-            escriturasPendientes--;
-            controlEscrituras.notifyAll();
-        }
-    }
-
-    public boolean escribirRegistro(Captura captura) throws IOException, InterruptedException {
+    /**
+     * Sección crítica de escritura: si el identificador ya está en el archivo no escribe (captura
+     * repetida); si es nuevo agrega su línea al final. Propaga IOException; el mutex se libera siempre.
+     */
+    public void escribirRegistro(String identificador) throws IOException, InterruptedException {
         mutex.acquire();
         try {
-            // El archivo sigue siendo la autoridad, incluso ante una retransmisión.
-            for (Captura registrada : leerDelArchivo()) {
-                if (registrada.getIdentificador().equals(captura.getIdentificador())) return false;
+            for (String linea : leerDelArchivo()) {
+                if (identificador.equals(identificadorDeLinea(linea))) return; // Captura repetida.
             }
-            // BufferedWriter propaga los errores de escritura y de cierre.
-            try (BufferedWriter salida = Files.newBufferedWriter(Path.of(rutaArchivo),
-                    StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-                salida.write(captura.aLinea());
-                salida.newLine();
+            try (BufferedWriter salida = Files.newBufferedWriter(Path.of(rutaArchivo), StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+                salida.write(armarLinea(identificador));
+                salida.write('\n');
+                salida.flush();
             }
-            return true; // Confirmación solamente después del cierre correcto.
-        } finally {
-            mutex.release(); // CRITICAL: se libera también si falla el archivo.
-        }
-    }
-
-    public List<Captura> leerRegistros() throws IOException, InterruptedException {
-        // Lecturas y escrituras comparten el mismo mutex justo (FIFO): el auditor espera a lo sumo las
-        // escrituras que ya estaban en cola, nunca queda postergado. Si lee entre dos escrituras cuenta de
-        // menos y vuelve a verificar en el proximo ciclo; no hay inconsistencia porque el archivo es la autoridad.
-        mutex.acquire();
-        try {
-            return leerDelArchivo();
         } finally {
             mutex.release();
         }
     }
 
-    /** Vacía estomago.txt: una misión nueva empieza sin capturas. Entra en la misma sección crítica que lecturas y escrituras. */
+    /** CU-10. Cuenta, en una sola sección crítica, las líneas con formato válido. Archivo inexistente: 0. */
+    public int contarRegistrosValidos() throws IOException, InterruptedException {
+        mutex.acquire();
+        try {
+            List<String> identificadores = new ArrayList<>();
+            for (String linea : leerDelArchivo()) {
+                String id = identificadorDeLinea(linea);
+                if (id != null && !identificadores.contains(id)) identificadores.add(id);
+            }
+            return identificadores.size();
+        } finally {
+            mutex.release();
+        }
+    }
+
+    /** Vacía el archivo: se llama al arrancar el Servidor (la misión empieza de cero). */
     public void reiniciar() throws IOException, InterruptedException {
         mutex.acquire();
         try {
-            Files.deleteIfExists(Path.of(rutaArchivo));
+            Files.write(Path.of(rutaArchivo), new byte[0]);
         } finally {
             mutex.release();
         }
     }
 
-    /** Cantidad de capturas de una lista obtenida con leerRegistros(), que ya trae solo las bien formadas y sin repetir. */
-    public int contarRegistrosValidos(List<Captura> registros) {
-        return registros.size();
+    /** Líneas del archivo tal como están; se llama siempre con el mutex tomado. */
+    private List<String> leerDelArchivo() throws IOException {
+        try {
+            return Files.readAllLines(Path.of(rutaArchivo), StandardCharsets.UTF_8);
+        } catch (NoSuchFileException e) {
+            return new ArrayList<>(); // Misión nueva: todavía no hay capturas.
+        }
     }
 
-    private List<Captura> leerDelArchivo() throws IOException {
-        List<String> lineas;
+    /** "identificador;fechaISO" con la hora del Servidor (el Arduino no tiene reloj). */
+    private String armarLinea(String identificador) {
+        return identificador + ";" + LocalDateTime.now();
+    }
+
+    /** Identificador de una línea válida, o null si la línea está vacía, cortada o alterada. */
+    private static String identificadorDeLinea(String linea) {
+        if (linea == null) return null;
+        String[] partes = linea.split(";", -1);
+        if (partes.length != 2 || !partes[0].matches("[A-Za-z0-9_-]{1,16}")) return null;
         try {
-            lineas = Files.readAllLines(Path.of(rutaArchivo), StandardCharsets.UTF_8);
-        } catch (NoSuchFileException e) {
-            return new ArrayList<>(); // Una misión nueva todavía no tiene capturas.
+            LocalDateTime.parse(partes[1]);
+            return partes[0];
+        } catch (DateTimeParseException e) {
+            return null;
         }
-        var unicas = new LinkedHashMap<String, Captura>();
-        for (String linea : lineas) {
-            Captura captura = Captura.desdeLinea(linea);
-            if (captura != null) unicas.putIfAbsent(captura.getIdentificador(), captura);
-        }
-        return new ArrayList<>(unicas.values());
     }
 }
