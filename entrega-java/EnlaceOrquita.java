@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import orquitas.servidor.navegacion.EstadoOrquita;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.Navegacion;
 import orquitas.servidor.persistencia.Estomago;
@@ -133,7 +134,7 @@ public class EnlaceOrquita extends Thread {
         switch (decodificar(trama)) {
             case CAPTURA: {
                 String identificador = identificadorCaptura;
-                System.out.println("[Estado] APROXIMACION -> CAPTURA (la Orquita avisa la captura " + identificador + ")");
+                navegacion.informarEstado(EstadoOrquita.CAPTURA, "la Orquita avisa la captura " + identificador);
                 if (estomago.registrarCaptura(identificador)) { // CU-09: espera al Escritor.
                     System.out.println("[Captura] id=" + identificador + " anotada en el estómago");
                     enviarConfirmacion();
@@ -217,7 +218,7 @@ public class EnlaceOrquita extends Thread {
     public synchronized void registrarFalla() {
         if (estado == EstadoEnlace.DESCONECTADO) return;
         String causa = causaFalla != null ? causaFalla : "falla del enlace";
-        System.out.println("[Estado] " + estado + " -> ERROR_SEGURO (" + causa + ")");
+        navegacion.informarEstado(EstadoOrquita.ERROR_SEGURO, causa);
         System.out.println("[Enlace] Restablecer a mano: vincular de nuevo el HC-06 y reiniciar el Servidor.");
         estado = EstadoEnlace.DESCONECTADO;
         sistemaActivo = false;

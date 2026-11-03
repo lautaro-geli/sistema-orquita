@@ -29,7 +29,7 @@ public class Navegacion {
     private Movimiento movimientoDecidido = Movimiento.DETENER;
     private int lecturasNoReconocidas;
     /** Último de los 6 estados de la consigna informado por consola. */
-    private String estadoInformado = "BUSQUEDA";
+    private EstadoOrquita estadoInformado = EstadoOrquita.BUSQUEDA;
 
     public Navegacion(RedNeuronal redNeuronal) {
         this.redNeuronal = Objects.requireNonNull(redNeuronal);
@@ -45,8 +45,8 @@ public class Navegacion {
         lecturasNoReconocidas = 0;
         movimientoDecidido = calcularMovimiento(entorno, telemetria);
         if (modoOperativo == ModoOperativo.BUSQUEDA) {
-            if (entorno == EntornoClasificado.LOBITO) informarEstado("APROXIMACION", "la red ve un Lobito");
-            else informarEstado("BUSQUEDA", "ya no ve un Lobito");
+            if (entorno == EntornoClasificado.LOBITO) informarEstado(EstadoOrquita.APROXIMACION, "la red ve un Lobito");
+            else informarEstado(EstadoOrquita.BUSQUEDA, "ya no ve un Lobito");
         }
     }
 
@@ -65,9 +65,9 @@ public class Navegacion {
         modoOperativo = Objects.requireNonNull(modo);
         if (anterior == modo) return;
         switch (modo) {
-            case ESCAPE: informarEstado("ESCAPE", "se alcanzó el umbral de capturas"); break;
-            case LIBERADA: informarEstado("FINALIZACION", "campo libre: la Orquita salió de la bahía"); break;
-            default: informarEstado("BUSQUEDA", "modo búsqueda");
+            case ESCAPE: informarEstado(EstadoOrquita.ESCAPE, "se alcanzó el umbral de capturas"); break;
+            case LIBERADA: informarEstado(EstadoOrquita.FINALIZACION, "campo libre: la Orquita salió de la bahía"); break;
+            default: informarEstado(EstadoOrquita.BUSQUEDA, "modo búsqueda");
         }
     }
 
@@ -153,9 +153,12 @@ public class Navegacion {
         return Movimiento.AVANZAR;
     }
 
-    /** Imprime "[Estado] ANTERIOR -> NUEVO (motivo)" solo cuando el estado cambia. */
-    private void informarEstado(String nuevo, String motivo) {
-        if (nuevo.equals(estadoInformado)) return;
+    /**
+     * Imprime "[Estado] ANTERIOR -> NUEVO (motivo)" solo cuando el estado cambia. Es público porque
+     * EnlaceOrquita informa por acá CAPTURA y ERROR_SEGURO: Navegacion lleva el único estado de la Orquita.
+     */
+    public synchronized void informarEstado(EstadoOrquita nuevo, String motivo) {
+        if (nuevo == estadoInformado) return;
         System.out.println("[Estado] " + estadoInformado + " -> " + nuevo + " (" + motivo + ")");
         estadoInformado = nuevo;
     }
