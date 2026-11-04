@@ -69,7 +69,7 @@ El Servidor no empareja ni crea el puerto: solo abre el COM ya creado.
 
 La consola muestra:
 
-- **Estados:** `[Estado] ANTERIOR -> NUEVO (motivo)`, con BUSQUEDA, APROXIMACION, CAPTURA, ESCAPE, FINALIZACION y ERROR_SEGURO.
+- **Estados:** `[Estado] ANTERIOR -> NUEVO` en cada cambio de modo (BUSQUEDA, ESCAPE, LIBERADA) y `[Estado] ERROR_SEGURO (causa)` cuando falla el enlace.
 - **Capturas:** `[Captura]` y `[Auditor] n/umbral`.
 - **Órdenes:** `[Orden]`.
 

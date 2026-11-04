@@ -14,7 +14,6 @@ EnlaceOrquita -> EnlaceOrquita : decodificar(trama)
 EnlaceOrquita --> EnlaceOrquita : tipoTrama
 
 alt hay aviso de captura (la trama es una captura)
-    EnlaceOrquita -> Navegacion : informarEstado(CAPTURA, motivo)
     EnlaceOrquita -> Estomago : registrarCaptura(identificador)
     activate Estomago
     ref over EnlaceOrquita, Estomago : CU-09 Actualizar Estómago
@@ -82,7 +81,6 @@ else entorno reconocido
 
         alt el campo está libre (la Orquita ya salió)
             Navegacion -> Navegacion : establecerModoOperativo(LIBERADA)
-            Navegacion -> Navegacion : informarEstado(FINALIZACION, motivo)
 
         else entorno SALIDA
             Navegacion -> Navegacion : sectorMasAbierto(telemetria)
@@ -110,7 +108,6 @@ else entorno reconocido
             Navegacion -> Navegacion : sumarIzquierda(telemetria)
             Navegacion --> Navegacion : sumaIzquierda
         end
-        Navegacion -> Navegacion : informarEstado(estado, motivo)
     end
 
     Navegacion --> Navegacion : movimiento
@@ -129,9 +126,8 @@ note right of Navegacion
   SALIDA -> AVANZAR.
   ESCAPE: ignora al LOBITO; SALIDA -> hacia el sector más
   abierto; OBJETO -> girar sin frenar; LIBRE -> AVANZAR.
-  Si el campo está libre, pasa a LIBERADA (DETENER) y el estado
-  pasa a FINALIZACION. informarEstado() imprime en la consola los
-  cambios entre BUSQUEDA y APROXIMACION (modo BÚSQUEDA).
+  Si el campo está libre, pasa a LIBERADA (DETENER); el cambio
+  de estado se informa en la consola del Servidor.
   LIBERADA: DETENER.
 end note
 @enduml
@@ -305,7 +301,6 @@ activate Navegacion
 
 opt el modo operativo es BÚSQUEDA
     Navegacion -> Navegacion : establecerModoOperativo(ESCAPE)
-    Navegacion -> Navegacion : informarEstado(ESCAPE, motivo)
 end
 
 deactivate Navegacion
@@ -317,7 +312,6 @@ hide footbox
 
 actor Orquita
 participant EnlaceOrquita
-participant Navegacion
 
 note over Orquita, EnlaceOrquita
   Lo activa el silencio de la Orquita (o la falla del enlace
@@ -347,7 +341,6 @@ loop sistema activo
 
     alt pasó el tiempo máximo de espera o falló el enlace
         EnlaceOrquita -> EnlaceOrquita : registrarFalla()
-        EnlaceOrquita -> Navegacion : informarEstado(ERROR_SEGURO, causa)
         note right of EnlaceOrquita
           Deja el enlace en DESCONECTADO y detiene el hilo
           (termina el bucle).

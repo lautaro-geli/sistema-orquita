@@ -29,9 +29,7 @@ Valores elegidos para no frenar el desarrollo. Los marcados **[A CONFIRMAR]** ha
 - **[A CONFIRMAR] `Navegacion.ALCANCE_LIBRE_MM` = 1500:** si en ESCAPE ningún sector ve nada más cerca, la Orquita se considera fuera de la bahía (LIBERADA). Ajustar en la pista: si afuera hay paredes o público a menos de 1,5 m, nunca se liberaría.
 - **[A CONFIRMAR] Geometría:** las decisiones usan el ROI 16x16 (`distanciaSector`). Derecha = sectores 0–4, izquierda = 8–12, frente = 5–7. Encerrada (BÚSQUEDA) = ambos lados suman menos de 1200 mm × 5 sectores.
 - **Umbral de capturas:** `--umbral=1` por defecto (prueba de campo del Hito 3); el reglamento de la competencia usa 3.
-- **Estados por consola:**
-  - La transición a `CAPTURA` la imprime `EnlaceOrquita` con el texto fijo `APROXIMACION -> CAPTURA`.
-  - La siguiente transición la informa `Navegacion` desde su último estado conocido (BUSQUEDA o APROXIMACION), porque `Navegacion` no se entera de la captura sin un método extra fuera del diagrama.
+- **Estados por consola:** el diagrama de clases no lleva estados (para eso está el Diagrama de Estados). `Navegacion.establecerModoOperativo` imprime `[Estado] ANTERIOR -> NUEVO` en cada cambio de modo y `EnlaceOrquita.registrarFalla` imprime `[Estado] ERROR_SEGURO (causa)`. Aproximación y Captura no se informan por consola: no son estados del código (ver el Diagrama de Estados).
   - La cantidad de capturas la imprime el `Auditor` (`n/umbral`) cada vez que cambia, justo antes del paso a ESCAPE.
 - **[A CONFIRMAR] Orden de encendido:** primero el robot, después el Servidor. Al abrir el COM, Windows conecta con el HC-06. El Servidor da 8 s de margen desde que arranca hasta recibir el primer dato del robot.
 - **Entrega a ClassRoom:**
