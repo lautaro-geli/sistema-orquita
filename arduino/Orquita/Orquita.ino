@@ -70,17 +70,23 @@ const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja 
 const uint8_t VELOCIDAD_MOTORES = 180;     // PWM 0..255.
 const unsigned long PASO_AVANZAR_MS = 400; // Duración de un paso de AVANZAR/RETROCEDER.
 const unsigned long PASO_GIRO_MS = 300;    // Duración de un paso de giro.
-const unsigned long ESPERA_SERVO_MS = 40;  // Asentamiento del servo entre posiciones de 15°.
-const unsigned long ESPERA_INICIO_BARRIDO_MS = 300; // Volver de 180° a 0°.
+const unsigned long ESPERA_SERVO_MS = 100; // Asentamiento del servo en cada posición (probado en el barrido que funcionó).
+const unsigned long ESPERA_INICIO_BARRIDO_MS = 500; // Volver de 180° a 0°.
 const unsigned long ESPERA_ELEVACION_MS = 250;      // Subir o bajar el sensor.
-const uint16_t PRESUPUESTO_MEDICION_US = 50000;     // ~50 ms por medición (modo Long).
+// Parámetros del barrido que funcionó bien (modo Short, medición más larga = más estable).
+const uint32_t PRESUPUESTO_MEDICION_US = 75000;     // Tiempo de captura del VL53L1X.
+const uint16_t LECTURA_MS = 78;                     // Presupuesto + ~3 ms de overhead.
+const unsigned long SLOT_MS = 370;                  // Tiempo máximo por ángulo (13 x 370 = 4,8 s).
+const uint16_t TIMEOUT_SENSOR_MS = 300;
+const uint16_t DIST_MIN_MM = 40;                    // Fuera de [40, 1300] mm la lectura es -1.
+const uint16_t DIST_MAX_MM = 1300;
 // Sentido de los ángulos: TODO confirmar. Se asume 0° = derecha del robot, 90° = frente, 180° = izquierda.
 
 // ---------------- Protocolo y tiempos ----------------
 const unsigned long BAUDIOS_HC06 = 9600;
 const unsigned long SAFE_MODE_MS = 3000;        // Sin recibir nada del Servidor: frenar.
 const unsigned long ESPERA_CONFIRMACION_MS = 1000;
-const unsigned long ESPERA_ORDEN_MS = 2000;
+const unsigned long ESPERA_ORDEN_MS = 3000;
 const unsigned long ANTIRREBOTE_MS = 20;        // El FC-51 debe marcar BAJO al menos este tiempo.
 const unsigned long BLOQUEO_CAPTURA_MS = 1500;  // Una canica no genera dos capturas.
 const uint8_t SECTORES = 13;
@@ -271,32 +277,41 @@ int8_t esperarOrden() {
 // Sensor y barrido
 // ======================================================================
 
-/** Una medición con el ROI indicado (lado en SPADs: 4, 8 o 16). -1 si falla o no hay eco válido. */
-int medir(uint8_t lado) {
+/** Una medición con el ROI indicado (lado en SPADs: 4, 8 o 16). -1 si falla o no hay eco válido.
+ *  limite = instante (millis) máximo para terminar este ángulo; resto = tiempo que aún necesitan los
+ *  ROI que faltan en este ángulo. Reintenta una vez solo si queda tiempo en el presupuesto del ángulo. */
+int medir(uint8_t lado, unsigned long limite, unsigned long resto) {
   if (!sensorListo) return SIN_ECO;
   sensor.setROISize(lado, lado);
   sensor.setROICenter(199);
-  uint16_t mm = sensor.readSingle();
-  if (sensor.timeoutOccurred()) return SIN_ECO;
-  if (sensor.ranging_data.range_status != VL53L1X::RangeValid) return SIN_ECO;
-  if (mm > ALCANCE_MM) return SIN_ECO; // El Servidor rechaza valores mayores a 4000.
-  return (int) mm;
+  for (uint8_t intento = 0; intento < 2; intento++) {
+    if (intento == 1 && millis() + LECTURA_MS + resto > limite) break;
+    uint16_t mm = sensor.readSingle();
+    if (sensor.timeoutOccurred()) continue;
+    if (sensor.ranging_data.range_status != VL53L1X::RangeValid) continue;
+    if (mm < DIST_MIN_MM || mm > DIST_MAX_MM) continue;
+    return (int) mm;
+  }
+  return SIN_ECO; // El Servidor reemplaza -1 por el alcance máximo.
 }
 
 /** Barrido de 13 posiciones x 3 ROI. Devuelve false si se cortó por Safe Mode. */
 bool barrer() {
   moverServo(CANAL_BARRIDO, 0);
   if (!esperarMs(ESPERA_INICIO_BARRIDO_MS)) return false;
+  unsigned long inicio = millis();
   for (uint8_t s = 0; s < SECTORES; s++) {
+    unsigned long limite = inicio + (unsigned long)(s + 1) * SLOT_MS;
     moverServo(CANAL_BARRIDO, s * 15);
     if (!esperarMs(ESPERA_SERVO_MS)) return false;
-    lecturas[s * ROIS + 0] = medir(4);
-    lecturas[s * ROIS + 1] = medir(8);
-    lecturas[s * ROIS + 2] = medir(16);
+    lecturas[s * ROIS + 0] = medir(4, limite, 2UL * LECTURA_MS);
+    lecturas[s * ROIS + 1] = medir(8, limite, 1UL * LECTURA_MS);
+    lecturas[s * ROIS + 2] = medir(16, limite, 0);
     atenderServidor(); // Drena el buffer entre posiciones (LATIDO) y controla el Safe Mode.
     revisarCaptura();
     if (enSafeMode) return false;
   }
+  DEP(F("[Robot] Barrido listo en ms: ")); DEPLN(millis() - inicio);
   return true;
 }
 
@@ -341,13 +356,14 @@ void setup() {
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
   moverServo(CANAL_BARRIDO, 0);
 
-  sensor.setTimeout(500);
+  sensor.setTimeout(TIMEOUT_SENSOR_MS);
   sensorListo = sensor.init();
   if (sensorListo) {
-    sensor.setDistanceMode(VL53L1X::Long);
-    sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
-  } else {
-    DEPLN(F("[Robot] No se encontró el VL53L1X: todas las lecturas serán -1"));
+    sensorListo = sensor.setDistanceMode(VL53L1X::Short)
+               && sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
+  }
+  if (!sensorListo) {
+    DEPLN(F("[Robot] VL53L1X no detectado o sin configurar: todas las lecturas serán -1"));
   }
 
   ultimoContacto = millis(); // Hasta que hable el Servidor, a los 3 s entra en Safe Mode.
