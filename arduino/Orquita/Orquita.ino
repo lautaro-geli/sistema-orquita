@@ -30,7 +30,7 @@
 #include <VL53L1X.h>
 #include <Servo.h>
 
-// #define DEPURAR  // Descomentar para ver mensajes por USB (Serial, 115200 baudios).
+#define DEPURAR  // Mensajes por USB (Serial, 115200 baudios). Comentar esta línea para la entrega final.
 #ifdef DEPURAR
   #define DEP(x) Serial.print(x)
   #define DEPLN(x) Serial.println(x)
@@ -101,6 +101,7 @@ const int8_t DETENER = 4;
 // ---------------- Estado global ----------------
 SoftwareSerial bt(HC_RX, HC_TX);
 VL53L1X sensor;
+bool sensorListo = false;               // false: no se detectó el VL53L1X; las lecturas son -1 sin esperar.
 Servo servos[3];                        // Barrido, elevación y colector.
 
 int lecturas[VALORES];                  // 78 bytes: un barrido completo.
@@ -176,7 +177,6 @@ void procesarLinea() {
     rechazoRecibido = true;
   }
   // LATIDO u otra cosa: solo sirvió para el reloj del Safe Mode.
-  DEP(F("<- ")); DEPLN(linea);
   largoLinea = 0;
 }
 
@@ -185,9 +185,12 @@ void atenderServidor() {
   while (bt.available() > 0) {
     char c = (char) bt.read();
     ultimoContacto = millis();
+#ifdef DEPURAR
+    Serial.write(c); // Eco de todo lo que llega por Bluetooth.
+#endif
     if (enSafeMode) {
       enSafeMode = false;
-      DEPLN(F("Sale del Safe Mode"));
+      DEPLN(F("[Robot] Sale del Safe Mode"));
     }
     if (c == '\r') continue;
     if (c == '\n') { procesarLinea(); continue; }
@@ -197,7 +200,7 @@ void atenderServidor() {
   if (!enSafeMode && millis() - ultimoContacto > SAFE_MODE_MS) {
     enSafeMode = true;
     detenerTodo();
-    DEPLN(F("SAFE MODE: sin noticias del Servidor"));
+    DEPLN(F("[Robot] SAFE MODE: sin noticias del Servidor"));
   }
 }
 
@@ -233,7 +236,7 @@ void enviarCapturaPendiente() {
   bt.print(F("CAPTURA|"));
   bt.print(id);
   bt.write('\n');
-  DEP(F("-> CAPTURA|")); DEPLN(id);
+  DEP(F("[Robot] -> CAPTURA|")); DEPLN(id);
   unsigned long inicio = millis();
   while (millis() - inicio < ESPERA_CONFIRMACION_MS) {
     if (!esperarMs(10)) return;
@@ -250,7 +253,7 @@ void enviarTelemetria() {
     bt.print(lecturas[i]);
   }
   bt.write('\n');
-  DEPLN(F("-> TELEMETRIA"));
+  DEPLN(F("[Robot] -> TELEMETRIA enviada"));
 }
 
 /** Espera la ORDEN de la telemetría. Devuelve SIN_ORDEN si llegó RECHAZO, si no llegó o si hubo Safe Mode. */
@@ -270,6 +273,7 @@ int8_t esperarOrden() {
 
 /** Una medición con el ROI indicado (lado en SPADs: 4, 8 o 16). -1 si falla o no hay eco válido. */
 int medir(uint8_t lado) {
+  if (!sensorListo) return SIN_ECO;
   sensor.setROISize(lado, lado);
   sensor.setROICenter(199);
   uint16_t mm = sensor.readSingle();
@@ -338,14 +342,16 @@ void setup() {
   moverServo(CANAL_BARRIDO, 0);
 
   sensor.setTimeout(500);
-  if (!sensor.init()) {
-    DEPLN(F("No se encontró el VL53L1X: todas las lecturas serán -1"));
+  sensorListo = sensor.init();
+  if (sensorListo) {
+    sensor.setDistanceMode(VL53L1X::Long);
+    sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
+  } else {
+    DEPLN(F("[Robot] No se encontró el VL53L1X: todas las lecturas serán -1"));
   }
-  sensor.setDistanceMode(VL53L1X::Long);
-  sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
 
   ultimoContacto = millis(); // Hasta que hable el Servidor, a los 3 s entra en Safe Mode.
-  DEPLN(F("Orquita lista"));
+  DEPLN(F("[Robot] Orquita lista"));
 }
 
 void loop() {
