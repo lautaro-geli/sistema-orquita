@@ -9,15 +9,17 @@ Valores elegidos para no frenar el desarrollo. Los marcados **[A CONFIRMAR]** ha
 - **[A CONFIRMAR] Colector (SG90 de rotación continua):** gira a velocidad constante mientras no esté en Safe Mode y se detiene en Safe Mode. `COLECTOR_DETENIDO` = 307 (≈1,5 ms) puede necesitar ajuste fino si el servo se arrastra.
 - **[A CONFIRMAR] Servo de elevación:** bajado (0°) durante el barrido, levantado (180°) durante el paso de movimiento, y vuelve a bajar antes del siguiente barrido.
 - **[A CONFIRMAR] Calibración:**
-  - pulsos del SG90: `PULSO_SERVO_0` = 110 y `PULSO_SERVO_180` = 500 (de 4096 a 50 Hz);
+  - pulsos del SG90 (librería `Servo`): `PULSO_SERVO_0_US` = 544 y `PULSO_SERVO_180_US` = 2400; colector: 1500 µs detenido y 1660 µs girando;
   - `VELOCIDAD_MOTORES` = 180;
   - `PASO_AVANZAR_MS` = 400 y `PASO_GIRO_MS` = 300;
   - `ESPERA_SERVO_MS` = 40 entre posiciones de 15° y 300 ms para volver a 0°;
   - `ESPERA_ELEVACION_MS` = 250.
-- **[A CONFIRMAR] Pines preliminares:**
-  - HC-06: RX = 10 y TX = 11 (con divisor de tensión);
-  - L298N: ENA = 5, ENB = 6, IN1 = 7, IN2 = 8, IN3 = 12, IN4 = 13;
-  - FC-51: pin 2, activo en bajo.
+- **Pines (cableado real de la plataforma):**
+  - servos directos al Arduino (sin PCA9685): servo 1 (barrido) = D2, servo 2 (elevación) = D3, servo 3 (colector, rotación continua) = D4; **[A CONFIRMAR]** qué servo físico cumple cada función;
+  - L298N: ENA = D5, ENB = D6, IN1 = D7, IN2 = D8, IN3 = D9, IN4 = D11;
+  - HC-06: TXD = D10 (el Arduino recibe) y RXD = A2 (el Arduino envía, con divisor de tensión);
+  - FC-51: A0, activo en bajo;
+  - VL53L1X: I2C, SDA = A4 y SCL = A5.
 - **VL53L1X:** modo Long, presupuesto de 50 ms por medición, ROI 4x4/8x8/16x16 centrado en 199, `readSingle()` (requiere la librería de Pololu ≥ 1.3.0). Una lectura con timeout, estado inválido o mayor a 4000 mm se envía como `-1` (el Servidor rechaza valores mayores a 4000).
 - **Capturas:** antirrebote de 20 ms y bloqueo de 1500 ms. Ids consecutivos desde 1; una segunda captura antes de la confirmación no se pierde (contadores de generadas y confirmadas).
 - **Tiempos de espera:** CONFIRMACION de una captura, hasta 1 s; ORDEN, hasta 2 s. Sin orden o con RECHAZO, el robot queda detenido y repite el ciclo.

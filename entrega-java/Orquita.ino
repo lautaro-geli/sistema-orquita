@@ -17,8 +17,7 @@
  *
  * Librerías (Gestor de librerías del IDE de Arduino):
  *   - VL53L1X de Pololu (versión 1.3.0 o posterior: usa readSingle()).
- *   - Adafruit PWM Servo Driver Library (Adafruit_PWMServoDriver).
- *   - SoftwareSerial y Wire (vienen con el IDE).
+ *   - Servo, SoftwareSerial y Wire (vienen con el IDE).
  *
  * Alimentación: servos y motores con fuente propia, separada del Arduino; todas las masas (GND) unidas.
  * Memoria: el UNO tiene ~2 KB de SRAM. No se usa String; los textos fijos van con F() y los números
@@ -29,7 +28,7 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <VL53L1X.h>
-#include <Adafruit_PWMServoDriver.h>
+#include <Servo.h>
 
 // #define DEPURAR  // Descomentar para ver mensajes por USB (Serial, 115200 baudios).
 #ifdef DEPURAR
@@ -40,27 +39,32 @@
   #define DEPLN(x)
 #endif
 
-// ---------------- Pines (preliminares) ----------------
-const uint8_t HC_RX = 10;        // Arduino recibe del HC-06 (TX del HC-06).
-const uint8_t HC_TX = 11;        // Arduino envía al HC-06 (RX del HC-06, con divisor de tensión a 3,3 V).
-const uint8_t PIN_ENA = 5;       // L298N: PWM motor izquierdo.
-const uint8_t PIN_ENB = 6;       // L298N: PWM motor derecho.
-const uint8_t PIN_IN1 = 7;
-const uint8_t PIN_IN2 = 8;
-const uint8_t PIN_IN3 = 12;
-const uint8_t PIN_IN4 = 13;
-const uint8_t PIN_CAPTURA = 2;   // FC-51: salida activa en BAJO. Cualquier detección es un Lobito.
+// ---------------- Pines (cableado real) ----------------
+const uint8_t PIN_SERVO_BARRIDO = 2;    // Servo 1: gira el sensor de 0° a 180°.
+const uint8_t PIN_SERVO_ELEVACION = 3;  // Servo 2: levanta/baja el sensor.
+const uint8_t PIN_SERVO_COLECTOR = 4;   // Servo 3: SG90 de rotación continua (colector).
+const uint8_t PIN_ENA = 5;       // L298N: PWM motor A (izquierdo).
+const uint8_t PIN_ENB = 6;       // L298N: PWM motor B (derecho).
+const uint8_t PIN_IN1 = 7;       // Motor A.
+const uint8_t PIN_IN2 = 8;       // Motor A.
+const uint8_t PIN_IN3 = 9;       // Motor B.
+const uint8_t HC_RX = 10;        // Arduino recibe del HC-06 (TXD del HC-06).
+const uint8_t PIN_IN4 = 11;      // Motor B.
+const uint8_t HC_TX = A2;        // Arduino envía al HC-06 (RXD del HC-06, con divisor de tensión a 3,3 V).
+const uint8_t PIN_CAPTURA = A0;  // FC-51: salida activa en BAJO. Cualquier detección es un Lobito.
+// I2C del VL53L1X: SDA = A4, SCL = A5 (fijos en el UNO).
 
-// ---------------- Canales del PCA9685 ----------------
-const uint8_t CANAL_BARRIDO = 0;    // SG90 que gira el sensor de 0° a 180°.
-const uint8_t CANAL_ELEVACION = 1;  // SG90 que levanta/baja el sensor.
-const uint8_t CANAL_COLECTOR = 2;   // SG90 de rotación continua (colector).
+// ---------------- Servos ----------------
+// Índices dentro del arreglo servos[].
+const uint8_t CANAL_BARRIDO = 0;
+const uint8_t CANAL_ELEVACION = 1;
+const uint8_t CANAL_COLECTOR = 2;
 
 // ---------------- Constantes a calibrar ----------------
-const int PULSO_SERVO_0 = 110;        // Pulso (de 4096) para 0°. Calibrar con el SG90 real.
-const int PULSO_SERVO_180 = 500;      // Pulso para 180°.
-const int COLECTOR_DETENIDO = 307;    // ~1,5 ms: el servo continuo no gira. Ajustar si se arrastra.
-const int COLECTOR_GIRANDO = 340;     // Velocidad del colector.
+const int PULSO_SERVO_0_US = 544;     // Pulso en µs para 0°. Calibrar con el SG90 real.
+const int PULSO_SERVO_180_US = 2400;  // Pulso en µs para 180°.
+const int COLECTOR_DETENIDO_US = 1500; // El servo continuo no gira. Ajustar si se arrastra.
+const int COLECTOR_GIRANDO_US = 1660;  // Velocidad del colector (invertir a ~1340 si gira al revés).
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
 const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja pasar la canica).
 const uint8_t VELOCIDAD_MOTORES = 180;     // PWM 0..255.
@@ -97,7 +101,7 @@ const int8_t DETENER = 4;
 // ---------------- Estado global ----------------
 SoftwareSerial bt(HC_RX, HC_TX);
 VL53L1X sensor;
-Adafruit_PWMServoDriver pca = Adafruit_PWMServoDriver(0x40);
+Servo servos[3];                        // Barrido, elevación y colector.
 
 int lecturas[VALORES];                  // 78 bytes: un barrido completo.
 char linea[LARGO_LINEA];                // Respuesta del Servidor en armado.
@@ -135,13 +139,13 @@ void motores(bool izquierdoAdelante, bool derechoAdelante) {
   analogWrite(PIN_ENB, VELOCIDAD_MOTORES);
 }
 
-/** Lleva un SG90 posicional al ángulo indicado (0..180). */
+/** Lleva un SG90 posicional (BARRIDO o ELEVACION) al ángulo indicado (0..180). */
 void moverServo(uint8_t canal, int grados) {
-  pca.setPWM(canal, 0, map(grados, 0, 180, PULSO_SERVO_0, PULSO_SERVO_180));
+  servos[canal].write(grados);
 }
 
 void colector(bool girando) {
-  pca.setPWM(CANAL_COLECTOR, 0, girando ? COLECTOR_GIRANDO : COLECTOR_DETENIDO);
+  servos[CANAL_COLECTOR].writeMicroseconds(girando ? COLECTOR_GIRANDO_US : COLECTOR_DETENIDO_US);
 }
 
 /** Frena todo: motores y colector. Se usa al entrar en Safe Mode. */
@@ -326,8 +330,9 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);
 
-  pca.begin();
-  pca.setPWMFreq(50);
+  servos[CANAL_BARRIDO].attach(PIN_SERVO_BARRIDO, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
+  servos[CANAL_ELEVACION].attach(PIN_SERVO_ELEVACION, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
+  servos[CANAL_COLECTOR].attach(PIN_SERVO_COLECTOR);
   colector(false);
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
   moverServo(CANAL_BARRIDO, 0);

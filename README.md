@@ -24,7 +24,7 @@ Maven las resuelve solas desde Maven Central (requiere internet la primera vez):
 | `com.fazecast:jSerialComm` | 2.11.4 | Abrir el puerto COM del Bluetooth con tiempos de espera de lectura. |
 | `junit:junit` (solo pruebas) | 4.13.2 | Pruebas automáticas. |
 
-Arduino (Gestor de librerías del IDE): **VL53L1X de Pololu** (≥ 1.3.0), **Adafruit PWM Servo Driver Library** (instala también Adafruit BusIO). `SoftwareSerial` y `Wire` vienen con el IDE.
+Arduino (Gestor de librerías del IDE): **VL53L1X de Pololu** (≥ 1.3.0). `Servo`, `SoftwareSerial` y `Wire` vienen con el IDE.
 
 ## Construir y probar
 
