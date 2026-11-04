@@ -69,13 +69,11 @@ class Navegacion {
   - modoOperativo : ModoOperativo
   - movimientoDecidido : Movimiento
   - lecturasNoReconocidas : int
-  - estadoInformado : EstadoOrquita
   + Navegacion(redNeuronal : RedNeuronal)
   + determinarMovimiento(telemetria : int[]) : void
   + obtenerMovimientoDecidido() : Movimiento
   + activarModoEscape() : void
   + establecerModoOperativo(modo : ModoOperativo) : void
-  + informarEstado(nuevo : EstadoOrquita, motivo : String) : void
   - resolverNoReconocido() : Movimiento
   - calcularMovimiento(entorno : EntornoClasificado, telemetria : int[]) : Movimiento
   - girarHaciaLoAbierto(telemetria : int[]) : Movimiento
@@ -118,15 +116,6 @@ enum ModoOperativo {
   BUSQUEDA
   ESCAPE
   LIBERADA
-}
-
-enum EstadoOrquita {
-  BUSQUEDA
-  APROXIMACION
-  CAPTURA
-  ESCAPE
-  FINALIZACION
-  ERROR_SEGURO
 }
 
 ' ---------------- Estómago (persistencia y concurrencia) ----------------
@@ -173,8 +162,6 @@ EnlaceOrquita ..> Movimiento
 Navegacion --> "1" RedNeuronal : - redNeuronal
 Navegacion ..> Movimiento
 Navegacion ..> ModoOperativo
-Navegacion --> "1" EstadoOrquita : - estadoInformado
-EnlaceOrquita ..> EstadoOrquita
 RedNeuronal ..> EntornoClasificado
 
 Estomago ..> Escritor : «create»
@@ -210,11 +197,9 @@ note bottom of Navegacion
   ROI 16x16 en mm (distanciaSector). campoLibre(): ningún sector
   ve un obstáculo dentro de ALCANCE_LIBRE_MM. determinarMovimiento()
   deja el movimiento guardado en movimientoDecidido.
-  Los 6 estados del Diagrama de Estados son EstadoOrquita.
-  Navegacion lleva el único estado (estadoInformado) y
-  informarEstado() imprime en la consola del Servidor cada cambio;
-  EnlaceOrquita lo llama para CAPTURA y ERROR_SEGURO. No hay
-  mensaje ESTADO. FINALIZACION corresponde al modo LIBERADA.
+  establecerModoOperativo() informa el cambio de modo en la
+  consola del Servidor; registrarFalla() informa ERROR_SEGURO.
+  No hay mensaje ESTADO.
 end note
 note bottom of RedNeuronal
   MLP de 39 entradas (Neuroph). normalizar() convierte cada
