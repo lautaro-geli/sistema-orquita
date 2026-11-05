@@ -346,8 +346,6 @@ void setup() {
   detenerMotores();
 
   bt.begin(BAUDIOS_HC06);
-  Wire.begin();
-  Wire.setClock(400000);
 
   servos[CANAL_BARRIDO].attach(PIN_SERVO_BARRIDO, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
   servos[CANAL_ELEVACION].attach(PIN_SERVO_ELEVACION, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
@@ -355,9 +353,15 @@ void setup() {
   colector(false);
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
   moverServo(CANAL_BARRIDO, 0);
+  delay(1000); // Como en el barrido probado: los servos terminan de moverse antes de iniciar el sensor.
 
+  Wire.begin();
+  Wire.setClock(400000);
   sensor.setTimeout(TIMEOUT_SENSOR_MS);
-  sensorListo = sensor.init();
+  for (uint8_t intento = 0; intento < 3 && !sensorListo; intento++) {
+    sensorListo = sensor.init();
+    if (!sensorListo) delay(200);
+  }
   if (sensorListo) {
     sensorListo = sensor.setDistanceMode(VL53L1X::Short)
                && sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
