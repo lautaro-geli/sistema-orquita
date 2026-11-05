@@ -35,7 +35,7 @@ Texto ASCII, **un mensaje por línea** terminada en `\n` (se acepta `\r\n`). El 
 ## Cambios de estado y falla del enlace
 
 - **No existe mensaje ESTADO.** Los cambios de estado se informan en la consola del Servidor: `[Estado] ANTERIOR -> NUEVO` en cada cambio de modo (BUSQUEDA, ESCAPE, LIBERADA) y `[Estado] ERROR_SEGURO (causa)` cuando falla el enlace. El robot los percibe por la ORDEN que recibe.
-- **Servidor (CU-12):** si no recibe nada durante `TIMEOUT_MAXIMO_MS` = 8000 ms, o falla una escritura al puerto, registra la falla (`ERROR_SEGURO`), deja el enlace `DESCONECTADO`, termina el hilo y el Servidor se cierra con código ≠ 0. No reabre el puerto: el enlace se restablece a mano (vincular de nuevo el HC-06 y reiniciar el Servidor, lo que vacía el estómago).
+- **Servidor (CU-12):** si no recibe nada durante `TIMEOUT_MAXIMO_MS` = 15000 ms, o falla una escritura al puerto, registra la falla (`ERROR_SEGURO`), deja el enlace `DESCONECTADO`, termina el hilo y el Servidor se cierra con código ≠ 0. No reabre el puerto: el enlace se restablece a mano (vincular de nuevo el HC-06 y reiniciar el Servidor, lo que vacía el estómago).
 - **Robot (Safe Mode):** si no recibe nada del Servidor (ni LATIDO) durante 3000 ms, frena motores y colector de inmediato y espera; sale del Safe Mode al volver a recibir algo.
 
 ## Trazabilidad Hito 2 (TCP) → Hito 3 (Bluetooth)

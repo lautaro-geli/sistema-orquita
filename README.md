@@ -61,7 +61,7 @@ El Servidor no empareja ni crea el puerto: solo abre el COM ya creado.
 **Orden de encendido:** primero el robot, después el Servidor.
 
 - Al abrir el COM, Windows conecta con el HC-06.
-- El Servidor espera hasta 8 s el primer dato del robot.
+- El Servidor espera hasta 15 s el primer dato del robot.
 - Cada arranque **vacía `estomago.txt`**: la misión empieza de cero.
 - El banner muestra el puerto, el modelo y el umbral activo.
 
@@ -75,7 +75,7 @@ La consola muestra:
 
 ### Procedimiento tras un Fail-Safe
 
-Si el robot calla más de 8 s o falla la escritura al puerto, el Servidor informa `ERROR_SEGURO`, cierra el enlace y termina con código ≠ 0. El robot, al no recibir nada durante 3 s, frena solo (Safe Mode). Para reanudar:
+Si el robot calla más de 15 s o falla la escritura al puerto, el Servidor informa `ERROR_SEGURO`, cierra el enlace y termina con código ≠ 0. El robot, al no recibir nada durante 3 s, frena solo (Safe Mode). Para reanudar:
 
 1. Verificar el robot (alimentación, HC-06 parpadeando).
 2. Si Windows perdió el vínculo, quitar el dispositivo y volver a emparejarlo.

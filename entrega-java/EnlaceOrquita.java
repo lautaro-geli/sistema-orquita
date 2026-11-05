@@ -20,7 +20,7 @@ import orquitas.servidor.persistencia.Estomago;
  */
 public class EnlaceOrquita extends Thread {
     /** Silencio máximo de la Orquita antes de declarar la falla del enlace. */
-    public static final long TIMEOUT_MAXIMO_MS = 8000;
+    public static final long TIMEOUT_MAXIMO_MS = 15000;
     /** Período del LATIDO y espera máxima de cada lectura. */
     public static final long PERIODO_LATIDO_MS = 1000;
     /** Caracteres por línea, sin contar el fin de línea. */

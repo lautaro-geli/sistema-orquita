@@ -33,7 +33,7 @@ Valores elegidos para no frenar el desarrollo. Los marcados **[A CONFIRMAR]** ha
 - **Umbral de capturas:** `--umbral=1` por defecto (prueba de campo del Hito 3); el reglamento de la competencia usa 3.
 - **Estados por consola:** el diagrama de clases no lleva estados (para eso está el Diagrama de Estados). `Navegacion.establecerModoOperativo` imprime `[Estado] ANTERIOR -> NUEVO` en cada cambio de modo y `EnlaceOrquita.registrarFalla` imprime `[Estado] ERROR_SEGURO (causa)`. Aproximación y Captura no se informan por consola: no son estados del código (ver el Diagrama de Estados).
   - La cantidad de capturas la imprime el `Auditor` (`n/umbral`) cada vez que cambia, justo antes del paso a ESCAPE.
-- **[A CONFIRMAR] Orden de encendido:** primero el robot, después el Servidor. Al abrir el COM, Windows conecta con el HC-06. El Servidor da 8 s de margen desde que arranca hasta recibir el primer dato del robot.
+- **[A CONFIRMAR] Orden de encendido:** primero el robot, después el Servidor. Al abrir el COM, Windows conecta con el HC-06. El Servidor da 15 s de margen desde que arranca hasta recibir el primer dato del robot.
 - **Entrega a ClassRoom:**
   - `entrega-java/` lleva los `.java` del Servidor (`orquitas.servidor.*`) y de las herramientas de datos (`orquitas.herramientas.*`), más `Orquita.ino`.
   - Quedan afuera la simulación (`orquitas.simulacion`) y las pruebas.
