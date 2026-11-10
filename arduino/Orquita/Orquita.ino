@@ -62,7 +62,7 @@ const uint8_t CANAL_COLECTOR = 2;
 // ---------------- Constantes a calibrar ----------------
 const int PULSO_SERVO_0_US = 544;     // Pulso en µs para 0°. Calibrar con el SG90 real.
 const int PULSO_SERVO_180_US = 2400;  // Pulso en µs para 180°.
-const int COLECTOR_DETENIDO_US = 1500; // El servo continuo no gira. Ajustar si se arrastra.
+const bool COLECTOR_GIRA = true;       // false = el colector no gira nunca (para probar sin él).
 const int COLECTOR_GIRANDO_US = 1660;  // Velocidad del colector (invertir a ~1340 si gira al revés).
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
 const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja pasar la canica).
@@ -145,8 +145,16 @@ void moverServo(uint8_t canal, int grados) {
   servos[canal].write(grados);
 }
 
+/** Gira o frena el colector. Para frenarlo se suelta el servo (sin pulsos), así queda quieto aunque su
+ *  punto neutro no sea exactamente 1500 us. */
 void colector(bool girando) {
-  servos[CANAL_COLECTOR].writeMicroseconds(girando ? COLECTOR_GIRANDO_US : COLECTOR_DETENIDO_US);
+  Servo &c = servos[CANAL_COLECTOR];
+  if (girando) {
+    if (!c.attached()) c.attach(PIN_SERVO_COLECTOR);
+    c.writeMicroseconds(COLECTOR_GIRANDO_US);
+  } else if (c.attached()) {
+    c.detach();
+  }
 }
 
 /** Frena todo: motores y colector. Se usa al entrar en Safe Mode. */
@@ -335,15 +343,14 @@ void setup() {
 #endif
   pinMode(PIN_IN1, OUTPUT); pinMode(PIN_IN2, OUTPUT);
   pinMode(PIN_IN3, OUTPUT); pinMode(PIN_IN4, OUTPUT);
-  pinMode(PIN_CAPTURA, INPUT);
+  pinMode(PIN_CAPTURA, INPUT_PULLUP); // Sin FC-51 conectado queda en alto (sin detección); el FC-51 empuja a bajo.
   detenerMotores();
 
   bt.begin(BAUDIOS_HC06);
 
   servos[CANAL_BARRIDO].attach(PIN_SERVO_BARRIDO, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
   servos[CANAL_ELEVACION].attach(PIN_SERVO_ELEVACION, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
-  servos[CANAL_COLECTOR].attach(PIN_SERVO_COLECTOR);
-  colector(false);
+  colector(false); // El colector queda sin pulsos hasta que el robot esté activo.
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
   moverServo(CANAL_BARRIDO, 0);
   delay(1000); // Como en el barrido probado: los servos terminan de moverse antes de iniciar el sensor.
@@ -375,7 +382,7 @@ void loop() {
     esperarMs(50);
     return;
   }
-  colector(true); // TODO confirmar: el colector gira siempre fuera del Safe Mode.
+  colector(COLECTOR_GIRA); // TODO confirmar: el colector gira siempre fuera del Safe Mode.
 
   if (capturasGeneradas > capturasConfirmadas) {
     enviarCapturaPendiente();
