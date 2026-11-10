@@ -15,7 +15,7 @@ Valores elegidos para no frenar el desarrollo. Los marcados **[A CONFIRMAR]** ha
   - `ESPERA_SERVO_MS` = 40 entre posiciones de 15° y 300 ms para volver a 0°;
   - `ESPERA_ELEVACION_MS` = 250.
 - **Pines (cableado real de la plataforma):**
-  - servos directos al Arduino (sin PCA9685): servo 1 (barrido) = D2, servo 2 (elevación) = D3, servos 1 y 2 únicamente; **[A CONFIRMAR]** qué servo físico cumple cada función;
+  - servos directos al Arduino (sin PCA9685): servo de barrido (el que lleva el sensor) = D4, servo de elevación = D3; **[A CONFIRMAR]** qué servo físico cumple cada función;
   - L298N: ENA y ENB con jumper (sin pin), IN1 = D7, IN2 = D8, IN3 = D9, IN4 = D11;
   - HC-06: TXD = D10 (el Arduino recibe) y RXD = A2 (el Arduino envía, con divisor de tensión);
   - FC-51: A0, activo en bajo;
