@@ -41,7 +41,7 @@
 
 // ---------------- Pines (cableado real) ----------------
 const uint8_t PIN_SERVO_BARRIDO = 4;    // Servo del sensor: gira el sensor de 0° a 180° (cableado real en D4).
-const uint8_t PIN_SERVO_ELEVACION = 3;  // Servo 2: levanta/baja el sensor.
+const uint8_t PIN_SERVO_ELEVACION = 12; // Servo de elevación: levanta/baja el sensor (D3 no funcionó; cableado en D12).
 // ENA y ENB del L298N van con sus jumpers puestos (siempre habilitados): no se usan pines del Arduino.
 const uint8_t PIN_IN1 = 7;       // Motor A.
 const uint8_t PIN_IN2 = 8;       // Motor A.
