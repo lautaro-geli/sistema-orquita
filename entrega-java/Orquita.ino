@@ -43,8 +43,7 @@
 const uint8_t PIN_SERVO_BARRIDO = 2;    // Servo 1: gira el sensor de 0° a 180°.
 const uint8_t PIN_SERVO_ELEVACION = 3;  // Servo 2: levanta/baja el sensor.
 const uint8_t PIN_SERVO_COLECTOR = 4;   // Servo 3: SG90 de rotación continua (colector).
-const uint8_t PIN_ENA = 5;       // L298N: PWM motor A (izquierdo).
-const uint8_t PIN_ENB = 6;       // L298N: PWM motor B (derecho).
+// ENA y ENB del L298N van con sus jumpers puestos (siempre habilitados): no se usan pines del Arduino.
 const uint8_t PIN_IN1 = 7;       // Motor A.
 const uint8_t PIN_IN2 = 8;       // Motor A.
 const uint8_t PIN_IN3 = 9;       // Motor B.
@@ -67,7 +66,6 @@ const int COLECTOR_DETENIDO_US = 1500; // El servo continuo no gira. Ajustar si 
 const int COLECTOR_GIRANDO_US = 1660;  // Velocidad del colector (invertir a ~1340 si gira al revés).
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
 const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja pasar la canica).
-const uint8_t VELOCIDAD_MOTORES = 180;     // PWM 0..255.
 const unsigned long PASO_AVANZAR_MS = 400; // Duración de un paso de AVANZAR/RETROCEDER.
 const unsigned long PASO_GIRO_MS = 300;    // Duración de un paso de giro.
 const unsigned long ESPERA_SERVO_MS = 100; // Asentamiento del servo en cada posición (probado en el barrido que funcionó).
@@ -128,10 +126,8 @@ bool hayCapturaPrevia = false;
 // Movimiento y servos
 // ======================================================================
 
-/** Detiene los dos motores (sin rueda libre: IN en bajo y PWM en 0). */
+/** Detiene los dos motores (sin rueda libre: los cuatro IN en bajo). */
 void detenerMotores() {
-  analogWrite(PIN_ENA, 0);
-  analogWrite(PIN_ENB, 0);
   digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, LOW);
   digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, LOW);
 }
@@ -142,8 +138,6 @@ void motores(bool izquierdoAdelante, bool derechoAdelante) {
   digitalWrite(PIN_IN2, izquierdoAdelante ? LOW : HIGH);
   digitalWrite(PIN_IN3, derechoAdelante ? HIGH : LOW);
   digitalWrite(PIN_IN4, derechoAdelante ? LOW : HIGH);
-  analogWrite(PIN_ENA, VELOCIDAD_MOTORES);
-  analogWrite(PIN_ENB, VELOCIDAD_MOTORES);
 }
 
 /** Lleva un SG90 posicional (BARRIDO o ELEVACION) al ángulo indicado (0..180). */
@@ -339,7 +333,6 @@ void setup() {
 #ifdef DEPURAR
   Serial.begin(115200);
 #endif
-  pinMode(PIN_ENA, OUTPUT); pinMode(PIN_ENB, OUTPUT);
   pinMode(PIN_IN1, OUTPUT); pinMode(PIN_IN2, OUTPUT);
   pinMode(PIN_IN3, OUTPUT); pinMode(PIN_IN4, OUTPUT);
   pinMode(PIN_CAPTURA, INPUT);
