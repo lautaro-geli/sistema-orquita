@@ -6,16 +6,16 @@ Valores elegidos para no frenar el desarrollo. Los marcados **[A CONFIRMAR]** ha
 
 - **[A CONFIRMAR] Sentido de los ángulos:** 0° = derecha del robot, 90° = frente, 180° = izquierda. Debe coincidir con la convención del Servidor (sector 0 = derecha, 6 = frente, 12 = izquierda). Si el servo de barrido está montado al revés, invertir el ángulo en `barrer()`.
 - **[A CONFIRMAR] Sentido de los giros:** `GIRAR_IZQ` = motor izquierdo atrás y derecho adelante; `GIRAR_DER`, lo contrario. Depende del cableado del L298N.
-- **[A CONFIRMAR] Colector (SG90 de rotación continua):** gira a velocidad constante mientras no esté en Safe Mode y se detiene en Safe Mode. `COLECTOR_DETENIDO` = 307 (≈1,5 ms) puede necesitar ajuste fino si el servo se arrastra.
+- **Colector:** fuera del sketch (el servo de rotación continua no se maneja desde el Arduino).
 - **[A CONFIRMAR] Servo de elevación:** bajado (0°) durante el barrido, levantado (180°) durante el paso de movimiento, y vuelve a bajar antes del siguiente barrido.
 - **[A CONFIRMAR] Calibración:**
-  - pulsos del SG90 (librería `Servo`): `PULSO_SERVO_0_US` = 544 y `PULSO_SERVO_180_US` = 2400; colector: 1500 µs detenido y 1660 µs girando;
+  - pulsos del SG90 (librería `Servo`): `PULSO_SERVO_0_US` = 544 y `PULSO_SERVO_180_US` = 2400;
   - velocidad: sin PWM (jumpers de ENA y ENB puestos: motores siempre a velocidad máxima);
   - `PASO_AVANZAR_MS` = 400 y `PASO_GIRO_MS` = 300;
   - `ESPERA_SERVO_MS` = 40 entre posiciones de 15° y 300 ms para volver a 0°;
   - `ESPERA_ELEVACION_MS` = 250.
 - **Pines (cableado real de la plataforma):**
-  - servos directos al Arduino (sin PCA9685): servo 1 (barrido) = D2, servo 2 (elevación) = D3, servo 3 (colector, rotación continua) = D4; **[A CONFIRMAR]** qué servo físico cumple cada función;
+  - servos directos al Arduino (sin PCA9685): servo 1 (barrido) = D2, servo 2 (elevación) = D3, servos 1 y 2 únicamente; **[A CONFIRMAR]** qué servo físico cumple cada función;
   - L298N: ENA y ENB con jumper (sin pin), IN1 = D7, IN2 = D8, IN3 = D9, IN4 = D11;
   - HC-06: TXD = D10 (el Arduino recibe) y RXD = A2 (el Arduino envía, con divisor de tensión);
   - FC-51: A0, activo en bajo;

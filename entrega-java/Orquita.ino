@@ -9,7 +9,7 @@
  *   4. Ejecuta la orden durante un paso corto y vuelve a detenerse.
  *
  * Safe Mode (Fail-Safe): si pasan más de 3000 ms sin recibir NADA del Servidor (ni LATIDO), frena de
- * inmediato (motores y colector) y espera; sale cuando vuelve a recibir algo.
+ * inmediato los motores y espera; sale cuando vuelve a recibir algo.
  *
  * Protocolo v2 (una línea por mensaje, terminada en \n):
  *   Orquita -> Servidor: TELEMETRIA|v0;...;v38    CAPTURA|id
@@ -42,7 +42,6 @@
 // ---------------- Pines (cableado real) ----------------
 const uint8_t PIN_SERVO_BARRIDO = 2;    // Servo 1: gira el sensor de 0° a 180°.
 const uint8_t PIN_SERVO_ELEVACION = 3;  // Servo 2: levanta/baja el sensor.
-const uint8_t PIN_SERVO_COLECTOR = 4;   // Servo 3: SG90 de rotación continua (colector).
 // ENA y ENB del L298N van con sus jumpers puestos (siempre habilitados): no se usan pines del Arduino.
 const uint8_t PIN_IN1 = 7;       // Motor A.
 const uint8_t PIN_IN2 = 8;       // Motor A.
@@ -57,13 +56,10 @@ const uint8_t PIN_CAPTURA = A0;  // FC-51: salida activa en BAJO. Cualquier dete
 // Índices dentro del arreglo servos[].
 const uint8_t CANAL_BARRIDO = 0;
 const uint8_t CANAL_ELEVACION = 1;
-const uint8_t CANAL_COLECTOR = 2;
 
 // ---------------- Constantes a calibrar ----------------
 const int PULSO_SERVO_0_US = 544;     // Pulso en µs para 0°. Calibrar con el SG90 real.
 const int PULSO_SERVO_180_US = 2400;  // Pulso en µs para 180°.
-const bool COLECTOR_GIRA = true;       // false = el colector no gira nunca (para probar sin él).
-const int COLECTOR_GIRANDO_US = 1660;  // Velocidad del colector (invertir a ~1340 si gira al revés).
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
 const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja pasar la canica).
 const unsigned long PASO_AVANZAR_MS = 400; // Duración de un paso de AVANZAR/RETROCEDER.
@@ -106,7 +102,7 @@ const int8_t DETENER = 4;
 SoftwareSerial bt(HC_RX, HC_TX);
 VL53L1X sensor;
 bool sensorListo = false;               // false: no se detectó el VL53L1X; las lecturas son -1 sin esperar.
-Servo servos[3];                        // Barrido, elevación y colector.
+Servo servos[2];                        // Barrido y elevación.
 
 int lecturas[VALORES];                  // 78 bytes: un barrido completo.
 char linea[LARGO_LINEA];                // Respuesta del Servidor en armado.
@@ -145,22 +141,9 @@ void moverServo(uint8_t canal, int grados) {
   servos[canal].write(grados);
 }
 
-/** Gira o frena el colector. Para frenarlo se suelta el servo (sin pulsos), así queda quieto aunque su
- *  punto neutro no sea exactamente 1500 us. */
-void colector(bool girando) {
-  Servo &c = servos[CANAL_COLECTOR];
-  if (girando) {
-    if (!c.attached()) c.attach(PIN_SERVO_COLECTOR);
-    c.writeMicroseconds(COLECTOR_GIRANDO_US);
-  } else if (c.attached()) {
-    c.detach();
-  }
-}
-
-/** Frena todo: motores y colector. Se usa al entrar en Safe Mode. */
+/** Frena todo (los motores). Se usa al entrar en Safe Mode. */
 void detenerTodo() {
   detenerMotores();
-  colector(false);
 }
 
 // ======================================================================
@@ -350,7 +333,6 @@ void setup() {
 
   servos[CANAL_BARRIDO].attach(PIN_SERVO_BARRIDO, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
   servos[CANAL_ELEVACION].attach(PIN_SERVO_ELEVACION, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
-  colector(false); // El colector queda sin pulsos hasta que el robot esté activo.
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
   moverServo(CANAL_BARRIDO, 0);
   delay(1000); // Como en el barrido probado: los servos terminan de moverse antes de iniciar el sensor.
@@ -382,7 +364,6 @@ void loop() {
     esperarMs(50);
     return;
   }
-  colector(COLECTOR_GIRA); // TODO confirmar: el colector gira siempre fuera del Safe Mode.
 
   if (capturasGeneradas > capturasConfirmadas) {
     enviarCapturaPendiente();
