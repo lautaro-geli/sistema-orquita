@@ -312,6 +312,7 @@ void ejecutarOrden(int8_t orden) {
     case GIRAR_IZQ:  motores(false, true); paso = PASO_GIRO_MS; break; // TODO confirmar sentido.
     case GIRAR_DER:  motores(true, false); paso = PASO_GIRO_MS; break;
   }
+  DEPLN(F("[Robot] Motores en marcha"));
   esperarMs(paso); // Si entra en Safe Mode, atenderServidor() ya frenó.
   detenerMotores();
 }
@@ -379,6 +380,7 @@ void loop() {
   rechazoRecibido = false;
   enviarTelemetria();
   int8_t orden = esperarOrden();
+  DEP(F("[Robot] Orden recibida (0=AVANZAR 1=RETROCEDER 2=IZQ 3=DER 4=DETENER -1=ninguna): ")); DEPLN(orden);
   if (orden == SIN_ORDEN) return; // RECHAZO o sin respuesta: queda detenida y repite el ciclo.
   ejecutarOrden(orden);
 }
