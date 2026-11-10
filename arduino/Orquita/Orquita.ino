@@ -130,10 +130,11 @@ void detenerMotores() {
 
 /** Fija el sentido de cada motor (true = adelante) y aplica la velocidad. */
 void motores(bool izquierdoAdelante, bool derechoAdelante) {
-  digitalWrite(PIN_IN1, izquierdoAdelante ? HIGH : LOW);
-  digitalWrite(PIN_IN2, izquierdoAdelante ? LOW : HIGH);
-  digitalWrite(PIN_IN3, derechoAdelante ? HIGH : LOW);
-  digitalWrite(PIN_IN4, derechoAdelante ? LOW : HIGH);
+  // Los motores están cableados con la polaridad invertida: acá se corrige para que "adelante" sea adelante.
+  digitalWrite(PIN_IN1, izquierdoAdelante ? LOW : HIGH);
+  digitalWrite(PIN_IN2, izquierdoAdelante ? HIGH : LOW);
+  digitalWrite(PIN_IN3, derechoAdelante ? LOW : HIGH);
+  digitalWrite(PIN_IN4, derechoAdelante ? HIGH : LOW);
 }
 
 /** Lleva un SG90 posicional (BARRIDO o ELEVACION) al ángulo indicado (0..180). */
@@ -315,6 +316,8 @@ void ejecutarOrden(int8_t orden) {
   DEPLN(F("[Robot] Motores en marcha"));
   esperarMs(paso); // Si entra en Safe Mode, atenderServidor() ya frenó.
   detenerMotores();
+  moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS); // El servo de elevación vuelve a 0° al terminar el paso.
+  esperarMs(ESPERA_ELEVACION_MS);
 }
 
 // ======================================================================
