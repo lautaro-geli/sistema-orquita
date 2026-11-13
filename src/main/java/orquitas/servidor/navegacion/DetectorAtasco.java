@@ -3,8 +3,8 @@ package orquitas.servidor.navegacion;
 /**
  * Detecta que la Orquita quedó trabada (por ejemplo, contra una pared): si después de una orden de
  * movimiento el barrido llega casi igual al anterior, el movimiento no tuvo efecto. En ese caso cambia
- * la orden para salir: después de un giro, el giro contrario; después de avanzar, retrocede; después de
- * retroceder, gira. Repetir la misma orden trabada solo suma choques (-5 cada uno).
+ * la orden para salir: primero lo contrario de lo que hizo y, si sigue trabada, todas las opciones de a una.
+ * Repetir la misma orden trabada solo suma choques (-5 cada uno).
  * Tiene memoria (el barrido y la orden anteriores): se usa uno por misión.
  */
 public final class DetectorAtasco {
@@ -49,14 +49,26 @@ public final class DetectorAtasco {
         return n >= MINIMO_COMPARABLES && suma / n < DIFERENCIA_MAXIMA_MM;
     }
 
-    /** Orden para salir del atasco; si se repite, alterna para no volver a lo mismo. */
+    /**
+     * Orden para salir del atasco. La primera vez prueba lo contrario de la orden trabada (giro opuesto,
+     * o retroceder si avanzaba); si sigue trabada, recorre todas las opciones en orden (retroceder, girar
+     * a la derecha, girar a la izquierda, avanzar un poco) para no quedar alternando entre dos que chocan.
+     */
     static OrdenMovimiento salida(OrdenMovimiento trabada, int vez) {
-        int ms = Math.max(300, trabada.milisegundos());
-        switch (trabada.movimiento()) {
-            case GIRAR_IZQ: return vez % 2 == 1 ? new OrdenMovimiento(Movimiento.GIRAR_DER, ms) : retroceder();
-            case GIRAR_DER: return vez % 2 == 1 ? new OrdenMovimiento(Movimiento.GIRAR_IZQ, ms) : retroceder();
-            case AVANZAR: return retroceder();
-            default: return new OrdenMovimiento(vez % 2 == 1 ? Movimiento.GIRAR_IZQ : Movimiento.GIRAR_DER, 400);
+        if (vez == 1) {
+            int ms = Math.max(300, trabada.milisegundos());
+            switch (trabada.movimiento()) {
+                case GIRAR_IZQ: return new OrdenMovimiento(Movimiento.GIRAR_DER, ms);
+                case GIRAR_DER: return new OrdenMovimiento(Movimiento.GIRAR_IZQ, ms);
+                case AVANZAR: return retroceder();
+                default: return new OrdenMovimiento(Movimiento.GIRAR_DER, 300);
+            }
+        }
+        switch ((vez - 2) % 4) {
+            case 0: return retroceder();
+            case 1: return new OrdenMovimiento(Movimiento.GIRAR_DER, 300);
+            case 2: return new OrdenMovimiento(Movimiento.GIRAR_IZQ, 300);
+            default: return new OrdenMovimiento(Movimiento.AVANZAR, CalibracionRobot.msParaAvanzar(30));
         }
     }
 

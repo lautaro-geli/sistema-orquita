@@ -182,6 +182,11 @@ public final class VisorBahia {
         if (percepcion == null) percepcion = "modelos/percepcion.nnet";
         if (movimiento == null) movimiento = "modelos/movimiento.nnet";
         SimuladorBahia sim = SimuladorBahia.alAzar(semilla, 3, 3, RobotSimulado.Calibracion.ESTIMADA, SensorSimulado.Ruido.NORMAL);
+        if (!maestro && !(java.nio.file.Files.isRegularFile(Path.of(percepcion)) && java.nio.file.Files.isRegularFile(Path.of(movimiento)))) {
+            System.out.println("No están " + percepcion + " y " + movimiento + " (entrenarlas con ./ejecutar.ps1 simular-entrenar)."
+                    + " Se muestra el maestro.");
+            maestro = true;
+        }
         Piloto piloto = maestro ? Piloto.maestro() : Piloto.redes(Path.of(percepcion), Path.of(movimiento));
         if (png == null) {
             animar(sim, piloto);

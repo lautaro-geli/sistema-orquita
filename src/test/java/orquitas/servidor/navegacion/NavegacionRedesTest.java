@@ -148,8 +148,10 @@ public class NavegacionRedesTest {
         OrdenMovimiento segunda = d.revisar(con(todo(400), 3, 405), giro);
         assertEquals(Movimiento.GIRAR_IZQ, segunda.movimiento());
         assertEquals(1, d.atascosSeguidos());
-        // Si sigue igual, retrocede.
-        assertEquals(Movimiento.RETROCEDER, d.revisar(todo(400), giro).movimiento());
+        // Si sigue igual, recorre las opciones: retroceder, girar a la derecha, a la izquierda, avanzar un poco.
+        java.util.List<Movimiento> vistas = new java.util.ArrayList<>();
+        for (int i = 0; i < 4; i++) vistas.add(d.revisar(todo(400), giro).movimiento());
+        assertEquals(java.util.List.of(Movimiento.RETROCEDER, Movimiento.GIRAR_DER, Movimiento.GIRAR_IZQ, Movimiento.AVANZAR), vistas);
         // Si el barrido cambió, vuelve a la orden de la red.
         OrdenMovimiento avanzar = new OrdenMovimiento(Movimiento.AVANZAR, 600);
         assertEquals(avanzar, d.revisar(todo(900), avanzar));
