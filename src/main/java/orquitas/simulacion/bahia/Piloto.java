@@ -1,3 +1,4 @@
+// Archivo de simulacion
 package orquitas.simulacion.bahia;
 
 import java.nio.file.Path;
@@ -6,6 +7,7 @@ import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.OrdenMovimiento;
 import orquitas.servidor.navegacion.RedMovimiento;
 import orquitas.servidor.navegacion.RedPercepcion;
+import orquitas.servidor.navegacion.ReflejoSeguridad;
 
 /** Quién maneja el robot en la simulación: el maestro (reglas con la geometría real) o las redes. */
 public interface Piloto {
@@ -18,13 +20,14 @@ public interface Piloto {
         return (sim, b) -> new Decision(Maestro.decidir(sim, b), b.etiquetas());
     }
 
-    /** Las dos redes, igual que en el Servidor: solo ven la telemetría y el modo. */
+    /** Las dos redes y el reflejo de seguridad, igual que en el Servidor: solo ven la telemetría y el modo. */
     static Piloto redes(RedPercepcion percepcion, RedMovimiento movimiento) {
         return (sim, b) -> {
             if (sim.modo() == ModoOperativo.LIBERADA) return new Decision(new OrdenMovimiento(orquitas.servidor.navegacion.Movimiento.DETENER, 0), null);
             double[] probabilidades = percepcion.probabilidades(b.telemetria());
+            EtiquetaSector[] etiquetas = RedPercepcion.etiquetas(probabilidades);
             OrdenMovimiento orden = movimiento.decidir(b.telemetria(), probabilidades, sim.modo());
-            return new Decision(orden, RedPercepcion.etiquetas(probabilidades));
+            return new Decision(ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas), etiquetas);
         };
     }
 

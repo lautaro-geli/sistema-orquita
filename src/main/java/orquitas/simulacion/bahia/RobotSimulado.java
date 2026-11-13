@@ -1,6 +1,8 @@
+// Archivo de simulacion
 package orquitas.simulacion.bahia;
 
 import java.util.Random;
+import orquitas.servidor.navegacion.CalibracionRobot;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.OrdenMovimiento;
 
@@ -17,7 +19,9 @@ public final class RobotSimulado {
      */
     public record Calibracion(double mmPorSegundo, double gradosPorSegundo, double largoMm, double anchoMm,
                               double bocaMm, double ruidoVelocidad) {
-        public static final Calibracion ESTIMADA = new Calibracion(250, 120, 200, 150, 60, 0.10);
+        /** La misma calibración que usa el Servidor (CalibracionRobot), boca de 60 mm y 10 % de ruido. */
+        public static final Calibracion ESTIMADA = new Calibracion(CalibracionRobot.MM_POR_SEGUNDO,
+                CalibracionRobot.GRADOS_POR_SEGUNDO, CalibracionRobot.LARGO_MM, CalibracionRobot.ANCHO_MM, 60, 0.10);
     }
 
     private static final double PASO_MM = 5;
@@ -143,9 +147,9 @@ public final class RobotSimulado {
         return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
     }
 
-    /** Posición del sensor (frente del robot, 30 mm hacia adentro). */
-    public double sensorX() { return x + (cal.largoMm() / 2 - 30) * Math.cos(rumbo); }
-    public double sensorY() { return y + (cal.largoMm() / 2 - 30) * Math.sin(rumbo); }
+    /** Posición del sensor (CalibracionRobot.SENSOR_AL_FRENTE_MM detrás del frente). */
+    public double sensorX() { return x + (cal.largoMm() / 2 - CalibracionRobot.SENSOR_AL_FRENTE_MM) * Math.cos(rumbo); }
+    public double sensorY() { return y + (cal.largoMm() / 2 - CalibracionRobot.SENSOR_AL_FRENTE_MM) * Math.sin(rumbo); }
 
     public double x() { return x; }
     public double y() { return y; }

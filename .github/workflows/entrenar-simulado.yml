@@ -1,0 +1,40 @@
+name: Entrenar en la bahía simulada
+# Entrena las redes de percepción y movimiento con Neuroph 2.98 (la misma versión del Servidor) y
+# publica los modelos y el reporte como artefacto. Se lanza a mano desde la pestaña Actions.
+on:
+  workflow_dispatch:
+    inputs:
+      episodios:
+        description: Episodios del maestro
+        default: '250'
+      epocas:
+        description: Épocas de entrenamiento
+        default: '60'
+      rondas:
+        description: Rondas DAgger
+        default: '2'
+permissions:
+  contents: read
+jobs:
+  entrenar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: mvn --batch-mode --no-transfer-progress -DskipTests package dependency:copy-dependencies
+      - name: Entrenar
+        run: >
+          java -cp "target/classes:target/dependency/*" orquitas.herramientas.EntrenamientoSimulado
+          ${{ inputs.episodios }} ${{ inputs.epocas }} modelos ${{ inputs.rondas }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modelos-bahia-simulada
+          path: |
+            modelos/percepcion.nnet
+            modelos/movimiento.nnet
+            docs/evidencias/entrenamiento_simulado_*.md

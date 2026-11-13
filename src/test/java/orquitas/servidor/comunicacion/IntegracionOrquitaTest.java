@@ -68,8 +68,8 @@ public class IntegracionOrquitaTest {
         try {
             int[] lobitoDerecha = con(todo(1400), 1, 300);
             // BUSQUEDA: persigue al Lobito que ve a la derecha.
-            assertEquals(List.of("CONFIRMACION", "ORDEN|GIRAR_DER"), orquita.enviar(trama(lobitoDerecha), 2));
-            assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR"), orquita.enviar(trama(con(todo(1400), 6, 300)), 2));
+            assertEquals(List.of("CONFIRMACION", "ORDEN|GIRAR_DER|300"), orquita.enviar(trama(lobitoDerecha), 2));
+            assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR|400"), orquita.enviar(trama(con(todo(1400), 6, 300)), 2));
             // Captura: se confirma recién con la línea escrita; el reenvío no duplica.
             assertEquals(List.of("CONFIRMACION"), orquita.enviar("CAPTURA|1", 1));
             assertEquals(List.of("CONFIRMACION"), orquita.enviar("CAPTURA|1", 1));
@@ -77,11 +77,11 @@ public class IntegracionOrquitaTest {
             // El Auditor ve 1 captura en el archivo (umbral 1) y pasa a ESCAPE.
             esperar(() -> leer(navegacion, "modoOperativo") == ModoOperativo.ESCAPE, 3000);
             // ESCAPE: el mismo Lobito a la derecha ahora se ignora; la orden cambia.
-            assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR"), orquita.enviar(trama(lobitoDerecha), 2));
+            assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR|400"), orquita.enviar(trama(lobitoDerecha), 2));
             // Trama inválida: RECHAZO y la conexión sigue.
             assertEquals(List.of("RECHAZO"), orquita.enviar("TELEMETRIA|1;2;3", 1));
             // Campo libre: LIBERADA y DETENER.
-            assertEquals(List.of("CONFIRMACION", "ORDEN|DETENER"), orquita.enviar(trama(todo(4000)), 2));
+            assertEquals(List.of("CONFIRMACION", "ORDEN|DETENER|0"), orquita.enviar(trama(todo(4000)), 2));
             assertEquals(ModoOperativo.LIBERADA, leer(navegacion, "modoOperativo"));
             esperar(() -> salida.contar("LATIDO") >= 1, 2000); // El latido sigue saliendo cada período.
             assertEquals(EstadoEnlace.CONECTADO, leer(enlace, "estado"));
@@ -101,7 +101,7 @@ public class IntegracionOrquitaTest {
         EnlaceOrquita enlace = new EnlaceOrquita(new PipedInputStream(robot, 8192), salida, estomago, navegacion, 400, 100);
         OrquitaSimulada orquita = new OrquitaSimulada(robot, salida);
         enlace.start();
-        assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR"), orquita.enviar(trama(todo(3000)), 2));
+        assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR|400"), orquita.enviar(trama(todo(3000)), 2));
         enlace.join(3000); // La Orquita deja de transmitir.
         assertFalse(enlace.isAlive());
         assertEquals(EstadoEnlace.DESCONECTADO, leer(enlace, "estado"));

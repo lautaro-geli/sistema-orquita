@@ -83,7 +83,7 @@ public class EnlaceOrquitaTest {
         SalidaRegistrada salida = new SalidaRegistrada();
         EnlaceOrquita e = enlace(salida, EntornoClasificado.LIBRE);
         e.recibirTrama(trama(todo(3000)));
-        assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR"), salida.lineas());
+        assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR|400"), salida.lineas());
     }
 
     @Test public void invalidaRespondeRechazo() throws IOException {
@@ -140,8 +140,8 @@ public class EnlaceOrquitaTest {
                     .getBytes(StandardCharsets.US_ASCII));
             robot.flush();
             esperar(() -> salida.respuestas().size() >= 8, 3000);
-            assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR", "RECHAZO", "CONFIRMACION", "ORDEN|AVANZAR",
-                    "RECHAZO", "CONFIRMACION", "ORDEN|AVANZAR"), salida.respuestas());
+            assertEquals(List.of("CONFIRMACION", "ORDEN|AVANZAR|400", "RECHAZO", "CONFIRMACION", "ORDEN|AVANZAR|400",
+                    "RECHAZO", "CONFIRMACION", "ORDEN|AVANZAR|400"), salida.respuestas());
         } finally {
             e.detener();
             e.join(2000);

@@ -1,3 +1,4 @@
+// Archivo de simulacion
 package orquitas.simulacion.bahia;
 
 import java.util.Random;
@@ -21,6 +22,8 @@ public final class SensorSimulado {
     public static final double MINIMO_MM = 40, MAXIMO_MM = 1300;
     private static final int RAYOS = 15;
     private static final double REFLEXION_CANICA = 0.6;
+    /** Parte de la señal que tiene que venir de la canica para etiquetar el sector como LOBITO. */
+    static final double PARTE_CANICA_LOBITO = 0.5;
 
     /** Barrido simulado: telemetría como la manda el robot y la etiqueta verdadera de cada sector. */
     public record Barrido(int[] telemetria, EtiquetaSector[] etiquetas, double[] distanciasReales) { }
@@ -98,13 +101,13 @@ public final class SensorSimulado {
     }
 
     /**
-     * Etiqueta verdadera del sector: LOBITO si la canica pesa al menos un 35 % de la señal en algún ROI;
+     * Etiqueta verdadera del sector: LOBITO si la canica pesa al menos PARTE_CANICA_LOBITO de la señal en algún ROI;
      * SALIDA si el rayo central o al menos un 30 % del cono del 8x8 pasa por el estrecho; si no, lo que
      * más pesa en el 8x8 (PARED u OBSTACULO); LIBRE si no hay nada al alcance.
      */
     private static EtiquetaSector etiquetaVerdadera(double parteCanica, double[] pesoPorTipo, Bahia.Impacto central,
                                                     double parteSalida) {
-        if (parteCanica >= 0.35) return EtiquetaSector.LOBITO;
+        if (parteCanica >= PARTE_CANICA_LOBITO) return EtiquetaSector.LOBITO;
         if (central.cruzaSalida() || parteSalida >= 0.3) return EtiquetaSector.SALIDA;
         double pared = pesoPorTipo[EtiquetaSector.PARED.ordinal()], obst = pesoPorTipo[EtiquetaSector.OBSTACULO.ordinal()];
         if (pared <= 0 && obst <= 0) return EtiquetaSector.LIBRE;

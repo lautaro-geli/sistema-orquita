@@ -6,14 +6,15 @@
  *   2. Barrido: 13 posiciones (0°, 15°, ..., 180°) x 3 ROI (4x4, 8x8, 16x16) = 39 distancias en mm
  *      (-1 = sin eco). Entre posiciones atiende al Servidor (Safe Mode) y revisa el sensor de captura.
  *   3. Envía TELEMETRIA|v0;...;v38 y espera la ORDEN (~2 s). Sin orden o con RECHAZO: no se mueve.
- *   4. Ejecuta la orden durante un paso corto y vuelve a detenerse.
+ *   4. Ejecuta la orden durante los ms que indica el Servidor (tope PASO_MAXIMO_MS) y vuelve a detenerse.
  *
  * Safe Mode (Fail-Safe): si pasan más de 3000 ms sin recibir NADA del Servidor (ni LATIDO), frena de
  * inmediato los motores y espera; sale cuando vuelve a recibir algo.
  *
- * Protocolo v2 (una línea por mensaje, terminada en \n):
+ * Protocolo v3 (una línea por mensaje, terminada en \n):
  *   Orquita -> Servidor: TELEMETRIA|v0;...;v38    CAPTURA|id
- *   Servidor -> Orquita: ORDEN|movimiento   CONFIRMACION   RECHAZO   LATIDO (cada 1 s)
+ *   Servidor -> Orquita: ORDEN|movimiento|ms   CONFIRMACION   RECHAZO   LATIDO (cada 1 s)
+ *   (ORDEN|movimiento sin ms, del protocolo v2, se sigue aceptando con el paso fijo.)
  *
  * Librerías (Gestor de librerías del IDE de Arduino):
  *   - VL53L1X de Pololu (versión 1.3.0 o posterior: usa readSingle()).
@@ -62,8 +63,9 @@ const int PULSO_SERVO_0_US = 544;     // Pulso en µs para 0°. Calibrar con el 
 const int PULSO_SERVO_180_US = 2400;  // Pulso en µs para 180°.
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
 const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja pasar la canica).
-const unsigned long PASO_AVANZAR_MS = 400; // Duración de un paso de AVANZAR/RETROCEDER.
-const unsigned long PASO_GIRO_MS = 300;    // Duración de un paso de giro.
+const unsigned long PASO_AVANZAR_MS = 400; // Paso de AVANZAR/RETROCEDER si la ORDEN no trae ms.
+const unsigned long PASO_GIRO_MS = 300;    // Paso de giro si la ORDEN no trae ms.
+const unsigned long PASO_MAXIMO_MS = 1500; // Tope de seguridad de la duración que pide el Servidor.
 const unsigned long ESPERA_SERVO_MS = 100; // Asentamiento del servo en cada posición (probado en el barrido que funcionó).
 const unsigned long ESPERA_INICIO_BARRIDO_MS = 500; // Volver de 180° a 0°.
 const unsigned long ESPERA_ELEVACION_MS = 250;      // Subir o bajar el sensor.
@@ -110,6 +112,7 @@ uint8_t largoLinea = 0;
 unsigned long ultimoContacto = 0;       // millis() del último byte recibido del Servidor.
 bool enSafeMode = false;
 int8_t ordenRecibida = SIN_ORDEN;
+unsigned long duracionRecibida = 0;     // ms de la ORDEN; 0 = no vino (se usa el paso fijo).
 bool confirmacionRecibida = false;
 bool rechazoRecibido = false;
 unsigned int capturasGeneradas = 0;     // Ids 1, 2, 3...: los genera el robot.
@@ -151,6 +154,18 @@ void detenerTodo() {
 // Comunicación con el Servidor y Safe Mode
 // ======================================================================
 
+/** Lee de 1 a 5 dígitos decimales; cualquier otra cosa devuelve 0 (se usa el paso fijo). */
+unsigned long leerMilisegundos(const char *texto) {
+  unsigned long valor = 0;
+  uint8_t digitos = 0;
+  for (; *texto != '\0'; texto++) {
+    if (*texto < '0' || *texto > '9' || digitos == 5) return 0;
+    valor = valor * 10 + (unsigned long) (*texto - '0');
+    digitos++;
+  }
+  return digitos == 0 ? 0 : valor;
+}
+
 /** Interpreta una línea completa del Servidor. Busca el mensaje dentro de la línea por si llegó pegado
  *  a un resto de otro mensaje (SoftwareSerial pierde bytes mientras transmite). */
 void procesarLinea() {
@@ -158,6 +173,12 @@ void procesarLinea() {
   char *orden = strstr(linea, "ORDEN|");
   if (orden != NULL) {
     char *mov = orden + 6;
+    duracionRecibida = 0;
+    char *separador = strchr(mov, '|');
+    if (separador != NULL) { // ORDEN|movimiento|ms
+      *separador = '\0';
+      duracionRecibida = leerMilisegundos(separador + 1);
+    }
     if (strcmp(mov, "AVANZAR") == 0) ordenRecibida = AVANZAR;
     else if (strcmp(mov, "RETROCEDER") == 0) ordenRecibida = RETROCEDER;
     else if (strcmp(mov, "GIRAR_IZQ") == 0) ordenRecibida = GIRAR_IZQ;
@@ -301,7 +322,7 @@ bool barrer() {
   return true;
 }
 
-/** Ejecuta un paso de la orden y vuelve a detenerse. El sensor sube durante el paso (TODO confirmar). */
+/** Ejecuta la orden durante duracionRecibida ms (o el paso fijo) y vuelve a detenerse. El sensor sube durante el paso (TODO confirmar). */
 void ejecutarOrden(int8_t orden) {
   if (orden == DETENER || orden == SIN_ORDEN) return;
   moverServo(CANAL_ELEVACION, SENSOR_ARRIBA_GRADOS);
@@ -313,6 +334,8 @@ void ejecutarOrden(int8_t orden) {
     case GIRAR_IZQ:  motores(false, true); paso = PASO_GIRO_MS; break; // TODO confirmar sentido.
     case GIRAR_DER:  motores(true, false); paso = PASO_GIRO_MS; break;
   }
+  if (duracionRecibida > 0) paso = duracionRecibida < PASO_MAXIMO_MS ? duracionRecibida : PASO_MAXIMO_MS;
+  DEP(F("[Robot] Paso de ms: ")); DEPLN(paso);
   DEPLN(F("[Robot] Motores en marcha"));
   esperarMs(paso); // Si entra en Safe Mode, atenderServidor() ya frenó.
   detenerMotores();
@@ -379,6 +402,7 @@ void loop() {
   if (!barrer()) return;
 
   ordenRecibida = SIN_ORDEN;
+  duracionRecibida = 0;
   confirmacionRecibida = false;
   rechazoRecibido = false;
   enviarTelemetria();

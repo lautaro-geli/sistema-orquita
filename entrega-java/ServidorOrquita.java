@@ -4,13 +4,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import orquitas.servidor.comunicacion.EnlaceOrquita;
 import orquitas.servidor.navegacion.Navegacion;
+import orquitas.servidor.navegacion.RedMovimiento;
 import orquitas.servidor.navegacion.RedNeuronal;
+import orquitas.servidor.navegacion.RedPercepcion;
 import orquitas.servidor.persistencia.Auditor;
 import orquitas.servidor.persistencia.Estomago;
 
 /**
  * Arranque del Servidor del Hito 3. Uso:
- * {@code ServidorOrquita <COMx> [--umbral=N] [--estomago=ruta] [--modelo=ruta]}.
+ * {@code ServidorOrquita <COMx> [--umbral=N] [--estomago=ruta] [--modelo=ruta]
+ *  [--percepcion=ruta --movimiento=ruta | --reglas]}.
+ * Si existen modelos/percepcion.nnet y modelos/movimiento.nnet (entrenados en la bahía simulada), la
+ * navegación usa las dos redes (etiqueta por sector, dirección y ms). Con --reglas, o si no están,
+ * usa la red de una clase (--modelo) con paso fijo.
  * Cada arranque empieza una misión nueva: vacía estomago.txt.
  */
 public class ServidorOrquita {
@@ -18,17 +24,24 @@ public class ServidorOrquita {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1 || args[0].startsWith("--")) {
-            System.err.println("Uso: ServidorOrquita <COMx> [--umbral=N] [--estomago=ruta] [--modelo=ruta]");
+            System.err.println("Uso: ServidorOrquita <COMx> [--umbral=N] [--estomago=ruta] [--modelo=ruta]"
+                    + " [--percepcion=ruta --movimiento=ruta | --reglas]");
             System.exit(2);
         }
         String nombrePuerto = args[0];
         int umbral = 1; // Prueba de campo del Hito 3; el reglamento de la competencia usa 3.
         String rutaEstomago = "estomago.txt";
         Path rutaModelo = Path.of("modelos/entorno.nnet");
+        Path rutaPercepcion = Path.of("modelos/percepcion.nnet");
+        Path rutaMovimiento = Path.of("modelos/movimiento.nnet");
+        boolean soloReglas = false;
         for (int i = 1; i < args.length; i++) {
             if (args[i].startsWith("--umbral=")) umbral = Integer.parseInt(args[i].substring(9));
             else if (args[i].startsWith("--estomago=")) rutaEstomago = args[i].substring(11);
             else if (args[i].startsWith("--modelo=")) rutaModelo = Path.of(args[i].substring(9));
+            else if (args[i].startsWith("--percepcion=")) rutaPercepcion = Path.of(args[i].substring(13));
+            else if (args[i].startsWith("--movimiento=")) rutaMovimiento = Path.of(args[i].substring(13));
+            else if (args[i].equals("--reglas")) soloReglas = true;
             else {
                 System.err.println("Argumento desconocido: " + args[i]);
                 System.exit(2);
@@ -42,12 +55,21 @@ public class ServidorOrquita {
 
         Estomago estomago = new Estomago(rutaEstomago);
         estomago.reiniciar();
-        if (!Files.isRegularFile(rutaModelo)) {
-            System.err.println("No se encontró el modelo " + rutaModelo.toAbsolutePath()
-                    + ". Generarlo con: ./ejecutar.ps1 entrenar (datos reales) o ./ejecutar.ps1 provisional.");
-            System.exit(1);
+        boolean conRedes = !soloReglas && Files.isRegularFile(rutaPercepcion) && Files.isRegularFile(rutaMovimiento);
+        Navegacion navegacion;
+        if (conRedes) {
+            System.out.println(" Navegación: redes de percepción (" + rutaPercepcion + ") y movimiento (" + rutaMovimiento + ")");
+            navegacion = new Navegacion(new RedPercepcion(rutaPercepcion), new RedMovimiento(rutaMovimiento));
+        } else {
+            if (!Files.isRegularFile(rutaModelo)) {
+                System.err.println("No se encontró el modelo " + rutaModelo.toAbsolutePath()
+                        + ". Generarlo con: ./ejecutar.ps1 simular-entrenar (bahía simulada), ./ejecutar.ps1 entrenar"
+                        + " (datos reales) o ./ejecutar.ps1 provisional.");
+                System.exit(1);
+            }
+            System.out.println(" Navegación: reglas con la red " + rutaModelo + " (paso fijo)");
+            navegacion = new Navegacion(new RedNeuronal(rutaModelo));
         }
-        Navegacion navegacion = new Navegacion(new RedNeuronal(rutaModelo));
         Auditor auditor = new Auditor(estomago, navegacion, INTERVALO_AUDITORIA_MS, umbral);
         EnlaceOrquita enlace;
         try {

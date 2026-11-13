@@ -55,8 +55,11 @@ El Servidor no empareja ni crea el puerto: solo abre el COM ya creado.
 
 ```powershell
 ./ejecutar.ps1 servidor COM5 --umbral=1
-# opciones: --estomago=estomago.txt  --modelo=modelos/entorno.nnet
+# opciones: --estomago=estomago.txt  --modelo=modelos/entorno.nnet  --reglas
+#           --percepcion=modelos/percepcion.nnet  --movimiento=modelos/movimiento.nnet
 ```
+
+Si existen `modelos/percepcion.nnet` y `modelos/movimiento.nnet`, la navegación usa las **dos redes de la bahía simulada** (etiqueta por sector y orden con ms; ver abajo). Con `--reglas`, o si no están, usa la red de una sola clase (`--modelo`) con paso fijo. El banner dice cuál está activa.
 
 **Orden de encendido:** primero el robot, después el Servidor.
 
@@ -99,13 +102,35 @@ El modelo incluido (`modelos/entorno.nnet`) es **provisional y sintético**: no 
    - Imprime la exactitud y la matriz de confusión, guarda `modelos/entorno.nnet` y el reporte `docs/evidencias/entrenamiento_AAAAMMDD.md` (evidencia de la consigna).
 3. **Modelo provisional** (sin robot): `./ejecutar.ps1 provisional`.
 
+## Bahía simulada: percepción por sector y movimiento con ms
+
+Problema que resuelve: en la pista un mismo barrido trae varias cosas a la vez (pared, obstáculo, Lobito, salida) y la red de una sola clase por barrido decide mal. Ahora hay dos redes:
+
+- **Percepción** (`RedPercepcion`, 78 → 40 → 65): una etiqueta por cada uno de los 13 sectores: `LIBRE`, `PARED`, `OBSTACULO`, `LOBITO` o `SALIDA`.
+- **Movimiento** (`RedMovimiento`, 145 → 32 → 6): con la telemetría, la percepción y el modo, elige la dirección y **cuántos ms** moverse. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`).
+
+Antes de entrar a las redes, la telemetría pasa por la **regla del -1** (`PreprocesadorTelemetria`): si el 4x4 o el 16x16 son `-1` se usa el 8x8; si el 8x8 es `-1` queda desconocido; si los tres son `-1`, los tres quedan desconocidos.
+
+Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simulacion.bahia`): base recta de 1150 mm, 1200 mm de la base al estrecho, estrecho de 300 mm, obstáculos de 90 × 90 mm, canicas de 16 mm y un VL53L1X simulado (13 sectores × 3 ROI, ruido, pérdidas y bloques sin eco). Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger).
+
+```powershell
+./ejecutar.ps1 simular-entrenar                 # 250 episodios, 60 épocas, 2 rondas DAgger -> modelos/percepcion.nnet y movimiento.nnet
+./ejecutar.ps1 simular-ver 7                    # ventana: la bahía 7 manejada por las redes
+./ejecutar.ps1 simular-ver 7 --maestro          # la misma bahía manejada por el maestro
+./ejecutar.ps1 simular-ver 7 --png=prueba.png   # corre la prueba y guarda la imagen final
+```
+
+El reporte queda en `docs/evidencias/entrenamiento_simulado_AAAAMMDD.md` (redes contra maestro en 100 bahías nuevas y matriz de confusión por sector).
+
+**Calibración [A CONFIRMAR]:** el simulador usa 250 mm/s al avanzar, 120 °/s al girar y un robot de 200 × 150 mm (`RobotSimulado.Calibracion.ESTIMADA`). Los ms que decide la red dependen de esto: con las medidas reales del robot hay que cambiar esos valores y volver a entrenar.
+
 ## Estructura
 
 | Carpeta | Contenido |
 |---|---|
 | `src/main/java/orquitas/servidor` | Servidor según el diagrama v5: `ServidorOrquita`, `comunicacion` (`EnlaceOrquita`, `EstadoEnlace`), `navegacion` (`Navegacion`, `RedNeuronal`, enums), `persistencia` (`Estomago`, `Escritor`, `Auditor`). |
-| `src/main/java/orquitas/herramientas` | `RecolectorBarridos`, `EntrenamientoReal` (no forman parte de los diagramas). |
-| `src/main/java/orquitas/simulacion` | `EntrenamientoDemostracion` (modelo provisional sintético). |
+| `src/main/java/orquitas/herramientas` | `RecolectorBarridos`, `EntrenamientoReal`, `EntrenamientoSimulado` (no forman parte de los diagramas). |
+| `src/main/java/orquitas/simulacion` | `EntrenamientoDemostracion` (modelo provisional sintético) y `bahia` (simulador 2D: `Bahia`, `RobotSimulado`, `SensorSimulado`, `SimuladorBahia`, `Maestro`, `Piloto`, `VisorBahia`). |
 | `arduino/Orquita/Orquita.ino` | Sketch del robot. |
-| `entrega-java/` | Lo que se sube a ClassRoom: los `.java` planos del Servidor y de las herramientas, y `Orquita.ino`. |
+| `entrega-java/` | Lo que se sube a ClassRoom: los `.java` planos del Servidor, de las herramientas y de la bahía simulada (marcados `// Archivo de simulacion`), y `Orquita.ino`. |
 | `docs/historico/` | Material de los hitos anteriores (no usar como versión actual). |

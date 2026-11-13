@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import orquitas.servidor.navegacion.Movimiento;
+import orquitas.servidor.navegacion.OrdenMovimiento;
 import orquitas.servidor.navegacion.Navegacion;
 import orquitas.servidor.persistencia.Estomago;
 
@@ -144,7 +144,7 @@ public class EnlaceOrquita extends Thread {
             case TELEMETRIA:
                 enviarConfirmacion();
                 navegacion.determinarMovimiento(telemetria); // CU-07
-                enviarOrdenNavegacion(navegacion.obtenerMovimientoDecidido()); // CU-08
+                enviarOrdenNavegacion(navegacion.obtenerOrdenDecidida()); // CU-08
                 break;
             default:
                 enviarRechazo();
@@ -194,11 +194,10 @@ public class EnlaceOrquita extends Thread {
         transmitir("RECHAZO");
     }
 
-    /** CU-08. Envía ORDEN|movimiento. */
-    public void enviarOrdenNavegacion(Movimiento movimiento) {
-        String orden = codificarOrden(movimiento);
-        System.out.println("[Orden] " + movimiento);
-        transmitir(orden);
+    /** CU-08. Envía ORDEN|movimiento|ms (protocolo v3: la duración la decide la navegación). */
+    public void enviarOrdenNavegacion(OrdenMovimiento orden) {
+        System.out.println("[Orden] " + orden.movimiento() + " " + orden.milisegundos() + " ms");
+        transmitir(codificarOrden(orden));
     }
 
     /** CU-12. Señal periódica con la que la Orquita sabe que el Servidor sigue vivo. */
@@ -265,8 +264,8 @@ public class EnlaceOrquita extends Thread {
         return null;
     }
 
-    private String codificarOrden(Movimiento movimiento) {
-        return "ORDEN|" + movimiento.name();
+    private String codificarOrden(OrdenMovimiento orden) {
+        return orden.comoTrama();
     }
 
     /** Escribe la línea con fin de línea y flush; si falla registra la falla del enlace. */
