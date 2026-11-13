@@ -4,16 +4,17 @@ import java.nio.file.Path;
 import org.neuroph.core.NeuralNetwork;
 
 /**
- * Red de movimiento (MLP de Neuroph): decide la dirección y cuántos milisegundos moverse.
+ * Red de movimiento (MLP de Neuroph): decide a qué sector ir (o retroceder) y cuántos mm; el Servidor
+ * lo traduce a una orden con milisegundos (ver MetaMovimiento).
  * Entradas (184): las 117 de PreprocesadorTelemetria, las 65 salidas de la red de percepción y el modo
  * (BUSQUEDA, ESCAPE) como dos entradas 0/1.
- * Salidas (6): AVANZAR, RETROCEDER, GIRAR_IZQ, GIRAR_DER, DETENER (gana la mayor) y la duración
- * normalizada en [0, 1] (ver OrdenMovimiento.desnormalizar).
+ * Salidas (15): una por sector meta 0..12 y una para ATRAS (gana la mayor), y la distancia normalizada
+ * en [0, 1] (x MetaMovimiento.MAXIMO_MM), que se usa al avanzar o retroceder.
  */
 public class RedMovimiento {
     public static final int ENTRADAS = PreprocesadorTelemetria.ENTRADAS + RedPercepcion.SALIDAS + 2;
-    public static final int DIRECCIONES = Movimiento.values().length;
-    public static final int SALIDAS = DIRECCIONES + 1;
+    public static final int CLASES = MetaMovimiento.CLASES;
+    public static final int SALIDAS = CLASES + 1;
     private final NeuralNetwork<?> red;
 
     public RedMovimiento(Path ruta) {
@@ -47,11 +48,12 @@ public class RedMovimiento {
         return e;
     }
 
-    /** Salida deseada para entrenar: dirección one-hot y duración normalizada. */
+    /** Salida deseada para entrenar: la orden (del maestro) pasada a sector meta one-hot y distancia. */
     public static double[] salidaDeseada(OrdenMovimiento orden) {
+        MetaMovimiento meta = MetaMovimiento.desde(orden);
         double[] d = new double[SALIDAS];
-        d[orden.movimiento().ordinal()] = 1;
-        d[DIRECCIONES] = orden.movimiento() == Movimiento.DETENER ? 0 : orden.duracionNormalizada();
+        d[meta.clase()] = 1;
+        d[CLASES] = meta.mm() / MetaMovimiento.MAXIMO_MM;
         return d;
     }
 
@@ -61,11 +63,16 @@ public class RedMovimiento {
         return interpretar(red.getOutput());
     }
 
-    /** Dirección = salida mayor entre las 5 primeras; duración = la sexta. */
-    public static OrdenMovimiento interpretar(double[] salida) {
+    /** Meta = salida mayor entre las 14 primeras; distancia = la última. */
+    public static MetaMovimiento meta(double[] salida) {
         int mejor = 0;
-        for (int i = 1; i < DIRECCIONES; i++) if (salida[i] > salida[mejor]) mejor = i;
-        Movimiento m = Movimiento.values()[mejor];
-        return new OrdenMovimiento(m, OrdenMovimiento.desnormalizar(salida[DIRECCIONES]));
+        for (int i = 1; i < CLASES; i++) if (salida[i] > salida[mejor]) mejor = i;
+        double mm = Math.max(0, Math.min(1, salida[CLASES])) * MetaMovimiento.MAXIMO_MM;
+        return new MetaMovimiento(mejor, mm);
+    }
+
+    /** Orden con milisegundos a partir de la salida de la red. */
+    public static OrdenMovimiento interpretar(double[] salida) {
+        return meta(salida).comoOrden();
     }
 }

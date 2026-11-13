@@ -178,10 +178,39 @@ public class NavegacionRedesTest {
         assertEquals(777, OrdenMovimiento.desnormalizar(o.duracionNormalizada()));
     }
 
-    @Test public void interpretarEligeLaDireccionMayorYDesnormalizaLaDuracion() {
-        double[] salida = {0.1, 0.2, 0.9, 0.3, 0.0, 0.5};
-        OrdenMovimiento o = RedMovimiento.interpretar(salida);
-        assertEquals(Movimiento.GIRAR_IZQ, o.movimiento());
-        assertEquals(OrdenMovimiento.desnormalizar(0.5), o.milisegundos());
+    @Test public void interpretarTraduceSectorMetaAGiroOAvance() {
+        double[] salida = new double[RedMovimiento.SALIDAS];
+        salida[8] = 0.9;   // Sector 8: 30° a la izquierda.
+        salida[RedMovimiento.CLASES] = 0.5;
+        OrdenMovimiento giro = RedMovimiento.interpretar(salida);
+        assertEquals(Movimiento.GIRAR_IZQ, giro.movimiento());
+        assertEquals((int) Math.round(30 / CalibracionRobot.GRADOS_POR_SEGUNDO * 1000), giro.milisegundos());
+        salida[8] = 0; salida[MetaMovimiento.FRENTE] = 0.9;
+        OrdenMovimiento avance = RedMovimiento.interpretar(salida);
+        assertEquals(Movimiento.AVANZAR, avance.movimiento());
+        assertEquals(CalibracionRobot.msParaAvanzar(0.5 * MetaMovimiento.MAXIMO_MM), avance.milisegundos());
+        salida[MetaMovimiento.FRENTE] = 0; salida[MetaMovimiento.ATRAS] = 0.9;
+        assertEquals(Movimiento.RETROCEDER, RedMovimiento.interpretar(salida).movimiento());
+        salida[MetaMovimiento.ATRAS] = 0; salida[0] = 0.9;
+        OrdenMovimiento derecha = RedMovimiento.interpretar(salida);
+        assertEquals(Movimiento.GIRAR_DER, derecha.movimiento());
+        assertEquals((int) Math.round(90 / CalibracionRobot.GRADOS_POR_SEGUNDO * 1000), derecha.milisegundos());
+    }
+
+    @Test public void ordenDelMaestroPasaAMetaYVuelve() {
+        int ms45 = (int) Math.round(45 / CalibracionRobot.GRADOS_POR_SEGUNDO * 1000);
+        MetaMovimiento izq = MetaMovimiento.desde(new OrdenMovimiento(Movimiento.GIRAR_IZQ, ms45));
+        assertEquals(9, izq.clase());
+        assertEquals(new OrdenMovimiento(Movimiento.GIRAR_IZQ, ms45), izq.comoOrden());
+        // Un giro chico (6°) se redondea a un sector; uno de 120° se acota a 90°.
+        assertEquals(5, MetaMovimiento.desde(new OrdenMovimiento(Movimiento.GIRAR_DER, 50)).clase());
+        assertEquals(12, MetaMovimiento.desde(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 1000)).clase());
+        MetaMovimiento avance = MetaMovimiento.desde(new OrdenMovimiento(Movimiento.AVANZAR, 800));
+        assertEquals(MetaMovimiento.FRENTE, avance.clase());
+        assertEquals(new OrdenMovimiento(Movimiento.AVANZAR, 800), avance.comoOrden());
+        assertEquals(MetaMovimiento.ATRAS, MetaMovimiento.desde(new OrdenMovimiento(Movimiento.RETROCEDER, 300)).clase());
+        double[] d = RedMovimiento.salidaDeseada(new OrdenMovimiento(Movimiento.AVANZAR, 800));
+        assertEquals(1, d[MetaMovimiento.FRENTE], 0);
+        assertEquals(CalibracionRobot.mmEn(800) / MetaMovimiento.MAXIMO_MM, d[RedMovimiento.CLASES], 1e-9);
     }
 }

@@ -17,6 +17,7 @@ import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.neuroph.util.TransferFunctionType;
 import orquitas.servidor.navegacion.EtiquetaSector;
+import orquitas.servidor.navegacion.MetaMovimiento;
 import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.OrdenMovimiento;
@@ -38,7 +39,8 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  *    verdaderas por sector y la orden del maestro.
  * 2. Red de percepción por ventana: un sector y 2 vecinos de cada lado -> su etiqueta (46 -> ocultas -> 5),
  *    aplicada a los 13 sectores.
- * 3. Red de movimiento: telemetría + percepción + modo -> dirección y ms (184 -> ocultas -> 6).
+ * 3. Red de movimiento: telemetría + percepción + modo -> sector meta (o atrás) y mm (184 -> ocultas -> 15);
+ *    el Servidor lo traduce a giro o avance en ms (MetaMovimiento).
  * 4. DAgger: las redes manejan, el maestro dice qué habría hecho en cada barrido, se suman esos
  *    ejemplos y se reentrena (así la red aprende a salir de los errores que ella misma comete).
  * 5. Evaluación en bahías nuevas (semillas que no se usaron para entrenar): redes contra maestro.
@@ -51,6 +53,8 @@ public class EntrenamientoSimulado {
     static final int OCULTAS_MOVIMIENTO = 48;
     static final double PROBABILIDAD_ORDEN_AL_AZAR = 0.15;
     static final int CANICAS = 3, UMBRAL = 3;
+    /** Tope de repeticiones de una clase rara de meta al balancear la red de movimiento. */
+    static final int REPETICION_MAXIMA = 6;
 
     /** Un barrido con lo que se sabe de él. */
     record Ejemplo(int[] telemetria, EtiquetaSector[] etiquetas, ModoOperativo modo, OrdenMovimiento orden) { }
@@ -181,12 +185,24 @@ public class EntrenamientoSimulado {
         return mezclado(RedPercepcion.ENTRADAS, RedPercepcion.SALIDAS_RED, filas);
     }
 
-    /** Movimiento: usa la salida de la red de percepción (no la verdad) para que entrene con lo que verá. */
+    /**
+     * Movimiento: usa la salida de la red de percepción (no la verdad) para que entrene con lo que verá.
+     * Balanceo: cada clase de meta (13 sectores + ATRAS) se repite hasta pesar lo mismo que la más común
+     * (con tope REPETICION_MAXIMA). Sin esto la red aprende a decir casi siempre "frente", porque cada
+     * giro en particular es raro.
+     */
     static DataSet datosMovimiento(List<Ejemplo> datos, RedPercepcion percepcion) {
+        int[] cuenta = new int[RedMovimiento.CLASES];
+        for (Ejemplo e : datos) cuenta[MetaMovimiento.desde(e.orden()).clase()]++;
+        int maximo = 0;
+        for (int c : cuenta) maximo = Math.max(maximo, c);
         List<DataSetRow> filas = new ArrayList<>();
         for (Ejemplo e : datos) {
             double[] p = percepcion.probabilidades(e.telemetria());
-            filas.add(new DataSetRow(RedMovimiento.entradas(e.telemetria(), p, e.modo()), RedMovimiento.salidaDeseada(e.orden())));
+            DataSetRow fila = new DataSetRow(RedMovimiento.entradas(e.telemetria(), p, e.modo()), RedMovimiento.salidaDeseada(e.orden()));
+            int c = cuenta[MetaMovimiento.desde(e.orden()).clase()];
+            int veces = Math.max(1, Math.min(REPETICION_MAXIMA, Math.round(maximo / (float) c)));
+            for (int i = 0; i < veces; i++) filas.add(fila);
         }
         return mezclado(RedMovimiento.ENTRADAS, RedMovimiento.SALIDAS, filas);
     }

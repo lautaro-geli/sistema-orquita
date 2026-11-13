@@ -21,11 +21,9 @@
 
 ## percepcion.nnet y movimiento.nnet — EXPERIMENTALES (bahía simulada)
 
-**Todavía no conviene usarlos en la pista.** Si están en esta carpeta, el Servidor los usa por defecto; para la navegación anterior agregar `--reglas`: `./ejecutar.ps1 servidor COM5 --umbral=1 --reglas`.
+**Todavía no conviene usarlos en la pista.** El Servidor usa las redes solo si están **los dos** archivos; si no, o con `--reglas`, usa la navegación anterior (`entorno.nnet`, paso fijo). Se generan con `./ejecutar.ps1 simular-entrenar` (en la PC del equipo, Neuroph 2.98).
 
-- Entrenados el 13/11/2026 en la PC del equipo con Neuroph 2.98 (`./ejecutar.ps1 simular-entrenar 300 80 modelos 2`): 300 episodios del maestro, 80 épocas, 2 rondas DAgger, 33 636 ejemplos. Bahía con 2 obstáculos y partida abajo a la izquierda. Calibración estimada (250 mm/s, 120 °/s) **[A CONFIRMAR]**.
-- `percepcion.nnet`: MLP 46-24-5 por ventana (se aplica a los 13 sectores): LIBRE, PARED, OBSTACULO, LOBITO, SALIDA. Acierto por sector en barridos nuevos: 83,2 %.
-- `movimiento.nnet`: MLP 184-48-6: AVANZAR, RETROCEDER, GIRAR_IZQ, GIRAR_DER, DETENER y duración (50–1500 ms).
-- En 100 bahías simuladas nuevas: misión completa 1 % (maestro 36 %), 0,78 capturas, 2,35 choques, −4,9 puntos. Reporte: `docs/evidencias/entrenamiento_simulado_20261113.md`.
-- SHA-256 percepcion.nnet: dccdad85000332ca38760dd2dda507cbec057967c27c0159aa706c816c272f64
-- SHA-256 movimiento.nnet: 15ed39e8a58e62522ab3fcc02bcdbb1a67dbce8e41b59ef3cc0a3bb0c6a97a1a
+- `percepcion.nnet` (en el repo): MLP 46-24-5 por ventana (se aplica a los 13 sectores): LIBRE, PARED, OBSTACULO, LOBITO, SALIDA. Entrenado el 13/11/2026 en la PC (300 episodios, 80 épocas, 2 rondas DAgger; bahía con 2 obstáculos y partida abajo a la izquierda). Acierto por sector en barridos nuevos: 83,2 %. SHA-256: dccdad85000332ca38760dd2dda507cbec057967c27c0159aa706c816c272f64
+- `movimiento.nnet` (**no está en el repo**: hay que entrenarlo): MLP 184-48-15. Elige el sector meta (0 a 12) o ATRAS y la distancia en mm (`MetaMovimiento`). El primer `movimiento.nnet` (13/11, 184-48-6, dirección + ms) se quitó del repo porque no es compatible con este formato; en 100 bahías simuladas había dado: misión completa 1 % (maestro 36 %), 0,78 capturas, 2,35 choques, −4,9 puntos.
+- Con el formato nuevo y balanceo de clases, en el entorno de desarrollo dio: misión completa 2 %, 1,26 capturas, 2,50 choques, −0,2 puntos (el mejor hasta ahora; ver `docs/evidencias/entrenamiento_simulado_20261113_sector_meta.md`). Falta generarlo en la PC con Neuroph 2.98.
+- Reportes: `docs/evidencias/entrenamiento_simulado_AAAAMMDD.md`. El entrenamiento con balanceo tarda más (~35 min).
