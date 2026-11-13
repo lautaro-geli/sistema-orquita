@@ -129,3 +129,54 @@ La red quedaría chica, por ejemplo **14 → 16 → 15**, en lugar de 184 → 48
 - `RedMovimiento.entradas(...)` pasaría a usar esa función.
 - `EntrenamientoSimulado` no cambia de estructura; solo cambia el tamaño de la red.
 - Pruebas: ángulo y distancia de la meta en barridos armados a mano, meta ausente, dos metas, modo escape con la salida.
+
+---
+
+## Bloque 6 — Memoria ❌ (hoy solo hay memoria fuera de la red: el DetectorAtasco)
+
+### Por qué hace falta
+
+La red de movimiento decide mirando **un solo barrido**. Sin memoria:
+
+- **Pierde el Lobito justo antes de tragarlo.** Cuando la canica queda a menos de 4 cm, o debajo y delante del sensor, el VL53L1X da `-1` o deja de verla. La red cree que no hay nada y se pone a explorar, en vez de seguir avanzando 5 cm más.
+- **Oscila.** Gira a la izquierda, en el barrido siguiente ve algo parecido y gira a la derecha, y así sigue.
+- **Se traba en esquinas.** Es el problema clásico de los robots que solo reaccionan al presente; el detector de atasco lo tapa desde afuera, pero la red no aprende a evitarlo.
+- **No sabe hacia dónde queda la salida** si no la está viendo, aunque la tenía enfrente al arrancar.
+
+El maestro no tiene memoria, pero hace "trampa" (conoce la posición de todo). La memoria le da a la red parte de esa información que el sensor no muestra.
+
+### Cómo sería (propuesta: memoria explícita, no red recurrente)
+
+Un objeto `MemoriaNavegacion`, uno por misión, que el Servidor actualiza en cada ciclo con lo que **ya sabe**: la orden que mandó y lo que vio. Sus valores se suman como entradas a las 14 del bloque 5.
+
+**Qué recuerda** (~10 entradas, todas en [0, 1]):
+
+| # | Entrada | Qué es | Para qué sirve |
+|---|---|---|---|
+| 15–18 | **ordenAnterior** | La última orden, una entrada por tipo: avanzar, retroceder, girar izq., girar der. (1 en la que fue) | Evitar oscilar (no deshacer lo que acaba de hacer sin motivo) |
+| 19 | **cuántoAnterior** | Cuánto duró esa orden (ms / 1500) | Distinguir un ajuste chico de un giro grande |
+| 20 | **atasco** | Barridos seguidos sin cambios después de moverse (el mismo cálculo del DetectorAtasco), acotado | Que la red aprenda a salir de los atascos, no solo el reflejo |
+| 21 | **cicloDesdeMeta** | Ciclos desde la última vez que vio la meta (0 = la ve ahora; 1 = hace 5 o más) | Seguir hacia el Lobito un par de ciclos aunque deje de verlo de cerca |
+| 22 | **ánguloMetaAnterior** | Dónde estaba la meta la última vez que la vio, corregido por los giros hechos desde entonces | Saber hacia dónde ir si la perdió de vista |
+| 23–24 | **rumboEstimado** (seno y coseno) | Hacia dónde mira el robot respecto de la partida, sumando los giros que mandó el Servidor (odometría por órdenes) | En escape: saber hacia dónde queda la salida aunque no se vea (al arrancar mira hacia ella) |
+
+Total con el bloque 5: **14 + 10 = 24 entradas**. La red seguiría siendo chica (por ejemplo 24 → 20 → 15).
+
+### Detalles importantes
+
+- **Se reinicia** al empezar cada misión (el Servidor ya vacía el estómago al arrancar; la memoria también).
+- **El rumbo estimado acumula error**: cada giro real difiere un poco del pedido. Sirve como pista, no como verdad, y mejora mucho con la calibración real (bloque 1). Se puede limitar a "hacia qué mitad mira" (frente o espalda) si el error es muy grande.
+- **Hay que entrenarla con memoria.** En la simulación, cada prueba tiene su propia `MemoriaNavegacion`, calculada igual que en el Servidor y con las órdenes que realmente se ejecutaron (incluidas las de la red en las rondas DAgger). Si se entrena sin memoria y se usa con memoria, no sirve.
+- **El maestro no cambia**: sigue decidiendo con la geometría real; la red usa la memoria para acercarse a lo que el maestro "sabe".
+- Al cambiar las entradas hay que volver a entrenar (el `movimiento.nnet` anterior deja de ser compatible).
+
+### Alternativa descartada por ahora: red recurrente
+
+Una red que guarde su propio estado de un ciclo al siguiente (Elman o Jordan) aprende sola qué recordar, pero se entrena mucho peor con Neuroph (sin retropropagación en el tiempo) y es más difícil de explicar y depurar. La memoria explícita es más simple, se puede probar con JUnit y mostrar en la consola (`[Memoria] vio el Lobito hace 1 ciclo a +15°; rumbo +40° desde la partida`).
+
+### Dónde viviría (para cuando se implemente)
+
+- Clase nueva `MemoriaNavegacion` en `orquitas.servidor.navegacion`: `actualizar(ordenEnviada, representacionActual)`, `entradas()` → `double[10]`, `reiniciar()`.
+- `Navegacion` tendría una instancia y la actualizaría después de decidir cada orden; el `DetectorAtasco` pasaría a alimentar la entrada `atasco`.
+- `Piloto.redes` (simulación) tendría otra, una por prueba.
+- Pruebas: oscilación (izq. → der.) visible en `ordenAnterior`; meta perdida y `cicloDesdeMeta` que crece; giros acumulados en `rumboEstimado`; reinicio.
