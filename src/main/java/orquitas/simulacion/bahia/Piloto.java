@@ -2,6 +2,7 @@
 package orquitas.simulacion.bahia;
 
 import java.nio.file.Path;
+import orquitas.servidor.navegacion.DetectorAtasco;
 import orquitas.servidor.navegacion.EtiquetaSector;
 import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.OrdenMovimiento;
@@ -20,14 +21,16 @@ public interface Piloto {
         return (sim, b) -> new Decision(Maestro.decidir(sim, b), b.etiquetas());
     }
 
-    /** Las dos redes y el reflejo de seguridad, igual que en el Servidor: solo ven la telemetría y el modo. */
+    /** Las dos redes, el reflejo de seguridad y el detector de atasco, igual que en el Servidor. Un piloto por prueba. */
     static Piloto redes(RedPercepcion percepcion, RedMovimiento movimiento) {
+        DetectorAtasco atasco = new DetectorAtasco();
         return (sim, b) -> {
             if (sim.modo() == ModoOperativo.LIBERADA) return new Decision(new OrdenMovimiento(orquitas.servidor.navegacion.Movimiento.DETENER, 0), null);
             double[] probabilidades = percepcion.probabilidades(b.telemetria());
             EtiquetaSector[] etiquetas = RedPercepcion.etiquetas(probabilidades);
             OrdenMovimiento orden = movimiento.decidir(b.telemetria(), probabilidades, sim.modo());
-            return new Decision(ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas), etiquetas);
+            OrdenMovimiento segura = ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas);
+            return new Decision(atasco.revisar(b.telemetria(), segura), etiquetas);
         };
     }
 

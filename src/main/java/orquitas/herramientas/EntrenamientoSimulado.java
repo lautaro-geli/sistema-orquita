@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -35,8 +36,9 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  * 1. El maestro (que conoce la geometría real) maneja el robot en bahías al azar; a veces se ejecuta
  *    una orden al azar para visitar situaciones variadas. Se guarda cada barrido con sus etiquetas
  *    verdaderas por sector y la orden del maestro.
- * 2. Red de percepción: telemetría -> etiqueta de cada sector (78 -> ocultas -> 65).
- * 3. Red de movimiento: telemetría + percepción + modo -> dirección y ms (145 -> ocultas -> 6).
+ * 2. Red de percepción por ventana: un sector y 2 vecinos de cada lado -> su etiqueta (46 -> ocultas -> 5),
+ *    aplicada a los 13 sectores.
+ * 3. Red de movimiento: telemetría + percepción + modo -> dirección y ms (184 -> ocultas -> 6).
  * 4. DAgger: las redes manejan, el maestro dice qué habría hecho en cada barrido, se suman esos
  *    ejemplos y se reentrena (así la red aprende a salir de los errores que ella misma comete).
  * 5. Evaluación en bahías nuevas (semillas que no se usaron para entrenar): redes contra maestro.
@@ -45,7 +47,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
 public class EntrenamientoSimulado {
     static final long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
-    static final int OCULTAS_PERCEPCION = 40;
+    static final int OCULTAS_PERCEPCION = 24;
     static final int OCULTAS_MOVIMIENTO = 48;
     static final double PROBABILIDAD_ORDEN_AL_AZAR = 0.15;
     static final int CANICAS = 3, UMBRAL = 3;
@@ -74,8 +76,9 @@ public class EntrenamientoSimulado {
         List<Ejemplo> datos = recolectarConMaestro(episodios, cal);
         log("Ejemplos del maestro: " + datos.size());
 
-        MultiLayerPerceptron percepcion = nuevaRed(PreprocesadorTelemetria.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS);
-        entrenar(percepcion, datosPercepcion(datos), epocas, "percepción");
+        MultiLayerPerceptron percepcion = nuevaRed(RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED);
+        // La percepción tiene ~8 filas por barrido (una por sector, balanceadas): necesita menos épocas.
+        entrenar(percepcion, datosPercepcion(datos), Math.max(5, epocas / 3), "percepción");
         MultiLayerPerceptron movimiento = nuevaRed(RedMovimiento.ENTRADAS, OCULTAS_MOVIMIENTO, RedMovimiento.SALIDAS);
         entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), epocas, "movimiento");
 
@@ -84,7 +87,7 @@ public class EntrenamientoSimulado {
                     new RedMovimiento(movimiento), SEMILLA + 10_000L * ronda);
             datos.addAll(nuevos);
             log("DAgger ronda " + ronda + ": +" + nuevos.size() + " ejemplos (total " + datos.size() + ")");
-            entrenar(percepcion, datosPercepcion(datos), Math.max(10, epocas / 2), "percepción");
+            entrenar(percepcion, datosPercepcion(datos), Math.max(3, epocas / 6), "percepción");
             entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), Math.max(10, epocas / 2), "movimiento");
         }
 
@@ -96,8 +99,8 @@ public class EntrenamientoSimulado {
         RedPercepcion rp = new RedPercepcion(rutaPercepcion);
         RedMovimiento rm = new RedMovimiento(rutaMovimiento);
         int pruebas = 100;
-        Resumen maestro = evaluar(Piloto.maestro(), pruebas, cal);
-        Resumen redes = evaluar(Piloto.redes(rp, rm), pruebas, cal);
+        Resumen maestro = evaluar(Piloto::maestro, pruebas, cal);
+        Resumen redes = evaluar(() -> Piloto.redes(rp, rm), pruebas, cal);
         int[][] confusion = confusionPercepcion(rp, 40, cal);
         double acuerdo = acuerdoDireccion(rp, rm, 40, cal);
         double minutos = (System.currentTimeMillis() - inicio) / 60000.0;
@@ -109,8 +112,8 @@ public class EntrenamientoSimulado {
                        episodios, rondas, epocas, datos.size(), minutos))
                .append(String.format(Locale.ROOT, "- Calibración usada: %.0f mm/s, %.0f °/s, robot %.0f x %.0f mm [A CONFIRMAR con el robot real].%n",
                        cal.mmPorSegundo(), cal.gradosPorSegundo(), cal.largoMm(), cal.anchoMm()))
-               .append(String.format(Locale.ROOT, "- Redes: percepción %d-%d-%d, movimiento %d-%d-%d (sigmoide, MomentumBackpropagation).%n%n",
-                       PreprocesadorTelemetria.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS,
+               .append(String.format(Locale.ROOT, "- Redes: percepción por ventana %d-%d-%d (x 13 sectores), movimiento %d-%d-%d (sigmoide, MomentumBackpropagation).%n%n",
+                       RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED,
                        RedMovimiento.ENTRADAS, OCULTAS_MOVIMIENTO, RedMovimiento.SALIDAS))
                .append("## Pruebas completas (").append(pruebas).append(" bahías nuevas, 7 min, 3 Lobitos)\n\n")
                .append("| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |\n|---|---|---|---|---|---|\n")
@@ -139,40 +142,53 @@ public class EntrenamientoSimulado {
 
     static void entrenar(MultiLayerPerceptron red, DataSet datos, int epocas, String nombre) {
         MomentumBackpropagation regla = new MomentumBackpropagation();
-        regla.setLearningRate(0.05);
+        regla.setLearningRate(0.1);
         regla.setMomentum(0.6);
         regla.setMaxIterations(epocas);
         regla.setMaxError(0.001);
-        regla.addListener(e -> {
-            MomentumBackpropagation r = (MomentumBackpropagation) e.getSource();
-            if (r.getCurrentIteration() % 10 == 0)
-                log(String.format(Locale.ROOT, "%s época %d error %.5f", nombre, r.getCurrentIteration(), r.getTotalNetworkError()));
-        });
         red.setLearningRule(regla);
-        datos.shuffle();
+        long inicio = System.currentTimeMillis();
         red.learn(datos);
+        log(String.format(Locale.ROOT, "%s: %d épocas, error %.5f, %.1f min", nombre, regla.getCurrentIteration(),
+                regla.getTotalNetworkError(), (System.currentTimeMillis() - inicio) / 60000.0));
     }
 
-    /** Percepción: los barridos con algún Lobito se repiten 4 veces (son pocos y es lo más importante). */
-    static DataSet datosPercepcion(List<Ejemplo> datos) {
-        DataSet ds = new DataSet(PreprocesadorTelemetria.ENTRADAS, RedPercepcion.SALIDAS);
-        for (Ejemplo e : datos) {
-            DataSetRow fila = new DataSetRow(PreprocesadorTelemetria.entradas(e.telemetria()), RedPercepcion.salidaDeseada(e.etiquetas()));
-            boolean lobito = false;
-            for (EtiquetaSector x : e.etiquetas()) lobito |= x == EtiquetaSector.LOBITO;
-            for (int i = 0; i < (lobito ? 4 : 1); i++) ds.add(fila);
-        }
+    /** DataSet con las filas mezcladas (semilla fija). */
+    static DataSet mezclado(int entradas, int salidas, List<DataSetRow> filas) {
+        Collections.shuffle(filas, new Random(SEMILLA));
+        DataSet ds = new DataSet(entradas, salidas);
+        for (DataSetRow f : filas) ds.add(f);
         return ds;
+    }
+
+    /**
+     * Percepción: una fila por sector (ventana). Para balancear, los sectores LOBITO se repiten 4 veces
+     * y de los PARED se toma 1 de cada 2 (son la gran mayoría).
+     */
+    static DataSet datosPercepcion(List<Ejemplo> datos) {
+        List<DataSetRow> filas = new ArrayList<>();
+        Random azar = new Random(SEMILLA);
+        for (Ejemplo e : datos) {
+            double[] entradas = PreprocesadorTelemetria.entradas(e.telemetria());
+            for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
+                EtiquetaSector et = e.etiquetas()[s];
+                int veces = et == EtiquetaSector.LOBITO ? 4 : et == EtiquetaSector.PARED ? (azar.nextInt(2) == 0 ? 1 : 0) : 1;
+                if (veces == 0) continue;
+                DataSetRow fila = new DataSetRow(PreprocesadorTelemetria.entradasVentana(entradas, s), RedPercepcion.salidaDeseada(et));
+                for (int i = 0; i < veces; i++) filas.add(fila);
+            }
+        }
+        return mezclado(RedPercepcion.ENTRADAS, RedPercepcion.SALIDAS_RED, filas);
     }
 
     /** Movimiento: usa la salida de la red de percepción (no la verdad) para que entrene con lo que verá. */
     static DataSet datosMovimiento(List<Ejemplo> datos, RedPercepcion percepcion) {
-        DataSet ds = new DataSet(RedMovimiento.ENTRADAS, RedMovimiento.SALIDAS);
+        List<DataSetRow> filas = new ArrayList<>();
         for (Ejemplo e : datos) {
             double[] p = percepcion.probabilidades(e.telemetria());
-            ds.add(new DataSetRow(RedMovimiento.entradas(e.telemetria(), p, e.modo()), RedMovimiento.salidaDeseada(e.orden())));
+            filas.add(new DataSetRow(RedMovimiento.entradas(e.telemetria(), p, e.modo()), RedMovimiento.salidaDeseada(e.orden())));
         }
-        return ds;
+        return mezclado(RedMovimiento.ENTRADAS, RedMovimiento.SALIDAS, filas);
     }
 
     /** El maestro maneja; con cierta probabilidad se ejecuta una orden al azar (pero se guarda la del maestro). */
@@ -196,8 +212,8 @@ public class EntrenamientoSimulado {
     static List<Ejemplo> recolectarConRedes(int episodios, RobotSimulado.Calibracion cal, RedPercepcion rp, RedMovimiento rm, long semilla) {
         List<Ejemplo> datos = new ArrayList<>();
         Random azar = new Random(semilla);
-        Piloto redes = Piloto.redes(rp, rm);
         for (int i = 0; i < episodios; i++) {
+            Piloto redes = Piloto.redes(rp, rm);
             int umbral = 1 + azar.nextInt(UMBRAL);
             SimuladorBahia sim = SimuladorBahia.alAzar(semilla + i, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
             while (!sim.terminada()) {
@@ -215,11 +231,13 @@ public class EntrenamientoSimulado {
         return new OrdenMovimiento(m[azar.nextInt(m.length)], 100 + azar.nextInt(900));
     }
 
-    static Resumen evaluar(Piloto piloto, int pruebas, RobotSimulado.Calibracion cal) {
+    /** Corre las pruebas con un piloto nuevo por prueba (el detector de atasco tiene memoria). */
+    static Resumen evaluar(java.util.function.Supplier<Piloto> fabrica, int pruebas, RobotSimulado.Calibracion cal) {
         int liberadas = 0;
         double capturas = 0, choques = 0, puntaje = 0, segundos = 0;
         for (int i = 0; i < pruebas; i++) {
             SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + i, CANICAS, UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
+            Piloto piloto = fabrica.get();
             while (!sim.terminada()) sim.ejecutar(piloto.decidir(sim, sim.medir()).orden());
             if (sim.modo() == ModoOperativo.LIBERADA) liberadas++;
             capturas += sim.capturas();

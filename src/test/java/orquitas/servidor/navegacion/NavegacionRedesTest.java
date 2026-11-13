@@ -89,7 +89,7 @@ public class NavegacionRedesTest {
         try { new RedPercepcion(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
         try { new RedMovimiento(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
         Path ok = dir.resolve("ok.nnet");
-        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS).save(ok.toString());
+        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS_RED).save(ok.toString());
         assertEquals(65, new RedPercepcion(ok).probabilidades(todo(-1)).length);
     }
 
@@ -100,15 +100,28 @@ public class NavegacionRedesTest {
         assertEquals(CalibracionRobot.msParaAvanzar(170 - ReflejoSeguridad.MARGEN_MM), o.milisegundos());
     }
 
-    @Test public void reflejoNoFrenaAnteUnLobitoNiTocaLosGiros() {
+    @Test public void reflejoNoFrenaAnteUnLobito() {
         int[] t = con(todo(1200), 6, 90);
         EtiquetaSector[] e = new EtiquetaSector[13];
         java.util.Arrays.fill(e, EtiquetaSector.PARED);
         e[6] = EtiquetaSector.LOBITO;
         OrdenMovimiento avanzar = new OrdenMovimiento(Movimiento.AVANZAR, 600);
         assertEquals(avanzar, ReflejoSeguridad.ajustar(avanzar, t, e));
+    }
+
+    @Test public void reflejoDejaGirarConLugarYRetrocedeSiLasEsquinasTocarian() {
         OrdenMovimiento giro = new OrdenMovimiento(Movimiento.GIRAR_DER, 600);
-        assertEquals(giro, ReflejoSeguridad.ajustar(giro, con(todo(1200), 6, 50), null));
+        assertEquals(giro, ReflejoSeguridad.ajustar(giro, todo(1200), null));
+        assertEquals(Movimiento.RETROCEDER, ReflejoSeguridad.ajustar(giro, con(todo(1200), 0, 100), null).movimiento());
+        assertEquals(Movimiento.RETROCEDER, ReflejoSeguridad.ajustar(giro, con(todo(1200), 6, 50), null).movimiento());
+    }
+
+    @Test public void reflejoTomaComoPegadoUnFrenteSinEcoConVecinosCerca() {
+        int[] t = con(todo(1200), 6, -1); // Pegado a la pared: el sensor da -1 por debajo de 40 mm.
+        t = con(t, 5, 120);
+        t = con(t, 7, 120);
+        OrdenMovimiento o = ReflejoSeguridad.ajustar(new OrdenMovimiento(Movimiento.AVANZAR, 600), t, null);
+        assertEquals(Movimiento.RETROCEDER, o.movimiento());
     }
 
     @Test public void reflejoRetrocedeSiYaEstaEncima() {
@@ -125,6 +138,33 @@ public class NavegacionRedesTest {
         Navegacion n = new Navegacion(new PercepcionFija(), new MovimientoFijo(new OrdenMovimiento(Movimiento.AVANZAR, 1500)));
         n.determinarMovimiento(con(todo(1200), 7, 200));
         assertTrue(n.obtenerOrdenDecidida().milisegundos() < 1500);
+    }
+
+    @Test public void atascoCambiaLaOrdenSiElBarridoNoCambio() {
+        DetectorAtasco d = new DetectorAtasco();
+        OrdenMovimiento giro = new OrdenMovimiento(Movimiento.GIRAR_DER, 500);
+        assertEquals(giro, d.revisar(todo(400), giro));
+        // El barrido llega igual (con ruido chico): el giro no tuvo efecto, se prueba el contrario.
+        OrdenMovimiento segunda = d.revisar(con(todo(400), 3, 405), giro);
+        assertEquals(Movimiento.GIRAR_IZQ, segunda.movimiento());
+        assertEquals(1, d.atascosSeguidos());
+        // Si sigue igual, retrocede.
+        assertEquals(Movimiento.RETROCEDER, d.revisar(todo(400), giro).movimiento());
+        // Si el barrido cambió, vuelve a la orden de la red.
+        OrdenMovimiento avanzar = new OrdenMovimiento(Movimiento.AVANZAR, 600);
+        assertEquals(avanzar, d.revisar(todo(900), avanzar));
+        assertEquals(0, d.atascosSeguidos());
+    }
+
+    @Test public void atascoNoSeActivaDespuesDeDetenerNiConPocosDatos() {
+        DetectorAtasco d = new DetectorAtasco();
+        OrdenMovimiento detener = new OrdenMovimiento(Movimiento.DETENER, 0);
+        d.revisar(todo(400), detener);
+        OrdenMovimiento avanzar = new OrdenMovimiento(Movimiento.AVANZAR, 600);
+        assertEquals(avanzar, d.revisar(todo(400), avanzar));
+        DetectorAtasco sinDatos = new DetectorAtasco();
+        sinDatos.revisar(todo(-1), avanzar);
+        assertEquals(avanzar, sinDatos.revisar(todo(-1), avanzar));
     }
 
     @Test public void ordenAcotaLaDuracionYDetenerVaEnCero() {

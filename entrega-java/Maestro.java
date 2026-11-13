@@ -5,6 +5,8 @@ import orquitas.servidor.navegacion.EtiquetaSector;
 import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.OrdenMovimiento;
+import orquitas.servidor.navegacion.PreprocesadorTelemetria;
+import orquitas.servidor.navegacion.ReflejoSeguridad;
 
 /**
  * Piloto "maestro" del simulador: conoce la geometría real y decide la orden ideal (dirección y ms).
@@ -21,6 +23,8 @@ public final class Maestro {
     private static final double DESPEJE_MINIMO_MM = 45;
     private static final double PASO_EXPLORACION_MM = 450;
     private static final double VISTA_LOBITO_MM = 600;
+    /** Si el sensor ve algo (que no sea Lobito) a menos de esto delante del frente, se aleja. */
+    private static final double FRENTE_CERCA_MM = 70;
 
     private Maestro() { }
 
@@ -32,6 +36,16 @@ public final class Maestro {
 
         double despeje = despejeAdelante(bahia, r, sim.modo() != ModoOperativo.ESCAPE);
         if (despeje < DESPEJE_MINIMO_MM) return salirDelPaso(sim, barrido);
+        OrdenMovimiento orden = decidirSinReflejo(sim, barrido, despeje);
+        // El maestro pasa por el mismo reflejo que la red: así la red aprende órdenes que se van a cumplir.
+        return ReflejoSeguridad.ajustar(orden, barrido.telemetria(), barrido.etiquetas());
+    }
+
+    private static OrdenMovimiento decidirSinReflejo(SimuladorBahia sim, SensorSimulado.Barrido barrido, double despeje) {
+        Bahia bahia = sim.bahia();
+        RobotSimulado r = sim.robot();
+        RobotSimulado.Calibracion cal = r.calibracion();
+        if (frenteVisto(barrido) < FRENTE_CERCA_MM) return salirDelPaso(sim, barrido);
 
         double[] meta = null;
         if (sim.modo() == ModoOperativo.BUSQUEDA && contiene(barrido, EtiquetaSector.LOBITO)) meta = lobitoVisible(bahia, r);
@@ -138,6 +152,20 @@ public final class Maestro {
 
     private static int msRecto(RobotSimulado.Calibracion cal, double mm) {
         return (int) Math.round(mm / cal.mmPorSegundo() * 1000);
+    }
+
+    /** Distancia libre delante del frente según el sensor (sectores 5 a 7, sin los marcados LOBITO). */
+    static double frenteVisto(SensorSimulado.Barrido b) {
+        int[] c = PreprocesadorTelemetria.corregir(b.telemetria());
+        double libre = Double.MAX_VALUE;
+        for (int s = 5; s <= 7; s++) {
+            if (b.etiquetas()[s] == EtiquetaSector.LOBITO) continue;
+            for (int roi = 1; roi <= 2; roi++) {
+                int d = c[s * 3 + roi];
+                if (!PreprocesadorTelemetria.esDesconocido(d)) libre = Math.min(libre, d - 30);
+            }
+        }
+        return libre;
     }
 
     /** +1 si la izquierda (sectores 8 a 12) está más abierta que la derecha (0 a 4), si no -1. */

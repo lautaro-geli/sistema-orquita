@@ -42,7 +42,7 @@ public class PreprocesadorTelemetriaTest {
 
     @Test public void entradasMarcanDesconocidoAparteYCercaniaCero() {
         double[] e = PreprocesadorTelemetria.entradas(sector(0, -1, -1, -1));
-        assertEquals(78, e.length);
+        assertEquals(117, e.length);
         for (int i = 0; i < 3; i++) {
             assertEquals(0, e[i], 0);
             assertEquals(1, e[39 + i], 0);
@@ -56,6 +56,30 @@ public class PreprocesadorTelemetriaTest {
         assertEquals(1, e[15], 1e-9);
         assertEquals(0, e[16], 1e-9);
         assertEquals(0, e[17], 1e-9);
+    }
+
+    @Test public void rasgosDeCanicaCercaYDeParedPlana() {
+        int[] t = todo(600);
+        t[6 * 3] = 60; t[6 * 3 + 1] = 70; t[6 * 3 + 2] = 90; // Canica al frente: 4x4 < 8x8 < 16x16.
+        double[] e = PreprocesadorTelemetria.entradas(t);
+        int base = 78 + 6 * 3;
+        assertTrue(e[base] > 0.5);      // 4x4 más cerca que 16x16.
+        assertTrue(e[base + 1] > 0.5);  // 4x4 más cerca que 8x8.
+        assertTrue(e[base + 2] > 0.5);  // Más cerca que los vecinos.
+        double[] plana = PreprocesadorTelemetria.entradas(todo(600));
+        assertEquals(0.5, plana[base], 1e-9);
+        assertEquals(0.5, plana[base + 2], 1e-9);
+    }
+
+    @Test public void ventanaRellenaFueraDelAbanicoYMarcaLaPosicion() {
+        double[] e = PreprocesadorTelemetria.entradas(todo(650));
+        double[] v0 = PreprocesadorTelemetria.entradasVentana(e, 0);
+        assertEquals(PreprocesadorTelemetria.ENTRADAS_VENTANA, v0.length);
+        assertEquals(0, v0[0], 0);        // Sector -2: no existe, cercanía 0...
+        assertEquals(1, v0[3], 0);        // ...y desconocido.
+        assertEquals(0.5, v0[18], 1e-9);  // Sector 0 (centro de la ventana): cercanía de 650 mm.
+        assertEquals(0, v0[v0.length - 1], 0);
+        assertEquals(1, PreprocesadorTelemetria.entradasVentana(e, 12)[PreprocesadorTelemetria.ENTRADAS_VENTANA - 1], 0);
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -13,7 +13,9 @@ import java.util.Objects;
  * Dos formas de decidir:
  * <ul>
  *   <li>Con redes (RedPercepcion + RedMovimiento, entrenadas en la bahía simulada): la percepción
- *       etiqueta cada sector y la red de movimiento elige dirección y milisegundos.</li>
+ *       etiqueta cada sector y la red de movimiento elige dirección y milisegundos. Después actúan el
+ *       ReflejoSeguridad (frenar o retroceder antes de chocar) y el DetectorAtasco (si el barrido no
+ *       cambió, la orden anterior no tuvo efecto y se prueba otra).</li>
  *   <li>Por reglas (RedNeuronal de una sola clase por barrido): la forma anterior, con paso fijo.</li>
  * </ul>
  * En los dos casos la telemetría pasa antes por la regla del -1 (PreprocesadorTelemetria).
@@ -41,6 +43,7 @@ public class Navegacion {
     private volatile ModoOperativo modoOperativo = ModoOperativo.BUSQUEDA;
     private OrdenMovimiento ordenDecidida = new OrdenMovimiento(Movimiento.DETENER, 0);
     private EtiquetaSector[] ultimasEtiquetas;
+    private final DetectorAtasco atasco = new DetectorAtasco();
     private int lecturasNoReconocidas;
 
     /** Navegación por reglas con la red de una sola clase (paso fijo). */
@@ -81,7 +84,10 @@ public class Navegacion {
         }
         if (modoOperativo == ModoOperativo.LIBERADA) return new OrdenMovimiento(Movimiento.DETENER, 0);
         OrdenMovimiento deLaRed = redMovimiento.decidir(telemetria, percepcion, modoOperativo);
-        return ReflejoSeguridad.ajustar(deLaRed, telemetria, ultimasEtiquetas);
+        OrdenMovimiento segura = ReflejoSeguridad.ajustar(deLaRed, telemetria, ultimasEtiquetas);
+        OrdenMovimiento elegida = atasco.revisar(telemetria, segura);
+        if (elegida != segura) System.out.println("[Navegación] Atasco detectado: " + segura.movimiento() + " -> " + elegida.movimiento());
+        return elegida;
     }
 
     /** Dirección de la última orden decidida. */

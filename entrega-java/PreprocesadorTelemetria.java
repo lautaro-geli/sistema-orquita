@@ -15,8 +15,8 @@ public final class PreprocesadorTelemetria {
     public static final int SECTORES = 13;
     public static final int ROIS = 3;
     public static final int VALORES = SECTORES * ROIS;
-    /** Entradas de la red: 39 cercanías + 39 marcas de desconocido. */
-    public static final int ENTRADAS = VALORES * 2;
+    /** Entradas de las redes: 39 cercanías + 39 marcas de desconocido + 3 rasgos por sector (39). */
+    public static final int ENTRADAS = VALORES * 3;
     public static final int SIN_ECO = -1;
     /** Valor de "desconocido" en el arreglo de distancias corregidas. */
     public static final int DESCONOCIDO = -1;
@@ -48,8 +48,14 @@ public final class PreprocesadorTelemetria {
     }
 
     /**
-     * Entradas de las redes: para cada valor, cercanía = clamp((ALCANCE - d) / ALCANCE, 0, 1)
-     * (pegado = 1, lejos = 0; desconocido = 0), y después las 39 marcas (1 = desconocido).
+     * Entradas de las redes (117):
+     * <ol>
+     *   <li>39 cercanías: clamp((ALCANCE - d) / ALCANCE, 0, 1) (pegado = 1, lejos = 0; desconocido = 0).</li>
+     *   <li>39 marcas de desconocido (1 = desconocido).</li>
+     *   <li>3 rasgos por sector, llevados de [-1, 1] a [0, 1] (0,5 = sin diferencia): cercanía 4x4 menos
+     *       16x16, 4x4 menos 8x8, y 8x8 del sector menos el 8x8 más cercano de sus vecinos. Una canica
+     *       cerca se ve más cerca en el ROI angosto que en el ancho y más cerca que los sectores de al lado.</li>
+     * </ol>
      */
     public static double[] entradas(int[] telemetria) {
         int[] corregida = corregir(telemetria);
@@ -62,7 +68,42 @@ public final class PreprocesadorTelemetria {
                 entradas[i] = Math.min(1, Math.max(0, (ALCANCE_MM - corregida[i]) / ALCANCE_MM));
             }
         }
+        int base = VALORES * 2;
+        for (int s = 0; s < SECTORES; s++) {
+            double c4 = entradas[s * ROIS + ROI_4X4], c8 = entradas[s * ROIS + ROI_8X8], c16 = entradas[s * ROIS + ROI_16X16];
+            double vecino = 0;
+            if (s > 0) vecino = Math.max(vecino, entradas[(s - 1) * ROIS + ROI_8X8]);
+            if (s < SECTORES - 1) vecino = Math.max(vecino, entradas[(s + 1) * ROIS + ROI_8X8]);
+            entradas[base + s * 3] = (c4 - c16 + 1) / 2;
+            entradas[base + s * 3 + 1] = (c4 - c8 + 1) / 2;
+            entradas[base + s * 3 + 2] = (c8 - vecino + 1) / 2;
+        }
         return entradas;
+    }
+
+    /** Sectores a cada lado que mira la red de percepción por ventana. */
+    public static final int RADIO_VENTANA = 2;
+    /** Valores por sector en la ventana: 3 cercanías, 3 marcas de desconocido y 3 rasgos. */
+    private static final int POR_SECTOR_VENTANA = 9;
+    /** Entradas de la red por ventana: 5 sectores x 9 valores + la posición del sector. */
+    public static final int ENTRADAS_VENTANA = (2 * RADIO_VENTANA + 1) * POR_SECTOR_VENTANA + 1;
+
+    /**
+     * Entradas de la red de percepción para un sector: sus valores y los de RADIO_VENTANA vecinos de cada
+     * lado (fuera del abanico: cercanía 0, desconocido 1, rasgos 0,5) y la posición del sector (0 = derecha,
+     * 1 = izquierda). Recibe las entradas ya armadas con entradas(), para no recalcularlas 13 veces.
+     */
+    public static double[] entradasVentana(double[] entradas, int sector) {
+        double[] v = new double[ENTRADAS_VENTANA];
+        int i = 0;
+        for (int k = sector - RADIO_VENTANA; k <= sector + RADIO_VENTANA; k++) {
+            boolean existe = k >= 0 && k < SECTORES;
+            for (int r = 0; r < ROIS; r++) v[i++] = existe ? entradas[k * ROIS + r] : 0;
+            for (int r = 0; r < ROIS; r++) v[i++] = existe ? entradas[VALORES + k * ROIS + r] : 1;
+            for (int r = 0; r < 3; r++) v[i++] = existe ? entradas[VALORES * 2 + k * 3 + r] : 0.5;
+        }
+        v[i] = sector / (double) (SECTORES - 1);
+        return v;
     }
 
     /** Distancia del 8x8 corregida del sector, o DESCONOCIDO. */

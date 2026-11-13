@@ -5,7 +5,7 @@ import org.neuroph.core.NeuralNetwork;
 
 /**
  * Red de movimiento (MLP de Neuroph): decide la dirección y cuántos milisegundos moverse.
- * Entradas (145): las 78 de PreprocesadorTelemetria, las 65 salidas de la red de percepción y el modo
+ * Entradas (184): las 117 de PreprocesadorTelemetria, las 65 salidas de la red de percepción y el modo
  * (BUSQUEDA, ESCAPE) como dos entradas 0/1.
  * Salidas (6): AVANZAR, RETROCEDER, GIRAR_IZQ, GIRAR_DER, DETENER (gana la mayor) y la duración
  * normalizada en [0, 1] (ver OrdenMovimiento.desnormalizar).
@@ -36,7 +36,7 @@ public class RedMovimiento {
         red = null;
     }
 
-    /** Arma las 145 entradas (la misma función para entrenar y para decidir). */
+    /** Arma las 184 entradas (la misma función para entrenar y para decidir). */
     public static double[] entradas(int[] telemetria, double[] percepcion, ModoOperativo modo) {
         double[] tel = PreprocesadorTelemetria.entradas(telemetria);
         double[] e = new double[ENTRADAS];

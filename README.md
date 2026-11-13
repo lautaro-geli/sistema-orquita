@@ -106,8 +106,12 @@ El modelo incluido (`modelos/entorno.nnet`) es **provisional y sintético**: no 
 
 Problema que resuelve: en la pista un mismo barrido trae varias cosas a la vez (pared, obstáculo, Lobito, salida) y la red de una sola clase por barrido decide mal. Ahora hay dos redes:
 
-- **Percepción** (`RedPercepcion`, 78 → 40 → 65): una etiqueta por cada uno de los 13 sectores: `LIBRE`, `PARED`, `OBSTACULO`, `LOBITO` o `SALIDA`.
-- **Movimiento** (`RedMovimiento`, 145 → 32 → 6): con la telemetría, la percepción y el modo, elige la dirección y **cuántos ms** moverse. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`).
+- **Percepción por ventana** (`RedPercepcion`, 46 → 24 → 5, aplicada a los 13 sectores): mira un sector, sus 2 vecinos de cada lado y la posición, y le pone una etiqueta: `LIBRE`, `PARED`, `OBSTACULO`, `LOBITO` o `SALIDA`. Al mirar de a un sector entrena con 13 ejemplos por barrido y se pueden balancear los Lobitos (pocos).
+- **Movimiento** (`RedMovimiento`, 184 → 48 → 6): con la telemetría, la percepción y el modo, elige la dirección y **cuántos ms** moverse. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`).
+- **Reflejo de seguridad** (`ReflejoSeguridad`): sobre la orden de la red, y solo con la telemetría, acorta un avance si el frente ve algo más cerca (sin contar un Lobito) y retrocede antes de un giro si las esquinas tocarían. Un sector sin eco con vecinos a menos de 200 mm se toma como pegado (el sensor da `-1` por debajo de 40 mm).
+- **Detector de atasco** (`DetectorAtasco`): si después de moverse el barrido llega casi igual (diferencia media < 20 mm), la orden no tuvo efecto (robot trabado): prueba el giro contrario o retrocede, en vez de repetir y sumar choques.
+
+Las entradas comunes (`PreprocesadorTelemetria.entradas`, 117) son 39 cercanías, 39 marcas de desconocido y 3 rasgos por sector (4x4 más cerca que 16x16, 4x4 más cerca que 8x8, sector más cerca que sus vecinos: la firma de una canica cerca).
 
 Antes de entrar a las redes, la telemetría pasa por la **regla del -1** (`PreprocesadorTelemetria`): si el 4x4 o el 16x16 son `-1` se usa el 8x8; si el 8x8 es `-1` queda desconocido; si los tres son `-1`, los tres quedan desconocidos.
 
@@ -122,7 +126,7 @@ Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simula
 
 El reporte queda en `docs/evidencias/entrenamiento_simulado_AAAAMMDD.md` (redes contra maestro en 100 bahías nuevas y matriz de confusión por sector).
 
-**Calibración [A CONFIRMAR]:** el simulador usa 250 mm/s al avanzar, 120 °/s al girar y un robot de 200 × 150 mm (`RobotSimulado.Calibracion.ESTIMADA`). Los ms que decide la red dependen de esto: con las medidas reales del robot hay que cambiar esos valores y volver a entrenar.
+**Calibración [A CONFIRMAR]:** el Servidor y el simulador usan 250 mm/s al avanzar, 120 °/s al girar y un robot de 200 × 150 mm (`CalibracionRobot`). Los ms que decide la red dependen de esto: con las medidas reales del robot hay que cambiar esos valores y volver a entrenar.
 
 ## Estructura
 
