@@ -8,7 +8,8 @@ package orquitas.servidor.navegacion;
  *   <li>AVANZAR: si el frente ve algo más cerca que lo que la red quiere avanzar, acorta el avance para
  *       frenar a MARGEN_MM; si ya está encima, retrocede. Los sectores marcados LOBITO no cuentan (hay que
  *       tocar la canica para tragarla).</li>
- *   <li>Giros: si hay algo tan cerca que las esquinas del robot lo tocarían al girar, primero retrocede.</li>
+ *   <li>Giros: si hay algo tan cerca que las esquinas del robot lo tocarían al girar, primero se aleja:
+ *       avanza un poco si el frente está libre (atrás el sensor no ve) y si no, retrocede.</li>
  *   <li>Un sector sin dato (desconocido) cuyo vecino ve algo a menos de VECINO_CERCA_MM se toma como pegado:
  *       el sensor da -1 por debajo de 40 mm.</li>
  * </ul>
@@ -21,13 +22,15 @@ public final class ReflejoSeguridad {
     /** Por debajo de esto (frente a obstáculo) se retrocede. */
     static final double PEGADO_MM = 40;
     static final double RETROCESO_MM = 80;
+    /** Avance corto para alejarse cuando un giro no entra y el frente está libre. */
+    static final double AVANCE_PARA_GIRAR_MM = 100;
     /** Un desconocido con un vecino más cerca que esto se toma como pegado. */
     static final double VECINO_CERCA_MM = 200;
     /**
      * Distancia mínima (desde el sensor) por sector para poder girar en el lugar sin que las esquinas
      * toquen: más en los costados que en el frente, porque el sensor está adelante del centro de giro.
      */
-    static final double[] LIBRE_PARA_GIRAR_MM = {145, 140, 125, 110, 95, 85, 80, 85, 95, 110, 125, 140, 145};
+    static final double[] LIBRE_PARA_GIRAR_MM = {135, 135, 125, 110, 95, 85, 80, 85, 95, 110, 125, 135, 135};
 
     private ReflejoSeguridad() { }
 
@@ -37,22 +40,33 @@ public final class ReflejoSeguridad {
         if (m == Movimiento.GIRAR_IZQ || m == Movimiento.GIRAR_DER) {
             for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
                 if (etiquetas != null && etiquetas[s] == EtiquetaSector.LOBITO) continue;
-                if (distancia(corregida, s) < LIBRE_PARA_GIRAR_MM[s]) return retroceder();
+                if (distancia(corregida, s) < LIBRE_PARA_GIRAR_MM[s]) {
+                    // No entra el giro: si adelante hay lugar, avanza un poco (lo ve); atrás no ve nada.
+                    if (frenteLibre(corregida, etiquetas) - MARGEN_MM > AVANCE_PARA_GIRAR_MM)
+                        return new OrdenMovimiento(Movimiento.AVANZAR, CalibracionRobot.msParaAvanzar(AVANCE_PARA_GIRAR_MM));
+                    return retroceder();
+                }
             }
             return orden;
         }
         if (m != Movimiento.AVANZAR) return orden;
-        double libre = Double.MAX_VALUE;
-        for (int s = PRIMER_FRENTE; s <= ULTIMO_FRENTE; s++) {
-            if (etiquetas != null && etiquetas[s] == EtiquetaSector.LOBITO) continue;
-            libre = Math.min(libre, distancia(corregida, s) - CalibracionRobot.SENSOR_AL_FRENTE_MM);
-        }
+        double libre = frenteLibre(corregida, etiquetas);
         if (libre == Double.MAX_VALUE) return orden;
         if (libre < PEGADO_MM) return retroceder();
         double permitido = libre - MARGEN_MM;
         if (CalibracionRobot.mmEn(orden.milisegundos()) <= permitido) return orden;
         if (permitido < CalibracionRobot.mmEn(OrdenMovimiento.MINIMO_MS)) return retroceder();
         return new OrdenMovimiento(Movimiento.AVANZAR, CalibracionRobot.msParaAvanzar(permitido));
+    }
+
+    /** Distancia libre delante del frente del robot (sectores 5 a 7, sin los LOBITO); MAX_VALUE si no se sabe. */
+    static double frenteLibre(int[] corregida, EtiquetaSector[] etiquetas) {
+        double libre = Double.MAX_VALUE;
+        for (int s = PRIMER_FRENTE; s <= ULTIMO_FRENTE; s++) {
+            if (etiquetas != null && etiquetas[s] == EtiquetaSector.LOBITO) continue;
+            libre = Math.min(libre, distancia(corregida, s) - CalibracionRobot.SENSOR_AL_FRENTE_MM);
+        }
+        return libre;
     }
 
     private static OrdenMovimiento retroceder() {

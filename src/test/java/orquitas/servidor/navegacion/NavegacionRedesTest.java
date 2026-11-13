@@ -109,10 +109,11 @@ public class NavegacionRedesTest {
         assertEquals(avanzar, ReflejoSeguridad.ajustar(avanzar, t, e));
     }
 
-    @Test public void reflejoDejaGirarConLugarYRetrocedeSiLasEsquinasTocarian() {
+    @Test public void reflejoDejaGirarConLugarYSeAlejaSiLasEsquinasTocarian() {
         OrdenMovimiento giro = new OrdenMovimiento(Movimiento.GIRAR_DER, 600);
         assertEquals(giro, ReflejoSeguridad.ajustar(giro, todo(1200), null));
-        assertEquals(Movimiento.RETROCEDER, ReflejoSeguridad.ajustar(giro, con(todo(1200), 0, 100), null).movimiento());
+        // Pared al costado y frente libre: se aleja avanzando un poco (atrás el sensor no ve).
+        assertEquals(Movimiento.AVANZAR, ReflejoSeguridad.ajustar(giro, con(todo(1200), 0, 100), null).movimiento());
         assertEquals(Movimiento.RETROCEDER, ReflejoSeguridad.ajustar(giro, con(todo(1200), 6, 50), null).movimiento());
     }
 

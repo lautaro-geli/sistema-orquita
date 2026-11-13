@@ -145,6 +145,9 @@ public class SimuladorBahiaTest {
             assertEquals(a.robot().x(), c.robot().x(), 0);
             assertEquals(a.bahia().obstaculos().size(), c.bahia().obstaculos().size());
             assertEquals(3, a.bahia().canicas().size());
+            assertEquals(Bahia.OBSTACULOS * 4, a.bahia().obstaculos().size());
+            assertEquals(Bahia.PARTIDA_X, a.robot().x(), 15);
+            assertEquals(90, Math.toDegrees(a.robot().rumbo()), 3);
             assertFalse(a.robot().choca(a.bahia(), a.robot().x(), a.robot().y(), a.robot().rumbo()));
         }
     }

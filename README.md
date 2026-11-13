@@ -115,7 +115,7 @@ Las entradas comunes (`PreprocesadorTelemetria.entradas`, 117) son 39 cercanías
 
 Antes de entrar a las redes, la telemetría pasa por la **regla del -1** (`PreprocesadorTelemetria`): si el 4x4 o el 16x16 son `-1` se usa el 8x8; si el 8x8 es `-1` queda desconocido; si los tres son `-1`, los tres quedan desconocidos.
 
-Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simulacion.bahia`): base recta de 1150 mm, 1200 mm de la base al estrecho, estrecho de 300 mm, obstáculos de 90 × 90 mm, canicas de 16 mm y un VL53L1X simulado (13 sectores × 3 ROI, ruido, pérdidas y bloques sin eco). Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger).
+Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simulacion.bahia`): base recta de 1150 mm, 1200 mm de la base al estrecho, estrecho de 300 mm, 2 obstáculos de 90 × 90 mm, canicas de 16 mm, partida abajo a la izquierda mirando hacia la salida y un VL53L1X simulado (13 sectores × 3 ROI, ruido, pérdidas y bloques sin eco). Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger).
 
 ```powershell
 ./ejecutar.ps1 simular-entrenar                 # 250 episodios, 60 épocas, 2 rondas DAgger -> modelos/percepcion.nnet y movimiento.nnet

@@ -20,6 +20,10 @@ public final class Bahia {
     public static final double OBSTACULO_MM = 90;
     public static final double CANICA_MM = 16;
     private static final int TRAMOS_POR_LADO = 30;
+    /** Partida: abajo a la izquierda, mirando hacia la salida (centro del robot, mm). */
+    public static final double PARTIDA_X = -420, PARTIDA_Y = 150;
+    /** En la pista siempre hay 2 obstáculos. */
+    public static final int OBSTACULOS = 2;
 
     /** Segmento de pared u obstáculo. */
     public record Segmento(double x1, double y1, double x2, double y2, EtiquetaSector tipo) { }
@@ -77,7 +81,7 @@ public final class Bahia {
             double y = 300 + azar.nextDouble() * (ALTO_MM - 550);
             if (!bahia.adentroConMargen(x, y, 130)) continue;
             if (Math.hypot(x, y - (ALTO_MM - 150)) < 300) continue; // No tapar el estrecho.
-            if (Math.hypot(x, y - 150) < 340) continue; // Lejos de la partida.
+            if (Math.hypot(x - PARTIDA_X, y - PARTIDA_Y) < 340) continue; // Lejos de la partida.
             boolean lejos = true;
             for (double[] c : bahia.centrosObstaculos) if (Math.hypot(c[0] - x, c[1] - y) < 320) lejos = false;
             if (lejos) bahia.agregarObstaculo(x, y, azar.nextDouble() * Math.PI / 2);
@@ -87,7 +91,7 @@ public final class Bahia {
             double x = (azar.nextDouble() * 2 - 1) * (BASE_MM / 2 - 60);
             double y = 80 + azar.nextDouble() * (ALTO_MM - 250);
             if (!bahia.adentroConMargen(x, y, 70)) continue;
-            if (Math.hypot(x, y - 150) < 280) continue; // Lejos de la partida.
+            if (Math.hypot(x - PARTIDA_X, y - PARTIDA_Y) < 280) continue; // Lejos de la partida.
             if (Math.hypot(x, y - (ALTO_MM - 100)) < 200) continue;
             boolean libre = true;
             for (double[] c : bahia.centrosObstaculos) if (Math.hypot(c[0] - x, c[1] - y) < 130) libre = false;
