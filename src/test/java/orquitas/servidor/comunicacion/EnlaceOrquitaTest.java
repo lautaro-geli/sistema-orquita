@@ -35,13 +35,13 @@ public class EnlaceOrquitaTest {
 
     // ---------------- decodificar ----------------
 
-    @Test public void telemetriaValidaReemplazaSinEco() throws IOException {
+    @Test public void telemetriaValidaConservaSinEco() throws IOException {
         EnlaceOrquita e = enlace(new SalidaRegistrada(), EntornoClasificado.LIBRE);
         int[] t = todo(1234);
         t[0] = -1; t[38] = 0; t[5] = 4000;
         assertEquals("TELEMETRIA", e.decodificar(trama(t)));
         int[] guardada = leer(e, "telemetria");
-        assertEquals(EnlaceOrquita.ALCANCE_MM, guardada[0]);
+        assertEquals(EnlaceOrquita.SIN_ECO, guardada[0]); // El -1 llega intacto a la navegación.
         assertEquals(0, guardada[38]);
         assertEquals(4000, guardada[5]);
         assertEquals(1234, guardada[1]);

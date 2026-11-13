@@ -29,7 +29,7 @@ public class EnlaceOrquita extends Thread {
     public static final int VALORES = 39;
     /** Valor que envía la Orquita cuando un ROI no recibió eco. */
     public static final int SIN_ECO = -1;
-    /** Distancia máxima en mm; reemplaza a SIN_ECO en la telemetría decodificada. */
+    /** Distancia máxima aceptada en mm. */
     public static final int ALCANCE_MM = 4000;
 
     private static final String CAPTURA = "CAPTURA";
@@ -153,7 +153,7 @@ public class EnlaceOrquita extends Thread {
 
     /**
      * Valida la trama de forma estricta y guarda lo leído (el identificador o las 39 distancias, con
-     * SIN_ECO ya reemplazado por ALCANCE_MM). Devuelve "CAPTURA", "TELEMETRIA" o "INVALIDA"; nunca
+     * SIN_ECO = -1 se conserva; ver PreprocesadorTelemetria). Devuelve "CAPTURA", "TELEMETRIA" o "INVALIDA"; nunca
      * lanza excepciones por datos malos.
      */
     public String decodificar(String trama) {
@@ -173,7 +173,7 @@ public class EnlaceOrquita extends Thread {
             int[] valores = new int[VALORES];
             for (int i = 0; i < VALORES; i++) {
                 if (campos[i].equals(String.valueOf(SIN_ECO))) {
-                    valores[i] = ALCANCE_MM;
+                    valores[i] = SIN_ECO; // Se conserva: la regla del -1 la aplica PreprocesadorTelemetria.
                     continue;
                 }
                 if (!campos[i].matches("[0-9]{1,4}")) return INVALIDA; // Sin signos, espacios ni decimales.
