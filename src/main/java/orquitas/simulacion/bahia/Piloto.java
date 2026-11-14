@@ -28,7 +28,7 @@ public interface Piloto {
             if (sim.modo() == ModoOperativo.LIBERADA) return new Decision(new OrdenMovimiento(orquitas.servidor.navegacion.Movimiento.DETENER, 0), null);
             double[] probabilidades = percepcion.probabilidades(b.telemetria());
             EtiquetaSector[] etiquetas = RedPercepcion.etiquetas(probabilidades);
-            OrdenMovimiento orden = movimiento.decidir(b.telemetria(), probabilidades, sim.modo());
+            OrdenMovimiento orden = movimiento.decidir(RedMovimiento.entradas(b.telemetria(), probabilidades, sim.modo()));
             OrdenMovimiento segura = ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas);
             return new Decision(atasco.revisar(b.telemetria(), segura), etiquetas);
         };

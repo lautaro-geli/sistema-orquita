@@ -25,13 +25,16 @@ public class NavegacionRedesTest {
         }
     }
 
-    /** Movimiento de prueba: devuelve siempre la misma orden y guarda el modo que recibió. */
+    /** Movimiento de prueba: devuelve siempre la misma orden y guarda las entradas (y el modo) que recibió. */
     static class MovimientoFijo extends RedMovimiento {
         final OrdenMovimiento orden;
+        double[] entradasRecibidas;
         ModoOperativo modoRecibido;
         MovimientoFijo(OrdenMovimiento orden) { this.orden = orden; }
-        @Override public synchronized OrdenMovimiento decidir(int[] t, double[] p, ModoOperativo modo) {
-            modoRecibido = modo;
+        @Override public synchronized OrdenMovimiento decidir(double[] entradas) {
+            entradasRecibidas = entradas.clone();
+            modoRecibido = entradas[RepresentacionIntermedia.MODO_BUSQUEDA] == 1 ? ModoOperativo.BUSQUEDA
+                    : entradas[RepresentacionIntermedia.MODO_ESCAPE] == 1 ? ModoOperativo.ESCAPE : ModoOperativo.LIBERADA;
             return orden;
         }
     }
@@ -44,6 +47,22 @@ public class NavegacionRedesTest {
         assertEquals("ORDEN|GIRAR_IZQ|640", n.obtenerOrdenDecidida().comoTrama());
         assertEquals(ModoOperativo.BUSQUEDA, mov.modoRecibido);
         assertEquals(EtiquetaSector.PARED, n.obtenerUltimasEtiquetas()[6]);
+    }
+
+    @Test public void conRedesLaRedDeMovimientoRecibeLaRepresentacionIntermedia() {
+        MovimientoFijo mov = new MovimientoFijo(new OrdenMovimiento(Movimiento.AVANZAR, 400));
+        PercepcionFija percepcion = new PercepcionFija();
+        Navegacion n = new Navegacion(percepcion, mov);
+        int[] t = con(todo(900), 2, 300);
+        n.determinarMovimiento(t);
+        assertEquals(RedMovimiento.ENTRADAS, mov.entradasRecibidas.length);
+        // Las entradas son las mismas que arma el entrenamiento con RedMovimiento.entradas.
+        double[] esperadas = RedMovimiento.entradas(t, percepcion.probabilidades(t), ModoOperativo.BUSQUEDA);
+        assertArrayEquals(esperadas, java.util.Arrays.copyOf(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS), 0);
+        assertArrayEquals(RepresentacionIntermedia.calcular(t, percepcion.probabilidades(t), ModoOperativo.BUSQUEDA),
+                java.util.Arrays.copyOf(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS), 0);
+        assertEquals(0, mov.entradasRecibidas[RepresentacionIntermedia.HAY_META], 0); // Todo PARED: sin Lobito.
+        assertEquals((1300 - 300) / 1300.0, mov.entradasRecibidas[RepresentacionIntermedia.OBSTACULO_DIAGONAL_DER], 1e-12);
     }
 
     @Test public void conRedesElModoLlegaALaRedDeMovimiento() {
@@ -88,6 +107,15 @@ public class NavegacionRedesTest {
         new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 39, 4, 4).save(p.toString());
         try { new RedPercepcion(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
         try { new RedMovimiento(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
+        // El formato anterior de la red de movimiento (184 entradas) ya no es compatible.
+        Path vieja = dir.resolve("vieja.nnet");
+        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 184, 4, RedMovimiento.SALIDAS).save(vieja.toString());
+        try { new RedMovimiento(vieja); fail("aceptó 184 entradas"); } catch (IllegalArgumentException esperado) { }
+        Path nueva = dir.resolve("nueva.nnet");
+        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, RedMovimiento.ENTRADAS, 4, RedMovimiento.SALIDAS).save(nueva.toString());
+        RedMovimiento movimiento = new RedMovimiento(nueva);
+        assertNotNull(movimiento.decidir(new double[RedMovimiento.ENTRADAS]));
+        try { movimiento.decidir(new double[184]); fail("aceptó 184 valores"); } catch (IllegalArgumentException esperado) { }
         Path ok = dir.resolve("ok.nnet");
         new MultiLayerPerceptron(TransferFunctionType.SIGMOID, RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS_RED).save(ok.toString());
         assertEquals(65, new RedPercepcion(ok).probabilidades(todo(-1)).length);

@@ -13,7 +13,9 @@ import java.util.Objects;
  * Dos formas de decidir:
  * <ul>
  *   <li>Con redes (RedPercepcion + RedMovimiento, entrenadas en la bahía simulada): la percepción
- *       etiqueta cada sector y la red de movimiento elige dirección y milisegundos. Después actúan el
+ *       etiqueta cada sector, la RepresentacionIntermedia resume dónde está la meta y qué hay cerca
+ *       (14 números, que se muestran en la consola) y la red de movimiento elige con eso el sector
+ *       meta y los mm, que se traducen a dirección y milisegundos. Después actúan el
  *       ReflejoSeguridad (frenar o retroceder antes de chocar) y el DetectorAtasco (si el barrido no
  *       cambió, la orden anterior no tuvo efecto y se prueba otra).</li>
  *   <li>Por reglas (RedNeuronal de una sola clase por barrido): la forma anterior, con paso fijo.</li>
@@ -83,7 +85,9 @@ public class Navegacion {
             establecerModoOperativo(ModoOperativo.LIBERADA);
         }
         if (modoOperativo == ModoOperativo.LIBERADA) return new OrdenMovimiento(Movimiento.DETENER, 0);
-        OrdenMovimiento deLaRed = redMovimiento.decidir(telemetria, percepcion, modoOperativo);
+        double[] entradas = RedMovimiento.entradas(telemetria, percepcion, modoOperativo);
+        System.out.println("[Navegación] " + RepresentacionIntermedia.describir(entradas, modoOperativo));
+        OrdenMovimiento deLaRed = redMovimiento.decidir(entradas);
         OrdenMovimiento segura = ReflejoSeguridad.ajustar(deLaRed, telemetria, ultimasEtiquetas);
         OrdenMovimiento elegida = atasco.revisar(telemetria, segura);
         if (elegida != segura) System.out.println("[Navegación] Atasco detectado: " + segura.movimiento() + " -> " + elegida.movimiento());

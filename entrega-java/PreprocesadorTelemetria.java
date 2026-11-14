@@ -15,7 +15,7 @@ public final class PreprocesadorTelemetria {
     public static final int SECTORES = 13;
     public static final int ROIS = 3;
     public static final int VALORES = SECTORES * ROIS;
-    /** Entradas de las redes: 39 cercanías + 39 marcas de desconocido + 3 rasgos por sector (39). */
+    /** Entradas de la percepción: 39 cercanías + 39 marcas de desconocido + 3 rasgos por sector (39). */
     public static final int ENTRADAS = VALORES * 3;
     public static final int SIN_ECO = -1;
     /** Valor de "desconocido" en el arreglo de distancias corregidas. */
@@ -48,9 +48,19 @@ public final class PreprocesadorTelemetria {
     }
 
     /**
-     * Entradas de las redes (117):
+     * Cercanía de una distancia ya corregida: clamp((ALCANCE_MM - d) / ALCANCE_MM, 0, 1). Pegado vale 1,
+     * lejos vale 0 y desconocido también vale 0. La usan las entradas de la percepción y la
+     * representación intermedia.
+     */
+    public static double cercania(int distanciaCorregida) {
+        if (esDesconocido(distanciaCorregida)) return 0;
+        return Math.min(1, Math.max(0, (ALCANCE_MM - distanciaCorregida) / ALCANCE_MM));
+    }
+
+    /**
+     * Entradas de la red de percepción (117):
      * <ol>
-     *   <li>39 cercanías: clamp((ALCANCE - d) / ALCANCE, 0, 1) (pegado = 1, lejos = 0; desconocido = 0).</li>
+     *   <li>39 cercanías (cercania): pegado = 1, lejos = 0; desconocido = 0.</li>
      *   <li>39 marcas de desconocido (1 = desconocido).</li>
      *   <li>3 rasgos por sector, llevados de [-1, 1] a [0, 1] (0,5 = sin diferencia): cercanía 4x4 menos
      *       16x16, 4x4 menos 8x8, y 8x8 del sector menos el 8x8 más cercano de sus vecinos. Una canica
@@ -61,12 +71,8 @@ public final class PreprocesadorTelemetria {
         int[] corregida = corregir(telemetria);
         double[] entradas = new double[ENTRADAS];
         for (int i = 0; i < VALORES; i++) {
-            if (esDesconocido(corregida[i])) {
-                entradas[i] = 0;
-                entradas[VALORES + i] = 1;
-            } else {
-                entradas[i] = Math.min(1, Math.max(0, (ALCANCE_MM - corregida[i]) / ALCANCE_MM));
-            }
+            entradas[i] = cercania(corregida[i]);
+            if (esDesconocido(corregida[i])) entradas[VALORES + i] = 1;
         }
         int base = VALORES * 2;
         for (int s = 0; s < SECTORES; s++) {

@@ -70,9 +70,25 @@ Consecuencias cuando se cambie:
 
 ---
 
-## Bloque 5 — Representación intermedia (entre percepción y movimiento) ❌
+## Bloque 5 — Representación intermedia (entre percepción y movimiento) ✅ (implementado el 14/11/2026, rama `hito3-bloques-2-5-6`)
 
 **Decisión del equipo (13/11/2026): se implementa como se describe abajo.** Encargo detallado para Claude Code: `docs/encargos/ENCARGO_bloques_2_5_6.md`.
+
+Qué quedó en el código:
+
+- `RepresentacionIntermedia.calcular(telemetria, probabilidadesPercepcion, modo)` → 14 números con las fórmulas exactas del encargo, y `describir(r, modo)` para la consola (`[Navegación] Lobito a +30°, 25 cm (0,99); frente libre; izq. cerrado`).
+- `RedMovimiento` recibe esos 14 números (`RedMovimiento.entradas` es la única función que los arma: la usan el entrenamiento, el piloto simulado y `Navegacion`). La red pasa a 14 → 16 → 15; las salidas no cambian.
+- `PreprocesadorTelemetria.cercania` es la única fórmula de cercanía (la usan la percepción y la representación).
+- La prueba de referencia del encargo da los valores exactos (`RepresentacionIntermediaTest`).
+- **Sin resultados todavía:** falta entrenar y comparar contra la versión de 184 entradas (corridas A/B/C del encargo, pendientes).
+
+Desvíos del encargo en este bloque:
+
+- **Empates al elegir el sector meta:** el encargo dice "s* = argmax" y no dice qué hacer si dos sectores tienen la misma probabilidad. Con una percepción todo o nada que ve la salida en 5, 6 y 7, tomar el primero daría un ángulo corrido (0,458) y no el 0,5 que pide la prueba. Se desempata así: gana el sector con vecinos más probables (el del medio de la mancha); si sigue el empate, el más cercano (lo que decía este documento); después, el de menor índice.
+- **Capa oculta de 16** en este commit (el "por ejemplo 14 → 16 → 15" de este documento); el encargo solo fija las 20 del bloque 6.
+- `RedMovimiento.decidir` ahora recibe las entradas ya armadas (`decidir(double[] entradas)`), para que `Navegacion` pueda mostrar en la consola la misma representación que usa la red sin calcularla dos veces.
+
+Lo que sigue es el registro de lo que se decidió antes de implementar.
 
 ### Idea
 

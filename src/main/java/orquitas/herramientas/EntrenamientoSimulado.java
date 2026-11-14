@@ -39,8 +39,9 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  *    verdaderas por sector y la orden del maestro.
  * 2. Red de percepción por ventana: un sector y 2 vecinos de cada lado -> su etiqueta (46 -> ocultas -> 5),
  *    aplicada a los 13 sectores.
- * 3. Red de movimiento: telemetría + percepción + modo -> sector meta (o atrás) y mm (184 -> ocultas -> 15);
- *    el Servidor lo traduce a giro o avance en ms (MetaMovimiento).
+ * 3. Red de movimiento: representación intermedia (RepresentacionIntermedia, 14 números calculados con
+ *    reglas a partir de la telemetría, la percepción y el modo) -> sector meta (o atrás) y mm
+ *    (14 -> ocultas -> 15); el Servidor lo traduce a giro o avance en ms (MetaMovimiento).
  * 4. DAgger: las redes manejan, el maestro dice qué habría hecho en cada barrido, se suman esos
  *    ejemplos y se reentrena (así la red aprende a salir de los errores que ella misma comete).
  * 5. Evaluación en bahías nuevas (semillas que no se usaron para entrenar): redes contra maestro.
@@ -50,7 +51,7 @@ public class EntrenamientoSimulado {
     static final long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
     static final int OCULTAS_PERCEPCION = 24;
-    static final int OCULTAS_MOVIMIENTO = 48;
+    static final int OCULTAS_MOVIMIENTO = 16;
     static final double PROBABILIDAD_ORDEN_AL_AZAR = 0.15;
     static final int CANICAS = 3, UMBRAL = 3;
     /** Tope de repeticiones de una clase rara de meta al balancear la red de movimiento. */
@@ -186,7 +187,8 @@ public class EntrenamientoSimulado {
     }
 
     /**
-     * Movimiento: usa la salida de la red de percepción (no la verdad) para que entrene con lo que verá.
+     * Movimiento: las entradas son la representación intermedia calculada con la salida de la red de
+     * percepción (no con la verdad), para que entrene con lo que verá.
      * Balanceo: cada clase de meta (13 sectores + ATRAS) se repite hasta pesar lo mismo que la más común
      * (con tope REPETICION_MAXIMA). Sin esto la red aprende a decir casi siempre "frente", porque cada
      * giro en particular es raro.
@@ -288,7 +290,7 @@ public class EntrenamientoSimulado {
             while (!sim.terminada()) {
                 SensorSimulado.Barrido b = sim.medir();
                 OrdenMovimiento maestro = Maestro.decidir(sim, b);
-                OrdenMovimiento red = rm.decidir(b.telemetria(), rp.probabilidades(b.telemetria()), sim.modo());
+                OrdenMovimiento red = rm.decidir(RedMovimiento.entradas(b.telemetria(), rp.probabilidades(b.telemetria()), sim.modo()));
                 if (red.movimiento() == maestro.movimiento()) iguales++;
                 total++;
                 sim.ejecutar(maestro);

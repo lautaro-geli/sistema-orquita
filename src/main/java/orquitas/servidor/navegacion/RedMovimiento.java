@@ -6,13 +6,13 @@ import org.neuroph.core.NeuralNetwork;
 /**
  * Red de movimiento (MLP de Neuroph): decide a qué sector ir (o retroceder) y cuántos mm; el Servidor
  * lo traduce a una orden con milisegundos (ver MetaMovimiento).
- * Entradas (184): las 117 de PreprocesadorTelemetria, las 65 salidas de la red de percepción y el modo
- * (BUSQUEDA, ESCAPE) como dos entradas 0/1.
+ * Entradas (14): la representación intermedia (RepresentacionIntermedia), que resume con reglas fijas
+ * dónde está la meta, qué tan cerca hay obstáculos por zona y el modo.
  * Salidas (15): una por sector meta 0..12 y una para ATRAS (gana la mayor), y la distancia normalizada
  * en [0, 1] (x MetaMovimiento.MAXIMO_MM), que se usa al avanzar o retroceder.
  */
 public class RedMovimiento {
-    public static final int ENTRADAS = PreprocesadorTelemetria.ENTRADAS + RedPercepcion.SALIDAS + 2;
+    public static final int ENTRADAS = RepresentacionIntermedia.ENTRADAS;
     public static final int CLASES = MetaMovimiento.CLASES;
     public static final int SALIDAS = CLASES + 1;
     private final NeuralNetwork<?> red;
@@ -37,15 +37,12 @@ public class RedMovimiento {
         red = null;
     }
 
-    /** Arma las 184 entradas (la misma función para entrenar y para decidir). */
+    /**
+     * Arma las entradas de la red: la representación intermedia de este barrido. Es la única función
+     * que las arma: la usan el entrenamiento, el piloto simulado y el Servidor.
+     */
     public static double[] entradas(int[] telemetria, double[] percepcion, ModoOperativo modo) {
-        double[] tel = PreprocesadorTelemetria.entradas(telemetria);
-        double[] e = new double[ENTRADAS];
-        System.arraycopy(tel, 0, e, 0, tel.length);
-        System.arraycopy(percepcion, 0, e, tel.length, RedPercepcion.SALIDAS);
-        e[ENTRADAS - 2] = modo == ModoOperativo.BUSQUEDA ? 1 : 0;
-        e[ENTRADAS - 1] = modo == ModoOperativo.ESCAPE ? 1 : 0;
-        return e;
+        return RepresentacionIntermedia.calcular(telemetria, percepcion, modo);
     }
 
     /** Salida deseada para entrenar: la orden (del maestro) pasada a sector meta one-hot y distancia. */
@@ -57,8 +54,11 @@ public class RedMovimiento {
         return d;
     }
 
-    public synchronized OrdenMovimiento decidir(int[] telemetria, double[] percepcion, ModoOperativo modo) {
-        red.setInput(entradas(telemetria, percepcion, modo));
+    /** Decide la orden a partir de las entradas ya armadas con entradas(). */
+    public synchronized OrdenMovimiento decidir(double[] entradas) {
+        if (entradas == null || entradas.length != ENTRADAS)
+            throw new IllegalArgumentException("Se esperan " + ENTRADAS + " entradas");
+        red.setInput(entradas);
         red.calculate();
         return interpretar(red.getOutput());
     }

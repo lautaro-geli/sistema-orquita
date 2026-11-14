@@ -75,6 +75,7 @@ La consola muestra:
 - **Estados:** `[Estado] ANTERIOR -> NUEVO` en cada cambio de modo (BUSQUEDA, ESCAPE, LIBERADA) y `[Estado] ERROR_SEGURO (causa)` cuando falla el enlace.
 - **Capturas:** `[Captura]` y `[Auditor] n/umbral`.
 - **Órdenes:** `[Orden]`.
+- **Navegación** (solo con las dos redes): una línea por barrido con lo que resume la representación intermedia, por ejemplo `[Navegación] Lobito a +30°, 25 cm (0,99); frente libre; izq. cerrado`.
 
 ### Procedimiento tras un Fail-Safe
 
@@ -107,11 +108,25 @@ El modelo incluido (`modelos/entorno.nnet`) es **provisional y sintético**: no 
 Problema que resuelve: en la pista un mismo barrido trae varias cosas a la vez (pared, obstáculo, Lobito, salida) y la red de una sola clase por barrido decide mal. Ahora hay dos redes:
 
 - **Percepción por ventana** (`RedPercepcion`, 46 → 24 → 5, aplicada a los 13 sectores): mira un sector, sus 2 vecinos de cada lado y la posición, y le pone una etiqueta: `LIBRE`, `PARED`, `OBSTACULO`, `LOBITO` o `SALIDA`. Al mirar de a un sector entrena con 13 ejemplos por barrido y se pueden balancear los Lobitos (pocos).
-- **Movimiento** (`RedMovimiento`, 184 → 48 → 15): con la telemetría, la percepción y el modo, elige **a qué sector ir** (0 a 12) o **retroceder**, y **cuántos mm** (`MetaMovimiento`). El Servidor lo traduce a milisegundos: sector 6 = avanzar esos mm; otro sector = girar 15° por sector hacia él (en el ciclo siguiente la red vuelve a decidir); atrás = retroceder. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`). Elegir un sector es más fácil de aprender que dirección + ms, porque coincide con el sector donde la percepción ve el Lobito o la salida.
+- **Representación intermedia** (`RepresentacionIntermedia`, no es una red): resume con reglas fijas la telemetría corregida, la percepción y el modo en **14 números** entre 0 y 1. La meta es el Lobito en BUSQUEDA y la salida en ESCAPE.
+
+  | # | Entrada | Qué es |
+  |---|---|---|
+  | 0 | hayMeta | 1 si algún sector tiene la meta con probabilidad ≥ 0,5 |
+  | 1 | anguloMeta | ángulo del sector meta más probable, afinado con sus 2 vecinos (−90° derecha … +90° izquierda, llevado a 0…1; sin meta 0,5) |
+  | 2 | distanciaMeta | cercanía de la meta (4x4 y 8x8 de ese sector) |
+  | 3 | confianzaMeta | probabilidad de la percepción en ese sector |
+  | 4 | anchoMeta | sectores seguidos con la meta / 13 |
+  | 5–9 | obstáculo por zona | cercanía de lo más cercano que no sea la meta: frente (5–7), diagonal izq. (8–10), diagonal der. (2–4), costado izq. (11–12), costado der. (0–1) |
+  | 10 | ladoMasAbierto | (libre izquierda − libre derecha), llevado a 0…1 |
+  | 11–12 | modoBusqueda, modoEscape | 0/1 |
+  | 13 | fraccionDesconocidos | sectores sin ningún dato / 13 |
+
+- **Movimiento** (`RedMovimiento`, 14 → 16 → 15): con la representación intermedia elige **a qué sector ir** (0 a 12) o **retroceder**, y **cuántos mm** (`MetaMovimiento`). El Servidor lo traduce a milisegundos: sector 6 = avanzar esos mm; otro sector = girar 15° por sector hacia él (en el ciclo siguiente la red vuelve a decidir); atrás = retroceder. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`). Elegir un sector es más fácil de aprender que dirección + ms, porque coincide con el sector donde la percepción ve el Lobito o la salida.
 - **Reflejo de seguridad** (`ReflejoSeguridad`): sobre la orden de la red, y solo con la telemetría, acorta un avance si el frente ve algo más cerca (sin contar un Lobito) y retrocede antes de un giro si las esquinas tocarían. Un sector sin eco con vecinos a menos de 200 mm se toma como pegado (el sensor da `-1` por debajo de 40 mm).
 - **Detector de atasco** (`DetectorAtasco`): si después de moverse el barrido llega casi igual (diferencia media < 20 mm), la orden no tuvo efecto (robot trabado): prueba el giro contrario o retrocede, en vez de repetir y sumar choques.
 
-Las entradas comunes (`PreprocesadorTelemetria.entradas`, 117) son 39 cercanías, 39 marcas de desconocido y 3 rasgos por sector (4x4 más cerca que 16x16, 4x4 más cerca que 8x8, sector más cerca que sus vecinos: la firma de una canica cerca).
+Las entradas de la percepción (`PreprocesadorTelemetria.entradas`, 117) son 39 cercanías, 39 marcas de desconocido y 3 rasgos por sector (4x4 más cerca que 16x16, 4x4 más cerca que 8x8, sector más cerca que sus vecinos: la firma de una canica cerca).
 
 Antes de entrar a las redes, la telemetría pasa por la **regla del -1** (`PreprocesadorTelemetria`): si el 4x4 o el 16x16 son `-1` se usa el 8x8; si el 8x8 es `-1` queda desconocido; si los tres son `-1`, los tres quedan desconocidos.
 
