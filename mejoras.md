@@ -57,6 +57,8 @@ Consecuencias cuando se cambie:
 
 ## Bloque 5 — Representación intermedia (entre percepción y movimiento) ❌
 
+**Decisión del equipo (13/11/2026): se implementa como se describe abajo.** Encargo detallado para Claude Code: `docs/encargos/ENCARGO_bloques_2_5_6.md`.
+
 ### Idea
 
 Hoy la red de movimiento recibe 184 números (117 de telemetría + 65 de percepción + 2 de modo) y tiene que deducir sola dónde está la meta. Los sistemas que funcionan separan el problema en módulos: la percepción dice **qué hay**, un paso intermedio resume **dónde está lo importante** en unos pocos números, y la red de movimiento decide con eso (por ejemplo, el TurtleBot3 de ROBOTIS recibe 24 lecturas del láser + distancia y ángulo al objetivo).
@@ -134,7 +136,7 @@ La red quedaría chica, por ejemplo **14 → 16 → 15**, en lugar de 184 → 48
 
 ## Bloque 6 — Memoria ❌ (hoy solo hay memoria fuera de la red: el DetectorAtasco)
 
-**Decisión del equipo (13/11/2026): la red de movimiento va a tener memoria explícita, como se describe abajo.** Pendiente de implementar.
+**Decisión del equipo (13/11/2026): la red de movimiento va a tener memoria explícita, como se describe abajo.** Pendiente de implementar; encargo en `docs/encargos/ENCARGO_bloques_2_5_6.md`.
 
 ### Por qué hace falta
 
