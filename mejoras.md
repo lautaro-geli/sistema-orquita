@@ -134,6 +134,8 @@ La red quedaría chica, por ejemplo **14 → 16 → 15**, en lugar de 184 → 48
 
 ## Bloque 6 — Memoria ❌ (hoy solo hay memoria fuera de la red: el DetectorAtasco)
 
+**Decisión del equipo (13/11/2026): la red de movimiento va a tener memoria explícita, como se describe abajo.** Pendiente de implementar.
+
 ### Por qué hace falta
 
 La red de movimiento decide mirando **un solo barrido**. Sin memoria:
