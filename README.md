@@ -115,7 +115,15 @@ Las entradas comunes (`PreprocesadorTelemetria.entradas`, 117) son 39 cercanías
 
 Antes de entrar a las redes, la telemetría pasa por la **regla del -1** (`PreprocesadorTelemetria`): si el 4x4 o el 16x16 son `-1` se usa el 8x8; si el 8x8 es `-1` queda desconocido; si los tres son `-1`, los tres quedan desconocidos.
 
-Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simulacion.bahia`): base recta de 1150 mm, 1200 mm de la base al estrecho, estrecho de 300 mm, 2 obstáculos de 90 × 90 mm, canicas de 16 mm, partida abajo a la izquierda mirando hacia la salida y un VL53L1X simulado (13 sectores × 3 ROI, ruido, pérdidas y bloques sin eco). Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger).
+Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simulacion.bahia`) con las medidas de la pista (13/11/2026):
+
+- **Forma:** rectángulo de 1520 mm de ancho × 1140 mm de alto (de la base a la salida) con las **4 esquinas redondeadas** (radio 150 mm; cada arco se aproxima con 8 tramos rectos). Origen en el centro de la base: x de −760 a 760, y de 0 a 1140.
+- **Salida:** un hueco de 300 mm centrado en el lado de arriba, sin pasillo. Afuera no hay nada: para el sensor, mirar por el hueco es "sin eco".
+- **Adentro:** siempre 2 obstáculos de 90 × 90 mm girados al azar (a 320 mm o más entre centros, lejos de la partida y del estrecho) y 3 canicas de 16 mm.
+- **Partida:** abajo a la izquierda, mirando hacia la salida (90° ± 3°), con el costado izquierdo del robot a 150–200 mm de la pared izquierda y la cola a 150–200 mm de la base (centro del robot alrededor de (−510, 275) mm). **[A CONFIRMAR]** si los 15–20 cm se miden al borde o al centro del robot: son las constantes `PARTIDA_...` de `Bahia`.
+- **Sensor:** un VL53L1X simulado (13 sectores × 3 ROI, ruido, pérdidas y bloques sin eco).
+
+Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger).
 
 ```powershell
 ./ejecutar.ps1 simular-entrenar                 # 250 episodios, 60 épocas, 2 rondas DAgger -> modelos/percepcion.nnet y movimiento.nnet

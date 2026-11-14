@@ -38,17 +38,19 @@ public final class SimuladorBahia {
 
     /**
      * Prueba al azar: bahía con 2 obstáculos y las canicas pedidas en lugares al azar. El robot sale
-     * siempre abajo a la izquierda mirando hacia adelante (hacia la salida), con un error de colocación
-     * de hasta ±15 mm y ±3°.
+     * siempre abajo a la izquierda mirando hacia la salida: el centro se sortea alrededor de
+     * (Bahia.PARTIDA_X, Bahia.PARTIDA_Y) en ± Bahia.PARTIDA_RANGO_MM (el costado izquierdo y la cola quedan
+     * a 150-200 mm de la pared izquierda y de la base) y el rumbo en 90° ± Bahia.PARTIDA_RANGO_GRADOS.
+     * Todo sale del Random de la prueba: con la misma semilla, la misma bahía y la misma partida.
      */
     public static SimuladorBahia alAzar(long semilla, int canicas, int umbral, RobotSimulado.Calibracion cal,
                                         SensorSimulado.Ruido ruido) {
         Random azar = new Random(semilla);
         while (true) {
             Bahia bahia = Bahia.generar(azar, Bahia.OBSTACULOS, canicas);
-            double rumbo = Math.PI / 2 + Math.toRadians((azar.nextDouble() * 2 - 1) * 3);
-            RobotSimulado robot = new RobotSimulado(cal, Bahia.PARTIDA_X + (azar.nextDouble() * 2 - 1) * 15,
-                    Bahia.PARTIDA_Y + (azar.nextDouble() * 2 - 1) * 15, rumbo);
+            double rumbo = Math.PI / 2 + Math.toRadians((azar.nextDouble() * 2 - 1) * Bahia.PARTIDA_RANGO_GRADOS);
+            RobotSimulado robot = new RobotSimulado(cal, Bahia.PARTIDA_X + (azar.nextDouble() * 2 - 1) * Bahia.PARTIDA_RANGO_MM,
+                    Bahia.PARTIDA_Y + (azar.nextDouble() * 2 - 1) * Bahia.PARTIDA_RANGO_MM, rumbo);
             if (!robot.choca(bahia, robot.x(), robot.y(), robot.rumbo()))
                 return new SimuladorBahia(bahia, robot, new SensorSimulado(ruido), azar, umbral);
         }

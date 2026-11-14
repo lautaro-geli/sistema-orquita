@@ -7,7 +7,22 @@ Estado: ✅ está · 🟡 a medias · ❌ falta.
 
 ## Bloque 2 — Un simulador fiel a la pista
 
-### 2.1 Geometría de la bahía ❌ (las medidas cambiaron)
+### 2.1 Geometría de la bahía ✅ (implementado el 14/11/2026, rama `hito3-bloques-2-5-6`)
+
+Qué quedó en el código (`Bahia`, `SimuladorBahia.alAzar`, `VisorBahia`, `SimuladorBahiaTest`):
+
+- Rectángulo de 1520 × 1140 mm con las 4 esquinas redondeadas (R = 150 mm, 8 tramos rectos por esquina), hueco de 300 mm centrado arriba, sin pasillo y sin nada afuera. Constantes `BASE_MM`, `ALTO_MM`, `RADIO_ESQUINA_MM`, `SALIDA_MM`.
+- Partida sorteada con la semilla de la prueba: costado izquierdo y cola del robot a 150–200 mm de la pared izquierda y de la base, rumbo 90° ± 3° (constantes `PARTIDA_...`; sigue **[A CONFIRMAR]** si los cm son al borde o al centro del robot).
+- Siempre 2 obstáculos y 3 canicas, con las restricciones revisadas para la bahía nueva (márgenes a paredes, lejos de la partida, no delante del estrecho, 320 mm entre centros de obstáculos).
+- **Sin resultados todavía:** falta medir al maestro y volver a entrenar las redes en la bahía nueva (corridas A/B/C del encargo, pendientes).
+
+Desvíos del encargo en este bloque:
+
+- La prueba de geometría pedía "desde (0, 1) hacia la derecha toca la pared a ~760 mm", pero a esa altura la pared ya es el arco de la esquina de abajo (queda a ~627 mm). El ancho de 760 mm se comprueba a y = 500 y el arco se comprueba aparte.
+- `Bahia.interseccion` acepta una tolerancia de 1e-9 en los extremos de cada tramo, para que un rayo que pasa justo por la unión de dos tramos de un arco no se escape.
+- El lienzo de `VisorBahia` se agrandó para que entre la bahía nueva (antes medía 760 px de ancho y la bahía de 1520 mm no entraba).
+
+Lo que sigue es el registro de lo que se decidió antes de implementar.
 
 Medidas reales de la pista (13/11/2026, aproximadas):
 

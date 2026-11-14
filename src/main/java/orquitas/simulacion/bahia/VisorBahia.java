@@ -31,8 +31,11 @@ import orquitas.servidor.navegacion.OrdenMovimiento;
  * Sin --png abre una ventana y anima la prueba (un ciclo cada 400 ms).
  */
 public final class VisorBahia {
-    private static final int ANCHO = 760, ALTO = 900;
     private static final double ESCALA = 0.55; // px por mm.
+    private static final int MARGEN_PX = 45;
+    /** Lugar para la bahía (1520 x 1140 mm), unos 300 mm del otro lado de la salida, el texto y la leyenda. */
+    private static final int ANCHO = (int) Math.round(Bahia.BASE_MM * ESCALA) + 2 * MARGEN_PX;
+    private static final int ALTO = (int) Math.round((Bahia.ALTO_MM + 300) * ESCALA) + 90 + MARGEN_PX;
 
     /** Lo que se ve en cada cuadro. */
     public record Cuadro(SimuladorBahia sim, SensorSimulado.Barrido barrido, EtiquetaSector[] etiquetasRed,
