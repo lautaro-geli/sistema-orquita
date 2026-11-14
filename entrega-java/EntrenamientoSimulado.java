@@ -1,6 +1,12 @@
 // Archivo de simulacion
 package orquitas.herramientas;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +17,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.function.BiFunction;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 import org.neuroph.nnet.MultiLayerPerceptron;
@@ -34,7 +50,14 @@ import orquitas.simulacion.bahia.SimuladorBahia;
 
 /**
  * Entrena las dos redes con la Bahía de Caza simulada (no forma parte de los diagramas). Uso:
- * {@code EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2]}.
+ * {@code EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]}.
+ *
+ * {@code --hilos=N} (opcional, en cualquier posición): en cuántos hilos se reparte la simulación. Por
+ * defecto, los núcleos disponibles menos 1 (mínimo 1). Se reparten las pruebas simuladas, que son
+ * independientes entre sí: los episodios del maestro, los de las rondas DAgger, la evaluación, la matriz
+ * de confusión y el acuerdo de dirección. El entrenamiento de las redes (Neuroph) sigue en un solo hilo.
+ * El resultado es exactamente el mismo con 1 hilo o con N: cada prueba depende solo de su semilla (la
+ * de su índice) y los resultados se juntan en el orden del índice, no en el que terminan los hilos.
  *
  * 1. El maestro (que conoce la geometría real) maneja el robot en bahías al azar; a veces se ejecuta
  *    una orden al azar para visitar situaciones variadas. Los ejemplos se guardan agrupados por episodio
@@ -53,6 +76,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  * Guarda percepcion.nnet, movimiento.nnet y un reporte en docs/evidencias/.
  */
 public class EntrenamientoSimulado {
+    static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]";
     static final long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
     static final int OCULTAS_PERCEPCION = 24;
@@ -70,6 +94,12 @@ public class EntrenamientoSimulado {
     record Ejemplo(int[] telemetria, EtiquetaSector[] etiquetas, ModoOperativo modo, OrdenMovimiento orden,
                    OrdenMovimiento ejecutada) { }
 
+    /** Las dos redes que usa un hilo de simulación: sus propias copias, que no comparte con otro hilo. */
+    record Redes(RedPercepcion percepcion, RedMovimiento movimiento) { }
+
+    /** Resultado de una prueba completa. */
+    record Prueba(boolean liberada, int capturas, int choques, int puntaje, double segundos) { }
+
     /** Resultado de varias pruebas. */
     record Resumen(int pruebas, int liberadas, double capturas, double choques, double puntaje, double segundos) {
         String fila(String nombre) {
@@ -79,17 +109,30 @@ public class EntrenamientoSimulado {
     }
 
     public static void main(String[] args) throws Exception {
-        int episodios = args.length > 0 ? Integer.parseInt(args[0]) : 250;
-        int epocas = args.length > 1 ? Integer.parseInt(args[1]) : 60;
-        Path carpeta = Path.of(args.length > 2 ? args[2] : "modelos");
-        int rondas = args.length > 3 ? Integer.parseInt(args[3]) : 2;
+        List<String> posicionales;
+        int hilos;
+        try {
+            posicionales = posicionales(args);
+            hilos = hilos(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            System.err.println(USO);
+            System.exit(2);
+            return;
+        }
+        int episodios = posicionales.size() > 0 ? Integer.parseInt(posicionales.get(0)) : 250;
+        int epocas = posicionales.size() > 1 ? Integer.parseInt(posicionales.get(1)) : 60;
+        Path carpeta = Path.of(posicionales.size() > 2 ? posicionales.get(2) : "modelos");
+        int rondas = posicionales.size() > 3 ? Integer.parseInt(posicionales.get(3)) : 2;
         Files.createDirectories(carpeta);
         StringBuilder reporte = new StringBuilder();
         long inicio = System.currentTimeMillis();
         RobotSimulado.Calibracion cal = RobotSimulado.Calibracion.ESTIMADA;
+        log("Simulación repartida en " + hilos + " hilo(s) (núcleos disponibles: " + Runtime.getRuntime().availableProcessors()
+                + "); las redes se entrenan en uno solo");
 
         // Cada elemento es un episodio (una prueba) con sus ejemplos en orden.
-        List<List<Ejemplo>> datos = recolectarConMaestro(episodios, cal);
+        List<List<Ejemplo>> datos = recolectarConMaestro(episodios, cal, hilos);
         log("Ejemplos del maestro: " + contar(datos) + " en " + datos.size() + " episodios");
 
         MultiLayerPerceptron percepcion = nuevaRed(RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED);
@@ -99,8 +142,8 @@ public class EntrenamientoSimulado {
         entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), epocas, "movimiento");
 
         for (int ronda = 1; ronda <= rondas; ronda++) {
-            List<List<Ejemplo>> nuevos = recolectarConRedes(episodios / 2, cal, new RedPercepcion(percepcion),
-                    new RedMovimiento(movimiento), SEMILLA + 10_000L * ronda);
+            List<List<Ejemplo>> nuevos = recolectarConRedes(episodios / 2, cal, copiasDe(percepcion, movimiento),
+                    SEMILLA + 10_000L * ronda, hilos);
             datos.addAll(nuevos);
             log("DAgger ronda " + ronda + ": +" + contar(nuevos) + " ejemplos (total " + contar(datos) + ")");
             entrenar(percepcion, datosPercepcion(datos), Math.max(3, epocas / 6), "percepción");
@@ -111,14 +154,13 @@ public class EntrenamientoSimulado {
         percepcion.save(rutaPercepcion.toString());
         movimiento.save(rutaMovimiento.toString());
 
-        // Evaluación con bahías nuevas.
-        RedPercepcion rp = new RedPercepcion(rutaPercepcion);
-        RedMovimiento rm = new RedMovimiento(rutaMovimiento);
+        // Evaluación con bahías nuevas: cada hilo carga sus redes de los archivos recién guardados.
+        Supplier<Redes> guardadas = () -> new Redes(new RedPercepcion(rutaPercepcion), new RedMovimiento(rutaMovimiento));
         int pruebas = 100;
-        Resumen maestro = evaluar(Piloto::maestro, pruebas, cal);
-        Resumen redes = evaluar(() -> Piloto.redes(rp, rm), pruebas, cal);
-        int[][] confusion = confusionPercepcion(rp, 40, cal);
-        double acuerdo = acuerdoDireccion(rp, rm, 40, cal);
+        Resumen maestro = evaluarMaestro(pruebas, cal, hilos);
+        Resumen redes = evaluarRedes(guardadas, pruebas, cal, hilos);
+        int[][] confusion = confusionPercepcion(guardadas, 40, cal, hilos);
+        double acuerdo = acuerdoDireccion(guardadas, 40, cal, hilos);
         double minutos = (System.currentTimeMillis() - inicio) / 60000.0;
 
         reporte.append("# Entrenamiento con la Bahía de Caza simulada (").append(LocalDate.now()).append(")\n\n")
@@ -126,6 +168,7 @@ public class EntrenamientoSimulado {
                .append("sirven para entrenar y comparar estrategias, no reemplazan la prueba en la pista real.\n\n")
                .append(String.format(Locale.ROOT, "- Episodios del maestro: %d; rondas DAgger: %d; épocas: %d; ejemplos: %d; tiempo: %.1f min.%n",
                        episodios, rondas, epocas, contar(datos), minutos))
+               .append(String.format(Locale.ROOT, "- Hilos de simulación: %d (el resultado no depende de la cantidad de hilos; las redes se entrenan en uno solo).%n", hilos))
                .append(String.format(Locale.ROOT, "- Calibración usada: %.0f mm/s, %.0f °/s, robot %.0f x %.0f mm [A CONFIRMAR con el robot real].%n",
                        cal.mmPorSegundo(), cal.gradosPorSegundo(), cal.largoMm(), cal.anchoMm()))
                .append(String.format(Locale.ROOT, "- Redes: percepción por ventana %d-%d-%d (x 13 sectores), movimiento %d-%d-%d (sigmoide, MomentumBackpropagation).%n",
@@ -151,6 +194,125 @@ public class EntrenamientoSimulado {
     static void log(String s) {
         System.out.println("[Entrenamiento] " + s);
     }
+
+    // ---------------------------------------------------------------- Argumentos
+
+    /** Hilos de simulación por defecto: los núcleos disponibles menos 1 (queda uno para el resto de la PC), mínimo 1. */
+    static int hilosPorDefecto() {
+        return Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+    }
+
+    /** Cantidad de hilos de simulación: la del argumento --hilos=N o, si no está, hilosPorDefecto(). */
+    static int hilos(String[] args) {
+        for (String a : args) {
+            if (!a.startsWith("--hilos=")) continue;
+            int n;
+            try {
+                n = Integer.parseInt(a.substring("--hilos=".length()));
+            } catch (NumberFormatException e) {
+                n = 0;
+            }
+            if (n < 1) throw new IllegalArgumentException("--hilos tiene que ser un número entero mayor o igual que 1: " + a);
+            return n;
+        }
+        return hilosPorDefecto();
+    }
+
+    /** Los argumentos que no son opciones (episodios, épocas, carpeta y rondas), en orden. */
+    static List<String> posicionales(String[] args) {
+        List<String> posicionales = new ArrayList<>();
+        for (String a : args) {
+            if (!a.startsWith("--")) posicionales.add(a);
+            else if (!a.startsWith("--hilos=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
+        }
+        return posicionales;
+    }
+
+    // ---------------------------------------------------------------- Reparto entre hilos
+
+    /**
+     * Corre tarea(contexto, i) para i = 0..cantidad-1 repartida en hasta `hilos` hilos y devuelve los
+     * resultados en el orden del índice (no en el que terminan los hilos). Cada hilo recibe su propio
+     * contexto (por ejemplo, sus copias de las redes), creado acá antes de empezar; los hilos van tomando
+     * el siguiente índice libre. Si la tarea depende solo del índice y del contexto, el resultado es el
+     * mismo con cualquier cantidad de hilos. Con 1 hilo corre en el hilo que llama.
+     */
+    static <C, R> List<R> repartir(int cantidad, int hilos, Supplier<C> contextoPorHilo, BiFunction<C, Integer, R> tarea) {
+        int usados = Math.max(1, Math.min(hilos, cantidad));
+        List<C> contextos = new ArrayList<>();
+        for (int h = 0; h < usados; h++) contextos.add(contextoPorHilo.get());
+        AtomicReferenceArray<R> resultados = new AtomicReferenceArray<>(cantidad);
+        AtomicInteger siguiente = new AtomicInteger();
+        if (usados == 1) {
+            trabajar(contextos.get(0), cantidad, siguiente, resultados, tarea);
+        } else {
+            ExecutorService servicio = Executors.newFixedThreadPool(usados, r -> {
+                Thread hilo = new Thread(r, "Simulacion");
+                hilo.setDaemon(true);
+                return hilo;
+            });
+            try {
+                List<Future<?>> trabajos = new ArrayList<>();
+                for (C contexto : contextos)
+                    trabajos.add(servicio.submit(() -> trabajar(contexto, cantidad, siguiente, resultados, tarea)));
+                for (Future<?> trabajo : trabajos) trabajo.get();
+            } catch (ExecutionException e) {
+                throw new IllegalStateException("Falló una prueba simulada: " + e.getCause(), e.getCause());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Se interrumpió la simulación", e);
+            } finally {
+                servicio.shutdownNow();
+            }
+        }
+        List<R> enOrden = new ArrayList<>(cantidad);
+        for (int i = 0; i < cantidad; i++) enOrden.add(resultados.get(i));
+        return enOrden;
+    }
+
+    /** Como repartir, para tareas que no necesitan nada propio de cada hilo. */
+    static <R> List<R> repartir(int cantidad, int hilos, IntFunction<R> tarea) {
+        return repartir(cantidad, hilos, () -> Boolean.TRUE, (sinContexto, i) -> tarea.apply(i));
+    }
+
+    /** Lo que hace cada hilo: toma el siguiente índice libre y guarda su resultado en ese lugar. */
+    private static <C, R> void trabajar(C contexto, int cantidad, AtomicInteger siguiente, AtomicReferenceArray<R> resultados,
+                                        BiFunction<C, Integer, R> tarea) {
+        for (int i = siguiente.getAndIncrement(); i < cantidad; i = siguiente.getAndIncrement())
+            resultados.set(i, tarea.apply(contexto, i));
+    }
+
+    /**
+     * Fábrica de copias de las redes tal como están ahora, una por hilo: las redes de Neuroph no son
+     * seguras entre hilos (guardan sus entradas y salidas adentro). Se serializan una sola vez, acá, y
+     * cada copia sale de deserializar esos bytes: los mismos pesos, así que las mismas salidas.
+     */
+    static Supplier<Redes> copiasDe(NeuralNetwork<?> percepcion, NeuralNetwork<?> movimiento) {
+        byte[] bytesPercepcion = serializar(percepcion), bytesMovimiento = serializar(movimiento);
+        return () -> new Redes(new RedPercepcion(deserializar(bytesPercepcion)), new RedMovimiento(deserializar(bytesMovimiento)));
+    }
+
+    static byte[] serializar(NeuralNetwork<?> red) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream salida = new ObjectOutputStream(bytes)) {
+            salida.writeObject(red);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo copiar la red", e);
+        }
+        return bytes.toByteArray();
+    }
+
+    static NeuralNetwork<?> deserializar(byte[] bytes) {
+        try (ObjectInputStream entrada = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+            return (NeuralNetwork<?>) entrada.readObject();
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo copiar la red", e);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("No se pudo copiar la red", e);
+        }
+    }
+
+    // ---------------------------------------------------------------- Redes y datos (un solo hilo)
 
     static MultiLayerPerceptron nuevaRed(int entradas, int ocultas, int salidas) {
         MultiLayerPerceptron red = new MultiLayerPerceptron(TransferFunctionType.SIGMOID, entradas, ocultas, salidas);
@@ -244,54 +406,71 @@ public class EntrenamientoSimulado {
         return total;
     }
 
+    // ---------------------------------------------------------------- Simulación (repartida entre hilos)
+
+    /**
+     * Azar propio de un episodio (el umbral de capturas y qué orden se ejecuta): sale solo de la semilla
+     * del episodio, no de los episodios anteriores, así no importa en qué hilo ni en qué orden se corre.
+     * Es distinto del azar de la bahía y del sensor (el de SimuladorBahia.alAzar con la misma semilla).
+     */
+    static Random azarDelEpisodio(long semillaEpisodio) {
+        return new Random(semillaEpisodio * 1_000_003L + 17);
+    }
+
     /**
      * El maestro maneja; con cierta probabilidad se ejecuta una orden al azar (pero se enseña la del
-     * maestro). Devuelve un episodio por prueba, con sus ejemplos en orden.
+     * maestro). Devuelve un episodio por prueba (el episodio i usa la semilla SEMILLA + i), en el orden
+     * del índice y con sus ejemplos en orden.
      */
-    static List<List<Ejemplo>> recolectarConMaestro(int episodios, RobotSimulado.Calibracion cal) {
-        List<List<Ejemplo>> datos = new ArrayList<>();
-        Random azar = new Random(SEMILLA);
-        for (int i = 0; i < episodios; i++) {
-            int umbral = 1 + azar.nextInt(UMBRAL); // También pruebas con umbral 1 y 2 (más escapes).
-            SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA + i, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
-            List<Ejemplo> episodio = new ArrayList<>();
-            while (!sim.terminada()) {
-                SensorSimulado.Barrido b = sim.medir();
-                OrdenMovimiento maestro = Maestro.decidir(sim, b);
-                OrdenMovimiento ejecutada = azar.nextDouble() < PROBABILIDAD_ORDEN_AL_AZAR ? ordenAlAzar(azar) : maestro;
-                episodio.add(new Ejemplo(b.telemetria(), b.etiquetas(), sim.modo(), maestro, ejecutada));
-                sim.ejecutar(ejecutada);
-            }
-            datos.add(episodio);
+    static List<List<Ejemplo>> recolectarConMaestro(int episodios, RobotSimulado.Calibracion cal, int hilos) {
+        return repartir(episodios, hilos, i -> episodioConMaestro(SEMILLA + i, cal));
+    }
+
+    static List<Ejemplo> episodioConMaestro(long semilla, RobotSimulado.Calibracion cal) {
+        Random azar = azarDelEpisodio(semilla);
+        int umbral = 1 + azar.nextInt(UMBRAL); // También pruebas con umbral 1 y 2 (más escapes).
+        SimuladorBahia sim = SimuladorBahia.alAzar(semilla, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
+        List<Ejemplo> episodio = new ArrayList<>();
+        while (!sim.terminada()) {
+            SensorSimulado.Barrido b = sim.medir();
+            OrdenMovimiento maestro = Maestro.decidir(sim, b);
+            OrdenMovimiento ejecutada = azar.nextDouble() < PROBABILIDAD_ORDEN_AL_AZAR ? ordenAlAzar(azar) : maestro;
+            episodio.add(new Ejemplo(b.telemetria(), b.etiquetas(), sim.modo(), maestro, ejecutada));
+            sim.ejecutar(ejecutada);
         }
-        return datos;
+        return episodio;
     }
 
     /**
      * Las redes manejan (la mitad de las veces el maestro, para no quedar trabadas); se enseña lo que
-     * diría el maestro. El piloto de redes decide en todos los barridos y se le avisa la orden que
-     * realmente se ejecutó, así su memoria sigue lo que pasó en la prueba aunque haya manejado el maestro.
+     * diría el maestro. Cada hilo usa sus copias de las redes (redesPorHilo) y cada episodio su propio
+     * piloto, con su memoria. El episodio i usa la semilla semilla + i.
      */
-    static List<List<Ejemplo>> recolectarConRedes(int episodios, RobotSimulado.Calibracion cal, RedPercepcion rp, RedMovimiento rm, long semilla) {
-        List<List<Ejemplo>> datos = new ArrayList<>();
-        Random azar = new Random(semilla);
-        for (int i = 0; i < episodios; i++) {
-            Piloto redes = Piloto.redes(rp, rm);
-            int umbral = 1 + azar.nextInt(UMBRAL);
-            SimuladorBahia sim = SimuladorBahia.alAzar(semilla + i, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
-            List<Ejemplo> episodio = new ArrayList<>();
-            while (!sim.terminada()) {
-                SensorSimulado.Barrido b = sim.medir();
-                OrdenMovimiento maestro = Maestro.decidir(sim, b);
-                OrdenMovimiento deLasRedes = redes.decidir(sim, b).orden();
-                OrdenMovimiento ejecutada = azar.nextDouble() < 0.5 ? deLasRedes : maestro;
-                episodio.add(new Ejemplo(b.telemetria(), b.etiquetas(), sim.modo(), maestro, ejecutada));
-                sim.ejecutar(ejecutada);
-                redes.registrarOrden(ejecutada);
-            }
-            datos.add(episodio);
+    static List<List<Ejemplo>> recolectarConRedes(int episodios, RobotSimulado.Calibracion cal, Supplier<Redes> redesPorHilo,
+                                                  long semilla, int hilos) {
+        return repartir(episodios, hilos, redesPorHilo, (redes, i) -> episodioConRedes(semilla + i, cal, redes));
+    }
+
+    /**
+     * El piloto de redes decide en todos los barridos y se le avisa la orden que realmente se ejecutó,
+     * así su memoria sigue lo que pasó en la prueba aunque haya manejado el maestro.
+     */
+    static List<Ejemplo> episodioConRedes(long semilla, RobotSimulado.Calibracion cal, Redes redes) {
+        Random azar = azarDelEpisodio(semilla);
+        Piloto piloto = Piloto.redes(redes.percepcion(), redes.movimiento());
+        int umbral = 1 + azar.nextInt(UMBRAL);
+        SimuladorBahia sim = SimuladorBahia.alAzar(semilla, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
+        List<Ejemplo> episodio = new ArrayList<>();
+        while (!sim.terminada()) {
+            SensorSimulado.Barrido b = sim.medir();
+            OrdenMovimiento maestro = Maestro.decidir(sim, b);
+            OrdenMovimiento deLasRedes = piloto.decidir(sim, b).orden();
+            OrdenMovimiento ejecutada = azar.nextDouble() < 0.5 ? deLasRedes : maestro;
+            episodio.add(new Ejemplo(b.telemetria(), b.etiquetas(), sim.modo(), maestro, ejecutada));
+            sim.ejecutar(ejecutada);
+            piloto.registrarOrden(ejecutada);
         }
-        return datos;
+        return episodio;
     }
 
     static OrdenMovimiento ordenAlAzar(Random azar) {
@@ -299,39 +478,62 @@ public class EntrenamientoSimulado {
         return new OrdenMovimiento(m[azar.nextInt(m.length)], 100 + azar.nextInt(900));
     }
 
-    /** Corre las pruebas con un piloto nuevo por prueba (cada uno con su memoria y su detector de atasco). */
-    static Resumen evaluar(java.util.function.Supplier<Piloto> fabrica, int pruebas, RobotSimulado.Calibracion cal) {
+    /** Pruebas completas con el maestro (la prueba i usa la semilla SEMILLA_EVALUACION + i). */
+    static Resumen evaluarMaestro(int pruebas, RobotSimulado.Calibracion cal, int hilos) {
+        return resumir(repartir(pruebas, hilos, i -> pruebaCompleta(SEMILLA_EVALUACION + i, Piloto.maestro(), cal)));
+    }
+
+    /** Las mismas pruebas con las redes: un piloto nuevo por prueba (con su memoria y su detector de atasco). */
+    static Resumen evaluarRedes(Supplier<Redes> redesPorHilo, int pruebas, RobotSimulado.Calibracion cal, int hilos) {
+        return resumir(repartir(pruebas, hilos, redesPorHilo,
+                (redes, i) -> pruebaCompleta(SEMILLA_EVALUACION + i, Piloto.redes(redes.percepcion(), redes.movimiento()), cal)));
+    }
+
+    static Prueba pruebaCompleta(long semilla, Piloto piloto, RobotSimulado.Calibracion cal) {
+        SimuladorBahia sim = SimuladorBahia.alAzar(semilla, CANICAS, UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
+        while (!sim.terminada()) {
+            OrdenMovimiento orden = piloto.decidir(sim, sim.medir()).orden();
+            sim.ejecutar(orden);
+            piloto.registrarOrden(orden);
+        }
+        return new Prueba(sim.modo() == ModoOperativo.LIBERADA, sim.capturas(), sim.choques(), sim.puntaje(), sim.segundos());
+    }
+
+    /** Promedios de las pruebas, sumadas en el orden del índice. */
+    static Resumen resumir(List<Prueba> pruebas) {
         int liberadas = 0;
         double capturas = 0, choques = 0, puntaje = 0, segundos = 0;
-        for (int i = 0; i < pruebas; i++) {
-            SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + i, CANICAS, UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
-            Piloto piloto = fabrica.get();
-            while (!sim.terminada()) {
-                OrdenMovimiento orden = piloto.decidir(sim, sim.medir()).orden();
-                sim.ejecutar(orden);
-                piloto.registrarOrden(orden);
-            }
-            if (sim.modo() == ModoOperativo.LIBERADA) liberadas++;
-            capturas += sim.capturas();
-            choques += sim.choques();
-            puntaje += sim.puntaje();
-            segundos += sim.segundos();
+        for (Prueba p : pruebas) {
+            if (p.liberada()) liberadas++;
+            capturas += p.capturas();
+            choques += p.choques();
+            puntaje += p.puntaje();
+            segundos += p.segundos();
         }
-        return new Resumen(pruebas, liberadas, capturas / pruebas, choques / pruebas, puntaje / pruebas, segundos / pruebas);
+        int n = pruebas.size();
+        return new Resumen(n, liberadas, capturas / n, choques / n, puntaje / n, segundos / n);
     }
 
     /** Matriz de confusión de la percepción en barridos nuevos (el maestro maneja). */
-    static int[][] confusionPercepcion(RedPercepcion rp, int pruebas, RobotSimulado.Calibracion cal) {
+    static int[][] confusionPercepcion(Supplier<Redes> redesPorHilo, int pruebas, RobotSimulado.Calibracion cal, int hilos) {
         int n = EtiquetaSector.values().length;
         int[][] m = new int[n][n];
-        for (int i = 0; i < pruebas; i++) {
-            SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + 500 + i, CANICAS, 1 + i % UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
-            while (!sim.terminada()) {
-                SensorSimulado.Barrido b = sim.medir();
-                EtiquetaSector[] red = RedPercepcion.etiquetas(rp.probabilidades(b.telemetria()));
-                for (int s = 0; s < red.length; s++) m[b.etiquetas()[s].ordinal()][red[s].ordinal()]++;
-                sim.ejecutar(Maestro.decidir(sim, b));
-            }
+        List<int[][]> porPrueba = repartir(pruebas, hilos, redesPorHilo, (redes, i) -> confusionDePrueba(i, redes.percepcion(), cal));
+        for (int[][] parcial : porPrueba)
+            for (int f = 0; f < n; f++)
+                for (int c = 0; c < n; c++) m[f][c] += parcial[f][c];
+        return m;
+    }
+
+    static int[][] confusionDePrueba(int i, RedPercepcion rp, RobotSimulado.Calibracion cal) {
+        int n = EtiquetaSector.values().length;
+        int[][] m = new int[n][n];
+        SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + 500 + i, CANICAS, 1 + i % UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
+        while (!sim.terminada()) {
+            SensorSimulado.Barrido b = sim.medir();
+            EtiquetaSector[] red = RedPercepcion.etiquetas(rp.probabilidades(b.telemetria()));
+            for (int s = 0; s < red.length; s++) m[b.etiquetas()[s].ordinal()][red[s].ordinal()]++;
+            sim.ejecutar(Maestro.decidir(sim, b));
         }
         return m;
     }
@@ -340,22 +542,31 @@ public class EntrenamientoSimulado {
      * Fracción de barridos nuevos en que la red elige la misma dirección que el maestro. Maneja el
      * maestro; la red decide con su memoria, que avanza con las órdenes del maestro (las ejecutadas).
      */
-    static double acuerdoDireccion(RedPercepcion rp, RedMovimiento rm, int pruebas, RobotSimulado.Calibracion cal) {
-        int iguales = 0, total = 0;
-        for (int i = 0; i < pruebas; i++) {
-            SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + 800 + i, CANICAS, 1 + i % UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
-            MemoriaNavegacion memoria = new MemoriaNavegacion();
-            while (!sim.terminada()) {
-                SensorSimulado.Barrido b = sim.medir();
-                OrdenMovimiento maestro = Maestro.decidir(sim, b);
-                OrdenMovimiento red = rm.decidir(RedMovimiento.entradasDelCiclo(b.telemetria(), rp.probabilidades(b.telemetria()), sim.modo(), memoria));
-                if (red.movimiento() == maestro.movimiento()) iguales++;
-                total++;
-                sim.ejecutar(maestro);
-                memoria.registrarOrden(maestro);
-            }
+    static double acuerdoDireccion(Supplier<Redes> redesPorHilo, int pruebas, RobotSimulado.Calibracion cal, int hilos) {
+        long iguales = 0, total = 0;
+        for (int[] parcial : repartir(pruebas, hilos, redesPorHilo, (redes, i) -> acuerdoDePrueba(i, redes, cal))) {
+            iguales += parcial[0];
+            total += parcial[1];
         }
         return total == 0 ? 0 : iguales / (double) total;
+    }
+
+    /** Devuelve {barridos en que coinciden, barridos} de una prueba. */
+    static int[] acuerdoDePrueba(int i, Redes redes, RobotSimulado.Calibracion cal) {
+        int iguales = 0, total = 0;
+        SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + 800 + i, CANICAS, 1 + i % UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
+        MemoriaNavegacion memoria = new MemoriaNavegacion();
+        while (!sim.terminada()) {
+            SensorSimulado.Barrido b = sim.medir();
+            OrdenMovimiento maestro = Maestro.decidir(sim, b);
+            double[] p = redes.percepcion().probabilidades(b.telemetria());
+            OrdenMovimiento red = redes.movimiento().decidir(RedMovimiento.entradasDelCiclo(b.telemetria(), p, sim.modo(), memoria));
+            if (red.movimiento() == maestro.movimiento()) iguales++;
+            total++;
+            sim.ejecutar(maestro);
+            memoria.registrarOrden(maestro);
+        }
+        return new int[] {iguales, total};
     }
 
     static String tablaConfusion(int[][] m) {

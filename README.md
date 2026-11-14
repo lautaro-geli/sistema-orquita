@@ -154,12 +154,20 @@ Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada
 
 ```powershell
 ./ejecutar.ps1 simular-entrenar                 # 250 episodios, 60 épocas, 2 rondas DAgger -> modelos/percepcion.nnet y movimiento.nnet
+./ejecutar.ps1 simular-entrenar 300 80 modelos 2 --hilos=4   # [episodios] [epocas] [carpeta] [rondasDagger] y la simulación en 4 hilos
 ./ejecutar.ps1 simular-ver 7                    # ventana: la bahía 7 manejada por las redes
 ./ejecutar.ps1 simular-ver 7 --maestro          # la misma bahía manejada por el maestro
 ./ejecutar.ps1 simular-ver 7 --png=prueba.png   # corre la prueba y guarda la imagen final
 ```
 
 El reporte queda en `docs/evidencias/entrenamiento_simulado_AAAAMMDD.md` (redes contra maestro en 100 bahías nuevas y matriz de confusión por sector).
+
+**Núcleos (`--hilos=N`):** la simulación se reparte entre hilos, porque cada bahía es independiente: los episodios del maestro, los de las rondas DAgger, la evaluación en 100 bahías, la matriz de confusión y el acuerdo de dirección.
+
+- `--hilos=N` es opcional y va en cualquier posición. Por defecto usa los núcleos disponibles menos 1 (mínimo 1): en la PC del equipo, con 5 núcleos, son 4 hilos. `--hilos=1` corre todo en un solo hilo.
+- Cada hilo tiene sus propias copias de las redes (las de Neuroph no son seguras entre hilos) y cada prueba su propio piloto y su propia memoria.
+- **El resultado es exactamente el mismo con 1 hilo o con N:** cada prueba depende solo de la semilla de su índice y los ejemplos se juntan en el orden del índice, no en el que terminan los hilos.
+- Neuroph entrena las redes en un solo hilo: esa parte no se reparte.
 
 **Calibración [A CONFIRMAR]:** el Servidor y el simulador usan 250 mm/s al avanzar, 120 °/s al girar y un robot de 200 × 150 mm (`CalibracionRobot`). Los ms que decide la red dependen de esto: con las medidas reales del robot hay que cambiar esos valores y volver a entrenar.
 

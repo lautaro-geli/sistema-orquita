@@ -1,6 +1,7 @@
 # Uso:
 #   ./ejecutar.ps1 servidor COM5 --umbral=1 [--estomago=estomago.txt] [--modelo=modelos/entorno.nnet] [--reglas]
-#   ./ejecutar.ps1 simular-entrenar [episodios] [epocas] [carpeta] [rondasDagger]   (bahía simulada: percepcion.nnet y movimiento.nnet)
+#   ./ejecutar.ps1 simular-entrenar [episodios] [epocas] [carpeta] [rondasDagger] [--hilos=N]   (bahía simulada: percepcion.nnet y movimiento.nnet;
+#                                    --hilos=N reparte la simulación en N hilos, por defecto los núcleos menos 1)
 #   ./ejecutar.ps1 simular-ver [semilla] [--maestro] [--png=archivo.png]           (ventana con la bahía simulada)
 #   ./ejecutar.ps1 recolectar COM5 LOBITO 30 [datos/barridos.csv]
 #   ./ejecutar.ps1 entrenar [datos/barridos.csv] [modelos/entorno.nnet] [ocultas]

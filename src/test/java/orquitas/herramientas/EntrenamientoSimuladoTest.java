@@ -7,10 +7,17 @@ import static orquitas.servidor.apoyo.Pruebas.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.junit.Test;
+import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
 import orquitas.herramientas.EntrenamientoSimulado.Ejemplo;
+import orquitas.herramientas.EntrenamientoSimulado.Redes;
+import orquitas.herramientas.EntrenamientoSimulado.Resumen;
 import orquitas.servidor.navegacion.EtiquetaSector;
 import orquitas.servidor.navegacion.MemoriaNavegacion;
 import orquitas.servidor.navegacion.ModoOperativo;
@@ -22,7 +29,10 @@ import orquitas.servidor.navegacion.RedPercepcion;
 import orquitas.servidor.navegacion.RepresentacionIntermedia;
 import orquitas.simulacion.bahia.RobotSimulado;
 
-/** Entrenamiento en la bahía simulada: los datos se arman igual que en el Servidor (sin entrenar redes). */
+/**
+ * Entrenamiento en la bahía simulada, sin entrenar redes: los datos se arman igual que en el Servidor y
+ * la simulación repartida entre hilos da exactamente lo mismo que en un solo hilo.
+ */
 public class EntrenamientoSimuladoTest {
     private static final RobotSimulado.Calibracion CAL = RobotSimulado.Calibracion.ESTIMADA;
 
@@ -121,7 +131,7 @@ public class EntrenamientoSimuladoTest {
     }
 
     @Test(timeout = 60000) public void elMaestroDejaEpisodiosEnOrdenConLaOrdenEjecutada() {
-        List<List<Ejemplo>> episodios = EntrenamientoSimulado.recolectarConMaestro(2, CAL);
+        List<List<Ejemplo>> episodios = EntrenamientoSimulado.recolectarConMaestro(2, CAL, 1);
         assertEquals(2, episodios.size());
         for (List<Ejemplo> episodio : episodios) {
             assertFalse(episodio.isEmpty());
@@ -148,9 +158,7 @@ public class EntrenamientoSimuladoTest {
 
     @Test(timeout = 60000) public void enDaggerLaOrdenEjecutadaEsLaDelMaestroOLaDeLasRedes() {
         // Redes sin entrenar (pesos al azar con semilla fija): solo importa cómo se guardan los ejemplos.
-        RedPercepcion rp = new RedPercepcion(EntrenamientoSimulado.nuevaRed(RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS_RED));
-        RedMovimiento rm = new RedMovimiento(EntrenamientoSimulado.nuevaRed(RedMovimiento.ENTRADAS, 4, RedMovimiento.SALIDAS));
-        List<List<Ejemplo>> episodios = EntrenamientoSimulado.recolectarConRedes(1, CAL, rp, rm, 777L);
+        List<List<Ejemplo>> episodios = EntrenamientoSimulado.recolectarConRedes(1, CAL, redesSinEntrenar(), 777L, 1);
         assertEquals(1, episodios.size());
         int delMaestro = 0, deLasRedes = 0;
         for (Ejemplo e : episodios.get(0)) {
@@ -158,5 +166,145 @@ public class EntrenamientoSimuladoTest {
             else deLasRedes++;
         }
         assertTrue("maestro " + delMaestro + ", redes " + deLasRedes, delMaestro > 0 && deLasRedes > 0);
+    }
+
+    // ---------------------------------------------------------------- Reparto de la simulación entre hilos
+
+    /** Copias por hilo de dos redes sin entrenar (pesos al azar con semilla fija). */
+    private static Supplier<Redes> redesSinEntrenar() {
+        MultiLayerPerceptron percepcion = EntrenamientoSimulado.nuevaRed(RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS_RED);
+        MultiLayerPerceptron movimiento = EntrenamientoSimulado.nuevaRed(RedMovimiento.ENTRADAS, 4, RedMovimiento.SALIDAS);
+        return EntrenamientoSimulado.copiasDe(percepcion, movimiento);
+    }
+
+    /** Los mismos episodios: misma cantidad y, en el mismo orden, misma telemetría, etiquetas, modo y órdenes. */
+    private static void assertMismosEpisodios(List<List<Ejemplo>> esperados, List<List<Ejemplo>> obtenidos) {
+        assertEquals(esperados.size(), obtenidos.size());
+        for (int i = 0; i < esperados.size(); i++) {
+            List<Ejemplo> a = esperados.get(i), b = obtenidos.get(i);
+            assertEquals("ejemplos del episodio " + i, a.size(), b.size());
+            for (int k = 0; k < a.size(); k++) {
+                String donde = "episodio " + i + ", ejemplo " + k;
+                assertArrayEquals(donde, a.get(k).telemetria(), b.get(k).telemetria());
+                assertArrayEquals(donde, a.get(k).etiquetas(), b.get(k).etiquetas());
+                assertEquals(donde, a.get(k).modo(), b.get(k).modo());
+                assertEquals(donde, a.get(k).orden(), b.get(k).orden());
+                assertEquals(donde, a.get(k).ejecutada(), b.get(k).ejecutada());
+            }
+        }
+    }
+
+    @Test(timeout = 60000) public void conTresEpisodiosDelMaestroUnHiloYTresHilosDanLosMismosEjemplos() {
+        List<List<Ejemplo>> conUno = EntrenamientoSimulado.recolectarConMaestro(3, CAL, 1);
+        List<List<Ejemplo>> conTres = EntrenamientoSimulado.recolectarConMaestro(3, CAL, 3);
+        assertEquals(3, conUno.size());
+        assertTrue(EntrenamientoSimulado.contar(conUno) > 0);
+        assertEquals(EntrenamientoSimulado.contar(conUno), EntrenamientoSimulado.contar(conTres));
+        assertMismosEpisodios(conUno, conTres);
+        // Los tres episodios son distintos entre sí (cada uno tiene su semilla)...
+        assertFalse(Arrays.equals(conUno.get(0).get(0).telemetria(), conUno.get(1).get(0).telemetria()));
+        assertFalse(Arrays.equals(conUno.get(1).get(0).telemetria(), conUno.get(2).get(0).telemetria()));
+        // ...y cada uno depende solo de su índice: pedir menos episodios o más hilos que episodios no los cambia.
+        assertMismosEpisodios(conUno.subList(0, 2), EntrenamientoSimulado.recolectarConMaestro(2, CAL, 8));
+    }
+
+    @Test(timeout = 60000) public void conRedesUnHiloYTresHilosDanLoMismo() {
+        Supplier<Redes> redes = redesSinEntrenar();
+        // Episodios de una ronda DAgger: cada hilo con sus copias de las redes, cada episodio con su piloto y su memoria.
+        List<List<Ejemplo>> conUno = EntrenamientoSimulado.recolectarConRedes(3, CAL, redes, 4242L, 1);
+        List<List<Ejemplo>> conTres = EntrenamientoSimulado.recolectarConRedes(3, CAL, redes, 4242L, 3);
+        assertEquals(3, conUno.size());
+        assertMismosEpisodios(conUno, conTres);
+        // Evaluación, matriz de confusión y acuerdo de dirección.
+        Resumen maestro = EntrenamientoSimulado.evaluarMaestro(3, CAL, 1);
+        assertEquals(maestro, EntrenamientoSimulado.evaluarMaestro(3, CAL, 3));
+        assertEquals(3, maestro.pruebas());
+        assertEquals(EntrenamientoSimulado.evaluarRedes(redes, 3, CAL, 1), EntrenamientoSimulado.evaluarRedes(redes, 3, CAL, 3));
+        int[][] confusion = EntrenamientoSimulado.confusionPercepcion(redes, 3, CAL, 1);
+        assertTrue(Arrays.deepEquals(confusion, EntrenamientoSimulado.confusionPercepcion(redes, 3, CAL, 3)));
+        int sectores = 0;
+        for (int[] fila : confusion) for (int v : fila) sectores += v;
+        assertTrue(sectores > 0 && sectores % 13 == 0); // 13 sectores por barrido.
+        assertEquals(EntrenamientoSimulado.acuerdoDireccion(redes, 3, CAL, 1), EntrenamientoSimulado.acuerdoDireccion(redes, 3, CAL, 3), 0);
+    }
+
+    @Test public void lasCopiasDeLasRedesSonObjetosDistintosConLasMismasSalidas() {
+        MultiLayerPerceptron percepcion = EntrenamientoSimulado.nuevaRed(RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS_RED);
+        MultiLayerPerceptron movimiento = EntrenamientoSimulado.nuevaRed(RedMovimiento.ENTRADAS, 4, RedMovimiento.SALIDAS);
+        Supplier<Redes> copias = EntrenamientoSimulado.copiasDe(percepcion, movimiento);
+        Redes a = copias.get(), b = copias.get();
+        assertNotSame(a.percepcion(), b.percepcion());
+        assertNotSame(a.movimiento(), b.movimiento());
+        int[] t = con(con(todo(700), 3, 250), 9, -1);
+        double[] p = new RedPercepcion(percepcion).probabilidades(t);
+        assertArrayEquals(p, a.percepcion().probabilidades(t), 0);
+        assertArrayEquals(p, b.percepcion().probabilidades(t), 0);
+        double[] entradas = RedMovimiento.entradasDelCiclo(t, p, ModoOperativo.BUSQUEDA, new MemoriaNavegacion());
+        OrdenMovimiento orden = new RedMovimiento(movimiento).decidir(entradas);
+        assertEquals(orden, a.movimiento().decidir(entradas));
+        assertEquals(orden, b.movimiento().decidir(entradas));
+        // También después de entrenar (acá, 2 épocas con 6 filas): es lo que pasa antes de cada ronda DAgger.
+        EntrenamientoSimulado.entrenar(movimiento, EntrenamientoSimulado.datosMovimiento(episodiosDePrueba(), new PercepcionFija()), 2, "movimiento de prueba");
+        Redes entrenadas = EntrenamientoSimulado.copiasDe(percepcion, movimiento).get();
+        double[] salida = salidaDe(movimiento, entradas);
+        assertFalse(Arrays.equals(salida, salidaDe(EntrenamientoSimulado.deserializar(EntrenamientoSimulado.serializar(
+                EntrenamientoSimulado.nuevaRed(RedMovimiento.ENTRADAS, 4, RedMovimiento.SALIDAS))), entradas))); // Los pesos cambiaron...
+        assertArrayEquals(salida, salidaDe(EntrenamientoSimulado.deserializar(EntrenamientoSimulado.serializar(movimiento)), entradas), 0); // ...y la copia los tiene.
+        assertEquals(new RedMovimiento(movimiento).decidir(entradas), entrenadas.movimiento().decidir(entradas));
+    }
+
+    private static double[] salidaDe(org.neuroph.core.NeuralNetwork<?> red, double[] entradas) {
+        red.setInput(entradas);
+        red.calculate();
+        return red.getOutput().clone();
+    }
+
+    @Test(timeout = 20000) public void repartirDevuelveLosResultadosEnElOrdenDelIndiceYUnContextoPorHilo() {
+        // Las primeras tareas tardan más: terminan al revés, pero el resultado sale en el orden del índice.
+        AtomicInteger contextos = new AtomicInteger();
+        Set<String> hilosUsados = ConcurrentHashMap.newKeySet();
+        List<String> resultados = EntrenamientoSimulado.repartir(8, 4, contextos::incrementAndGet, (contexto, i) -> {
+            try { Thread.sleep(5L * (8 - i)); } catch (InterruptedException e) { throw new IllegalStateException(e); }
+            hilosUsados.add(Thread.currentThread().getName() + "/" + contexto);
+            return "tarea " + i;
+        });
+        List<String> esperados = new ArrayList<>();
+        for (int i = 0; i < 8; i++) esperados.add("tarea " + i);
+        assertEquals(esperados, resultados);
+        assertEquals(4, contextos.get());            // Un contexto por hilo...
+        assertTrue(hilosUsados.size() <= 4);         // ...y cada contexto lo usa un solo hilo.
+        // Nunca se crean más hilos (ni contextos) que tareas; con 1 hilo corre en el hilo que llama.
+        contextos.set(0);
+        assertEquals(List.of(0, 10), EntrenamientoSimulado.repartir(2, 16, contextos::incrementAndGet, (contexto, i) -> 10 * i));
+        assertEquals(2, contextos.get());
+        String este = Thread.currentThread().getName();
+        assertEquals(List.of(este, este, este), EntrenamientoSimulado.repartir(3, 1, i -> Thread.currentThread().getName()));
+        assertTrue(EntrenamientoSimulado.repartir(0, 3, i -> i).isEmpty());
+        // Si una tarea falla, el error llega a quien llamó.
+        try {
+            EntrenamientoSimulado.repartir(6, 3, i -> {
+                if (i == 4) throw new IllegalArgumentException("tarea rota");
+                return i;
+            });
+            fail("no avisó la falla");
+        } catch (IllegalStateException esperado) {
+            assertTrue(esperado.getCause() instanceof IllegalArgumentException);
+        }
+    }
+
+    @Test public void laCantidadDeHilosSaleDelArgumentoOpcional() {
+        int porDefecto = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+        assertEquals(porDefecto, EntrenamientoSimulado.hilosPorDefecto());
+        assertEquals(porDefecto, EntrenamientoSimulado.hilos(new String[] {}));
+        assertEquals(porDefecto, EntrenamientoSimulado.hilos(new String[] {"300", "80", "modelos", "2"}));
+        assertEquals(4, EntrenamientoSimulado.hilos(new String[] {"300", "80", "modelos", "2", "--hilos=4"}));
+        assertEquals(1, EntrenamientoSimulado.hilos(new String[] {"--hilos=1", "300"}));
+        // --hilos no ocupa el lugar de los otros argumentos, esté donde esté.
+        assertEquals(List.of("300", "80", "modelos", "2"), EntrenamientoSimulado.posicionales(new String[] {"300", "80", "--hilos=4", "modelos", "2"}));
+        assertEquals(List.of(), EntrenamientoSimulado.posicionales(new String[] {"--hilos=2"}));
+        for (String malo : new String[] {"--hilos=0", "--hilos=-2", "--hilos=", "--hilos=muchos"}) {
+            try { EntrenamientoSimulado.hilos(new String[] {malo}); fail("aceptó " + malo); } catch (IllegalArgumentException esperado) { }
+        }
+        try { EntrenamientoSimulado.posicionales(new String[] {"300", "--nucleos=4"}); fail("aceptó --nucleos"); } catch (IllegalArgumentException esperado) { }
     }
 }

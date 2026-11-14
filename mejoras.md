@@ -3,6 +3,8 @@
 Lista de lo que hay que tener, por bloques. Acá solo se anota; se implementa más adelante, de a un bloque.
 Estado: ✅ está · 🟡 a medias · ❌ falta.
 
+**Estado al 14/11/2026 (rama `hito3-bloques-2-5-6`):** los bloques 2 (geometría de la bahía), 5 y 6 están implementados y con pruebas, y la simulación se reparte entre núcleos. **Todavía no hay resultados de entrenamiento:** faltan las corridas A/B/C del encargo, la tabla comparativa, las imágenes del visor y el extracto de consola (puntos 3 a 6 del §5 de `docs/encargos/ENCARGO_bloques_2_5_6.md`).
+
 ---
 
 ## Bloque 2 — Un simulador fiel a la pista
@@ -67,6 +69,25 @@ Consecuencias cuando se cambie:
 
 - Hoy: 200 × 150 mm, 250 mm/s, 120 °/s, boca de 60 mm, sensor 30 mm detrás del frente, 10 % de ruido de velocidad, todo estimado.
 - Hay que tener: las medidas reales (bloque 1, calibración) y, si se puede, el error real de los giros y avances (cuánto varía de una vez a otra) para usarlo como ruido.
+
+---
+
+## Simulación repartida entre núcleos ✅ (implementado el 14/11/2026, rama `hito3-bloques-2-5-6`)
+
+La PC del equipo tiene 5 núcleos y Neuroph entrena en un solo hilo (eso no se toca). Lo que se reparte es la simulación, porque cada bahía es independiente.
+
+Qué quedó en el código (`EntrenamientoSimulado`):
+
+- Se reparten entre hilos: los episodios del maestro, los de las rondas DAgger, la evaluación en 100 bahías, la matriz de confusión de la percepción y el acuerdo de dirección. `red.learn` sigue igual, en un hilo.
+- Argumento opcional `--hilos=N` (por defecto núcleos disponibles − 1, mínimo 1). Documentado en el README, en `ejecutar.ps1` y en el comentario de uso de la clase; el reporte dice cuántos hilos se usaron.
+- Cada hilo usa sus propias copias de las redes (se serializan una vez y cada hilo deserializa la suya; en la evaluación cada hilo las carga del archivo) y cada prueba su propio `Piloto` y su propia `MemoriaNavegacion`.
+- **Mismo resultado con 1 hilo o con N:** cada prueba usa la semilla de su índice y los ejemplos se juntan en el orden del índice, no en el que terminan los hilos. Hay una prueba JUnit con 3 episodios del maestro (1 hilo contra 3) y otra con redes sin entrenar para DAgger, evaluación, confusión y acuerdo.
+- **Sin medir todavía:** no se corrió ningún entrenamiento, así que falta ver cuánto tiempo se gana.
+
+Desvíos respecto de lo pedido:
+
+- **El azar de exploración ahora es de cada episodio.** Antes un solo generador recorría todos los episodios uno tras otro (sorteaba el umbral de capturas y qué orden se ejecutaba), así que cada episodio dependía de cuánto habían durado los anteriores y no se podía repartir. Ahora sale de la semilla del episodio (`azarDelEpisodio`). La bahía, la partida y el ruido del sensor de cada episodio siguen saliendo de la misma semilla de antes, pero los ejemplos generados no son los mismos que antes de este cambio (son igual de variados).
+- `evaluar` se partió en `evaluarMaestro` y `evaluarRedes`, y las funciones de simulación reciben la cantidad de hilos y una fábrica de redes por hilo en lugar de las redes.
 
 ---
 
