@@ -165,6 +165,7 @@ public final class VisorBahia {
                 Piloto.Decision d = piloto.decidir(sim, barrido);
                 actual[0] = new Cuadro(sim, barrido, d.etiquetas(), d.orden());
                 sim.ejecutar(d.orden());
+                piloto.registrarOrden(d.orden());
                 panel.repaint();
             });
             reloj.start();
@@ -201,6 +202,7 @@ public final class VisorBahia {
             barrido = sim.medir();
             d = piloto.decidir(sim, barrido);
             sim.ejecutar(d.orden());
+            piloto.registrarOrden(d.orden());
         }
         barrido = sim.medir(); // El dibujo muestra el barrido de la pose final.
         d = piloto.decidir(sim, barrido);

@@ -14,10 +14,12 @@ import java.util.Objects;
  * <ul>
  *   <li>Con redes (RedPercepcion + RedMovimiento, entrenadas en la bahía simulada): la percepción
  *       etiqueta cada sector, la RepresentacionIntermedia resume dónde está la meta y qué hay cerca
- *       (14 números, que se muestran en la consola) y la red de movimiento elige con eso el sector
+ *       (14 números) y la MemoriaNavegacion agrega lo que se sabe de los ciclos anteriores (10 números);
+ *       las dos se muestran en la consola. Con esas 24 entradas la red de movimiento elige el sector
  *       meta y los mm, que se traducen a dirección y milisegundos. Después actúan el
  *       ReflejoSeguridad (frenar o retroceder antes de chocar) y el DetectorAtasco (si el barrido no
- *       cambió, la orden anterior no tuvo efecto y se prueba otra).</li>
+ *       cambió, la orden anterior no tuvo efecto y se prueba otra). La orden final se registra en
+ *       la memoria.</li>
  *   <li>Por reglas (RedNeuronal de una sola clase por barrido): la forma anterior, con paso fijo.</li>
  * </ul>
  * En los dos casos la telemetría pasa antes por la regla del -1 (PreprocesadorTelemetria).
@@ -46,6 +48,8 @@ public class Navegacion {
     private OrdenMovimiento ordenDecidida = new OrdenMovimiento(Movimiento.DETENER, 0);
     private EtiquetaSector[] ultimasEtiquetas;
     private final DetectorAtasco atasco = new DetectorAtasco();
+    /** Memoria de la misión (solo con redes): una por Navegacion, empieza vacía. */
+    private final MemoriaNavegacion memoria = new MemoriaNavegacion();
     private int lecturasNoReconocidas;
 
     /** Navegación por reglas con la red de una sola clase (paso fijo). */
@@ -85,12 +89,17 @@ public class Navegacion {
             establecerModoOperativo(ModoOperativo.LIBERADA);
         }
         if (modoOperativo == ModoOperativo.LIBERADA) return new OrdenMovimiento(Movimiento.DETENER, 0);
-        double[] entradas = RedMovimiento.entradas(telemetria, percepcion, modoOperativo);
-        System.out.println("[Navegación] " + RepresentacionIntermedia.describir(entradas, modoOperativo));
+        // Ciclo de la memoria (ver MemoriaNavegacion): representación, observar y las 24 entradas...
+        double[] entradas = RedMovimiento.entradasDelCiclo(telemetria, percepcion, modoOperativo, memoria);
+        System.out.println("[Navegación] " + RepresentacionIntermedia.describir(entradas, modoOperativo)
+                + " | [Memoria] " + memoria.describir());
+        // ...red de movimiento, reflejo y atasco...
         OrdenMovimiento deLaRed = redMovimiento.decidir(entradas);
         OrdenMovimiento segura = ReflejoSeguridad.ajustar(deLaRed, telemetria, ultimasEtiquetas);
         OrdenMovimiento elegida = atasco.revisar(telemetria, segura);
         if (elegida != segura) System.out.println("[Navegación] Atasco detectado: " + segura.movimiento() + " -> " + elegida.movimiento());
+        // ...y la orden final (la que se envía) queda en la memoria para el ciclo siguiente.
+        memoria.registrarOrden(elegida);
         return elegida;
     }
 

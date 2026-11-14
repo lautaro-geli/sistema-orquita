@@ -38,7 +38,11 @@ public final class DetectorAtasco {
         return atascosSeguidos;
     }
 
-    static boolean iguales(int[] a, int[] b) {
+    /**
+     * True si dos barridos ya corregidos (regla del -1) son casi iguales: diferencia media menor que
+     * DIFERENCIA_MAXIMA_MM entre los valores conocidos en los dos. La usa también MemoriaNavegacion.
+     */
+    public static boolean iguales(int[] a, int[] b) {
         double suma = 0;
         int n = 0;
         for (int i = 0; i < a.length; i++) {

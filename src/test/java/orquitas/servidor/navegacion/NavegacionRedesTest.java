@@ -56,13 +56,73 @@ public class NavegacionRedesTest {
         int[] t = con(todo(900), 2, 300);
         n.determinarMovimiento(t);
         assertEquals(RedMovimiento.ENTRADAS, mov.entradasRecibidas.length);
-        // Las entradas son las mismas que arma el entrenamiento con RedMovimiento.entradas.
-        double[] esperadas = RedMovimiento.entradas(t, percepcion.probabilidades(t), ModoOperativo.BUSQUEDA);
-        assertArrayEquals(esperadas, java.util.Arrays.copyOf(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS), 0);
+        // Las primeras 14 son la representación intermedia de ese barrido.
         assertArrayEquals(RepresentacionIntermedia.calcular(t, percepcion.probabilidades(t), ModoOperativo.BUSQUEDA),
                 java.util.Arrays.copyOf(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS), 0);
         assertEquals(0, mov.entradasRecibidas[RepresentacionIntermedia.HAY_META], 0); // Todo PARED: sin Lobito.
         assertEquals((1300 - 300) / 1300.0, mov.entradasRecibidas[RepresentacionIntermedia.OBSTACULO_DIAGONAL_DER], 1e-12);
+    }
+
+    @Test public void conRedesLaRedDeMovimientoRecibe24EntradasYLaMemoriaCambiaDespuesDeUnaOrden() {
+        MovimientoFijo mov = new MovimientoFijo(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 750)); // 90° a la izquierda.
+        Navegacion n = new Navegacion(new PercepcionFija(), mov);
+        n.determinarMovimiento(todo(900));
+        assertEquals(24, mov.entradasRecibidas.length);
+        double[] memoriaAntes = java.util.Arrays.copyOfRange(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS, RedMovimiento.ENTRADAS);
+        // Primer ciclo: la memoria está como al empezar la misión.
+        assertArrayEquals(new MemoriaNavegacion().entradas(), memoriaAntes, 0);
+        assertEquals(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 750), n.obtenerOrdenDecidida());
+        // Segundo ciclo: las últimas 10 entradas reflejan la orden enviada.
+        n.determinarMovimiento(todo(700));
+        double[] memoriaDespues = java.util.Arrays.copyOfRange(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS, RedMovimiento.ENTRADAS);
+        assertEquals(MemoriaNavegacion.ENTRADAS, memoriaDespues.length);
+        assertFalse(java.util.Arrays.equals(memoriaAntes, memoriaDespues));
+        assertEquals(1, memoriaDespues[MemoriaNavegacion.ORDEN_GIRAR_IZQ], 0);
+        assertEquals(0.5, memoriaDespues[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
+        assertEquals(1, memoriaDespues[MemoriaNavegacion.RUMBO_SENO], 1e-12);
+        assertEquals(0.5, memoriaDespues[MemoriaNavegacion.RUMBO_COSENO], 1e-12);
+        // Las primeras 14 siguen siendo la representación del barrido actual.
+        assertArrayEquals(RepresentacionIntermedia.calcular(todo(700), new PercepcionFija().probabilidades(todo(700)), ModoOperativo.BUSQUEDA),
+                java.util.Arrays.copyOf(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS), 0);
+    }
+
+    @Test public void conRedesLaMemoriaRegistraLaOrdenFinalYNoLaQueQueriaLaRed() {
+        // La red quiere avanzar 1500 ms, pero hay una pared a 200 mm: el reflejo acorta el avance.
+        MovimientoFijo mov = new MovimientoFijo(new OrdenMovimiento(Movimiento.AVANZAR, 1500));
+        Navegacion n = new Navegacion(new PercepcionFija(), mov);
+        n.determinarMovimiento(con(todo(1200), 6, 200));
+        OrdenMovimiento enviada = n.obtenerOrdenDecidida();
+        assertTrue(enviada.milisegundos() < 1500);
+        n.determinarMovimiento(con(todo(1200), 6, 600));
+        double[] memoria = java.util.Arrays.copyOfRange(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS, RedMovimiento.ENTRADAS);
+        assertEquals(1, memoria[MemoriaNavegacion.ORDEN_AVANZAR], 0);
+        assertEquals(enviada.milisegundos() / 1500.0, memoria[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
+    }
+
+    @Test public void entradasJuntaLaRepresentacionYLaMemoria() {
+        double[] r = new double[RepresentacionIntermedia.ENTRADAS], m = new double[MemoriaNavegacion.ENTRADAS];
+        for (int i = 0; i < r.length; i++) r[i] = i / 100.0;
+        for (int i = 0; i < m.length; i++) m[i] = 0.5 + i / 100.0;
+        double[] e = RedMovimiento.entradas(r, m);
+        assertEquals(24, RedMovimiento.ENTRADAS);
+        assertEquals(24, e.length);
+        assertArrayEquals(r, java.util.Arrays.copyOf(e, 14), 0);
+        assertArrayEquals(m, java.util.Arrays.copyOfRange(e, 14, 24), 0);
+        try { RedMovimiento.entradas(new double[24], m); fail("aceptó 24 valores de representación"); } catch (IllegalArgumentException esperado) { }
+        try { RedMovimiento.entradas(r, new double[9]); fail("aceptó 9 valores de memoria"); } catch (IllegalArgumentException esperado) { }
+        // entradasDelCiclo hace los pasos 2 a 4: calcula la representación, la memoria la observa y arma las 24.
+        MemoriaNavegacion memoria = new MemoriaNavegacion();
+        memoria.registrarOrden(new OrdenMovimiento(Movimiento.RETROCEDER, 300));
+        EtiquetaSector[] etiquetas = new EtiquetaSector[13];
+        java.util.Arrays.fill(etiquetas, EtiquetaSector.PARED);
+        etiquetas[8] = EtiquetaSector.LOBITO;
+        double[] p = RedPercepcion.salidaDeseada(etiquetas);
+        double[] ciclo = RedMovimiento.entradasDelCiclo(todo(600), p, ModoOperativo.BUSQUEDA, memoria);
+        assertArrayEquals(RepresentacionIntermedia.calcular(todo(600), p, ModoOperativo.BUSQUEDA), java.util.Arrays.copyOf(ciclo, 14), 0);
+        assertArrayEquals(memoria.entradas(), java.util.Arrays.copyOfRange(ciclo, 14, 24), 0);
+        assertEquals(1, ciclo[14 + MemoriaNavegacion.ORDEN_RETROCEDER], 0);
+        assertEquals(0, ciclo[14 + MemoriaNavegacion.CICLO_DESDE_META], 0);                    // La memoria ya vio el Lobito...
+        assertEquals((30 + 180) / 360.0, ciclo[14 + MemoriaNavegacion.ANGULO_META_ANTERIOR], 1e-12); // ...a +30°.
     }
 
     @Test public void conRedesElModoLlegaALaRedDeMovimiento() {
@@ -107,15 +167,26 @@ public class NavegacionRedesTest {
         new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 39, 4, 4).save(p.toString());
         try { new RedPercepcion(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
         try { new RedMovimiento(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
-        // El formato anterior de la red de movimiento (184 entradas) ya no es compatible.
-        Path vieja = dir.resolve("vieja.nnet");
-        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 184, 4, RedMovimiento.SALIDAS).save(vieja.toString());
-        try { new RedMovimiento(vieja); fail("aceptó 184 entradas"); } catch (IllegalArgumentException esperado) { }
+        // Los formatos anteriores de la red de movimiento (184 entradas, o 14 sin memoria) ya no son compatibles.
+        for (int entradas : new int[] {184, 14, 23, 25}) {
+            Path vieja = dir.resolve("vieja" + entradas + ".nnet");
+            new MultiLayerPerceptron(TransferFunctionType.SIGMOID, entradas, 4, RedMovimiento.SALIDAS).save(vieja.toString());
+            try { new RedMovimiento(vieja); fail("aceptó " + entradas + " entradas"); } catch (IllegalArgumentException esperado) { }
+            try {
+                new RedMovimiento(new MultiLayerPerceptron(TransferFunctionType.SIGMOID, entradas, 4, RedMovimiento.SALIDAS));
+                fail("aceptó " + entradas + " entradas en memoria");
+            } catch (IllegalArgumentException esperado) { }
+        }
         Path nueva = dir.resolve("nueva.nnet");
-        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, RedMovimiento.ENTRADAS, 4, RedMovimiento.SALIDAS).save(nueva.toString());
+        new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 24, 4, RedMovimiento.SALIDAS).save(nueva.toString());
         RedMovimiento movimiento = new RedMovimiento(nueva);
-        assertNotNull(movimiento.decidir(new double[RedMovimiento.ENTRADAS]));
-        try { movimiento.decidir(new double[184]); fail("aceptó 184 valores"); } catch (IllegalArgumentException esperado) { }
+        assertNotNull(movimiento.decidir(new double[24]));
+        try { movimiento.decidir(new double[14]); fail("aceptó 14 valores"); } catch (IllegalArgumentException esperado) { }
+        // Tampoco sirve un modelo con 24 entradas y otra cantidad de salidas.
+        try {
+            new RedMovimiento(new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 24, 4, 6));
+            fail("aceptó 6 salidas");
+        } catch (IllegalArgumentException esperado) { }
         Path ok = dir.resolve("ok.nnet");
         new MultiLayerPerceptron(TransferFunctionType.SIGMOID, RedPercepcion.ENTRADAS, 4, RedPercepcion.SALIDAS_RED).save(ok.toString());
         assertEquals(65, new RedPercepcion(ok).probabilidades(todo(-1)).length);

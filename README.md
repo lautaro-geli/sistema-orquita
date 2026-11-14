@@ -75,7 +75,7 @@ La consola muestra:
 - **Estados:** `[Estado] ANTERIOR -> NUEVO` en cada cambio de modo (BUSQUEDA, ESCAPE, LIBERADA) y `[Estado] ERROR_SEGURO (causa)` cuando falla el enlace.
 - **Capturas:** `[Captura]` y `[Auditor] n/umbral`.
 - **Órdenes:** `[Orden]`.
-- **Navegación** (solo con las dos redes): una línea por barrido con lo que resume la representación intermedia, por ejemplo `[Navegación] Lobito a +30°, 25 cm (0,99); frente libre; izq. cerrado`.
+- **Navegación y memoria** (solo con las dos redes): una línea por barrido con lo que resume la representación intermedia y lo principal de la memoria, por ejemplo `[Navegación] Lobito a +30°, 25 cm (0,99); frente libre; izq. cerrado | [Memoria] última GIRAR_IZQ 250 ms; meta vista hace 0 ciclos; rumbo +40°`.
 
 ### Procedimiento tras un Fail-Safe
 
@@ -122,7 +122,19 @@ Problema que resuelve: en la pista un mismo barrido trae varias cosas a la vez (
   | 11–12 | modoBusqueda, modoEscape | 0/1 |
   | 13 | fraccionDesconocidos | sectores sin ningún dato / 13 |
 
-- **Movimiento** (`RedMovimiento`, 14 → 16 → 15): con la representación intermedia elige **a qué sector ir** (0 a 12) o **retroceder**, y **cuántos mm** (`MetaMovimiento`). El Servidor lo traduce a milisegundos: sector 6 = avanzar esos mm; otro sector = girar 15° por sector hacia él (en el ciclo siguiente la red vuelve a decidir); atrás = retroceder. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`). Elegir un sector es más fácil de aprender que dirección + ms, porque coincide con el sector donde la percepción ve el Lobito o la salida.
+- **Memoria** (`MemoriaNavegacion`, tampoco es una red; una por misión): **10 números** entre 0 y 1 con lo que el Servidor ya sabe de los ciclos anteriores.
+
+  | # | Entrada | Qué es |
+  |---|---|---|
+  | 14–17 | ordenAnterior | una entrada por tipo de la última orden enviada: avanzar, retroceder, girar izq., girar der. (DETENER o ninguna: todo 0) |
+  | 18 | cuantoAnterior | ms de esa orden / 1500 |
+  | 19 | atasco | barridos seguidos iguales al anterior después de moverse (la comparación del `DetectorAtasco`), hasta 3, dividido 3 |
+  | 20 | cicloDesdeMeta | ciclos desde la última vez que vio la meta (0 = la ve ahora; 1 = hace 5 o más, o nunca) |
+  | 21 | anguloMetaAnterior | dónde quedó la meta la última vez que la vio, corregido por los giros hechos desde entonces (−180° … +180°, llevado a 0…1; nunca vista 0,5) |
+  | 22–23 | rumboEstimado | seno y coseno del giro acumulado desde la partida (sumando los giros que mandó el Servidor), llevados a 0…1 |
+
+  Ciclo de cada barrido: representación → `memoria.observar` (meta y atasco) → red de movimiento → reflejo → atasco → `memoria.registrarOrden` con la orden final. Al pasar a ESCAPE la meta cambia de Lobito a salida: se olvida la meta anterior, no el rumbo.
+- **Movimiento** (`RedMovimiento`, 24 → 20 → 15): con la representación intermedia (14) y la memoria (10) elige **a qué sector ir** (0 a 12) o **retroceder**, y **cuántos mm** (`MetaMovimiento`). El Servidor lo traduce a milisegundos: sector 6 = avanzar esos mm; otro sector = girar 15° por sector hacia él (en el ciclo siguiente la red vuelve a decidir); atrás = retroceder. La orden viaja como `ORDEN|movimiento|ms` (protocolo v3, ver `docs/PROTOCOLO.md`). Elegir un sector es más fácil de aprender que dirección + ms, porque coincide con el sector donde la percepción ve el Lobito o la salida.
 - **Reflejo de seguridad** (`ReflejoSeguridad`): sobre la orden de la red, y solo con la telemetría, acorta un avance si el frente ve algo más cerca (sin contar un Lobito) y retrocede antes de un giro si las esquinas tocarían. Un sector sin eco con vecinos a menos de 200 mm se toma como pegado (el sensor da `-1` por debajo de 40 mm).
 - **Detector de atasco** (`DetectorAtasco`): si después de moverse el barrido llega casi igual (diferencia media < 20 mm), la orden no tuvo efecto (robot trabado): prueba el giro contrario o retrocede, en vez de repetir y sumar choques.
 
@@ -138,7 +150,7 @@ Las redes se entrenan en un **modelo 2D de la Bahía de Caza** (`orquitas.simula
 - **Partida:** abajo a la izquierda, mirando hacia la salida (90° ± 3°), con el costado izquierdo del robot a 150–200 mm de la pared izquierda y la cola a 150–200 mm de la base (centro del robot alrededor de (−510, 275) mm). **[A CONFIRMAR]** si los 15–20 cm se miden al borde o al centro del robot: son las constantes `PARTIDA_...` de `Bahia`.
 - **Sensor:** un VL53L1X simulado (13 sectores × 3 ROI, ruido, pérdidas y bloques sin eco).
 
-Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger).
+Un piloto "maestro" que conoce la geometría real enseña qué orden dar en cada barrido (imitación + DAgger). Como la memoria depende de lo que pasó antes, los ejemplos se guardan por episodio y en orden, con la orden que realmente se ejecutó; al entrenar la red de movimiento cada episodio se reproduce con el mismo ciclo del Servidor, así la memoria se calcula igual en los dos lados.
 
 ```powershell
 ./ejecutar.ps1 simular-entrenar                 # 250 episodios, 60 épocas, 2 rondas DAgger -> modelos/percepcion.nnet y movimiento.nnet
@@ -155,7 +167,7 @@ El reporte queda en `docs/evidencias/entrenamiento_simulado_AAAAMMDD.md` (redes 
 
 | Carpeta | Contenido |
 |---|---|
-| `src/main/java/orquitas/servidor` | Servidor según el diagrama v5: `ServidorOrquita`, `comunicacion` (`EnlaceOrquita`, `EstadoEnlace`), `navegacion` (`Navegacion`, `RedNeuronal`, enums), `persistencia` (`Estomago`, `Escritor`, `Auditor`). |
+| `src/main/java/orquitas/servidor` | Servidor según el diagrama v5: `ServidorOrquita`, `comunicacion` (`EnlaceOrquita`, `EstadoEnlace`), `navegacion` (`Navegacion`, `RedNeuronal`, `RedPercepcion`, `RepresentacionIntermedia`, `MemoriaNavegacion`, `RedMovimiento`, enums), `persistencia` (`Estomago`, `Escritor`, `Auditor`). |
 | `src/main/java/orquitas/herramientas` | `RecolectorBarridos`, `EntrenamientoReal`, `EntrenamientoSimulado` (no forman parte de los diagramas). |
 | `src/main/java/orquitas/simulacion` | `EntrenamientoDemostracion` (modelo provisional sintético) y `bahia` (simulador 2D: `Bahia`, `RobotSimulado`, `SensorSimulado`, `SimuladorBahia`, `Maestro`, `Piloto`, `VisorBahia`). |
 | `arduino/Orquita/Orquita.ino` | Sketch del robot. |

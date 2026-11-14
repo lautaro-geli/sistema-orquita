@@ -165,9 +165,29 @@ La red quedaría chica, por ejemplo **14 → 16 → 15**, en lugar de 184 → 48
 
 ---
 
-## Bloque 6 — Memoria ❌ (hoy solo hay memoria fuera de la red: el DetectorAtasco)
+## Bloque 6 — Memoria ✅ (implementado el 14/11/2026, rama `hito3-bloques-2-5-6`)
 
-**Decisión del equipo (13/11/2026): la red de movimiento va a tener memoria explícita, como se describe abajo.** Pendiente de implementar; encargo en `docs/encargos/ENCARGO_bloques_2_5_6.md`.
+**Decisión del equipo (13/11/2026): la red de movimiento va a tener memoria explícita, como se describe abajo.** Encargo en `docs/encargos/ENCARGO_bloques_2_5_6.md`.
+
+Qué quedó en el código:
+
+- `MemoriaNavegacion` (una por `Navegacion` y una por `Piloto.redes`): `observar(telemetria, representacion)`, `entradas()` → 10 números, `registrarOrden(ordenFinal)`, `reiniciar()` y `describir()` para la consola.
+- `RedMovimiento.ENTRADAS = 24` (14 de la representación + 10 de la memoria); la red pasa a 24 → 20 → 15. `RedMovimiento.entradas(representacion, memoria)` es la única función que las junta.
+- `Navegacion` sigue el ciclo del encargo y muestra `[Navegación] … | [Memoria] …` en cada barrido. El `DetectorAtasco` sigue actuando por fuera de la red; su comparación de barridos (`iguales`) es la misma que alimenta la entrada `atasco`.
+- `EntrenamientoSimulado` guarda los ejemplos **por episodio y en orden**, con la orden del maestro y la orden realmente ejecutada, y `datosMovimiento` **reproduce** cada episodio con la percepción ya entrenada (`entradasDelCiclo` + `registrarOrden(ejecutada)`), con el balanceo de clases de antes. Una prueba compara esas entradas con las que arma `Navegacion` para los mismos barridos: son idénticas.
+- **Sin resultados todavía:** falta entrenar (corridas A/B/C del encargo, pendientes).
+
+Desvíos del encargo en este bloque:
+
+- **`Piloto.registrarOrden(ejecutada)`** (método nuevo, por defecto no hace nada): el piloto de redes no registra solo su orden; se le avisa la que se ejecutó. Hace falta en DAgger, donde la mitad de las veces se ejecuta la orden del maestro: sin esto la memoria del piloto no seguiría lo que pasó en la prueba. `evaluar` y `VisorBahia` lo llaman después de cada orden.
+- **En DAgger el piloto de redes decide en todos los barridos** (antes solo en los que manejaba). Si no, su memoria y su detector de atasco se salteaban ciclos. La cantidad de números al azar que se consumen no cambia.
+- **`RedMovimiento.entradasDelCiclo(telemetria, percepcion, modo, memoria)`**: además de `entradas(representacion, memoria)` que pide el encargo, junta los pasos 2 a 4 del ciclo (representación, `observar`, armar las 24). La usan `Navegacion`, `Piloto.redes` y `EntrenamientoSimulado`, para que el ciclo esté escrito una sola vez.
+- **`observar` lee el modo de la representación** (entradas 11 y 12) para detectar el paso a ESCAPE; no hizo falta otro parámetro.
+- **"Acotar a [−180, 180]"** el ángulo de la meta anterior se tomó literal: se recorta (no se da la vuelta). El rumbo sí se normaliza a una vuelta, que no cambia su seno ni su coseno.
+- `datosMovimiento` se partió en `filasMovimiento` (las filas en orden, para poder probarlas) y la mezcla.
+- En LIBERADA `Navegacion` responde DETENER sin tocar la memoria (la misión terminó).
+
+Lo que sigue es el registro de lo que se decidió antes de implementar (los números de entrada de la tabla estaban corridos en uno: en el código son 14 a 23).
 
 ### Por qué hace falta
 

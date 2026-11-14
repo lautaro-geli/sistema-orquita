@@ -6,9 +6,13 @@ import static org.junit.Assert.*;
 import java.util.Random;
 import org.junit.Test;
 import orquitas.servidor.navegacion.EtiquetaSector;
+import orquitas.servidor.navegacion.MemoriaNavegacion;
 import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.OrdenMovimiento;
+import orquitas.servidor.navegacion.RedMovimiento;
+import orquitas.servidor.navegacion.RedPercepcion;
+import orquitas.servidor.navegacion.RepresentacionIntermedia;
 
 /** Bahía simulada: geometría, sensor, capturas, choques, escenas mixtas y el maestro. */
 public class SimuladorBahiaTest {
@@ -244,6 +248,55 @@ public class SimuladorBahiaTest {
                 for (double[] c : centros) assertTrue(Math.hypot(k.x - c[0], k.y - c[1]) >= Bahia.CANICA_A_OBSTACULO_MM - 1e-6);
             }
         }
+    }
+
+    /** Percepción de prueba: todos los sectores PARED. */
+    static class PercepcionFija extends RedPercepcion {
+        @Override public synchronized double[] probabilidades(int[] telemetria) {
+            EtiquetaSector[] e = new EtiquetaSector[13];
+            java.util.Arrays.fill(e, EtiquetaSector.PARED);
+            return RedPercepcion.salidaDeseada(e);
+        }
+    }
+
+    /** Movimiento de prueba: devuelve siempre la misma orden y guarda las entradas que recibió. */
+    static class MovimientoFijo extends RedMovimiento {
+        final OrdenMovimiento orden;
+        double[] entradasRecibidas;
+        MovimientoFijo(OrdenMovimiento orden) { this.orden = orden; }
+        @Override public synchronized OrdenMovimiento decidir(double[] entradas) {
+            entradasRecibidas = entradas.clone();
+            return orden;
+        }
+        double[] memoriaRecibida() {
+            return java.util.Arrays.copyOfRange(entradasRecibidas, RepresentacionIntermedia.ENTRADAS, RedMovimiento.ENTRADAS);
+        }
+    }
+
+    @Test public void elPilotoDeRedesTieneSuMemoriaYRegistraLaOrdenQueSeEjecuto() {
+        SimuladorBahia sim = new SimuladorBahia(Bahia.vacia(), robot(0, 500, 90), new SensorSimulado(SensorSimulado.Ruido.NINGUNO), new Random(1), 3);
+        MovimientoFijo mov = new MovimientoFijo(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 250));
+        Piloto piloto = Piloto.redes(new PercepcionFija(), mov);
+        Piloto.Decision d = piloto.decidir(sim, sim.medir());
+        assertEquals(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 250), d.orden());
+        assertEquals(24, mov.entradasRecibidas.length);
+        assertArrayEquals(new MemoriaNavegacion().entradas(), mov.memoriaRecibida(), 0); // Primer ciclo: memoria vacía.
+        // Como en la recolección DAgger: se ejecuta otra orden (la del maestro) y se le avisa al piloto.
+        OrdenMovimiento ejecutada = new OrdenMovimiento(Movimiento.GIRAR_DER, 750);
+        sim.ejecutar(ejecutada);
+        piloto.registrarOrden(ejecutada);
+        piloto.decidir(sim, sim.medir());
+        double[] memoria = mov.memoriaRecibida();
+        assertEquals(1, memoria[MemoriaNavegacion.ORDEN_GIRAR_DER], 0);
+        assertEquals(0, memoria[MemoriaNavegacion.ORDEN_GIRAR_IZQ], 0);
+        assertEquals(0.5, memoria[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
+        assertEquals(0, memoria[MemoriaNavegacion.RUMBO_SENO], 1e-12); // ψ = -90°.
+        assertEquals(0.5, memoria[MemoriaNavegacion.RUMBO_COSENO], 1e-12);
+        // Cada piloto tiene su propia memoria: uno nuevo empieza de cero.
+        Piloto.redes(new PercepcionFija(), mov).decidir(sim, sim.medir());
+        assertArrayEquals(new MemoriaNavegacion().entradas(), mov.memoriaRecibida(), 0);
+        // El maestro no tiene memoria: avisarle una orden no hace nada.
+        Piloto.maestro().registrarOrden(ejecutada);
     }
 
     @Test public void laPartidaEstaAbajoALaIzquierdaMirandoALaSalida() {
