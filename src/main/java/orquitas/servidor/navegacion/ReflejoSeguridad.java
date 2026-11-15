@@ -8,7 +8,8 @@ package orquitas.servidor.navegacion;
  *   <li>AVANZAR: si el frente ve algo más cerca que lo que la red quiere avanzar, acorta el avance para
  *       frenar a MARGEN_MM; si ya está encima, retrocede. Los sectores marcados LOBITO no cuentan (hay que
  *       tocar la canica para tragarla).</li>
- *   <li>Giros: si hay algo tan cerca que las esquinas del robot lo tocarían al girar, primero se aleja:
+ *   <li>Giros: si algo que ve el sensor quedaría dentro del robot al girar sobre el eje de las ruedas
+ *       (se prueba la geometría real del giro pedido), primero se aleja:
  *       avanza un poco si el frente está libre (atrás el sensor no ve) y si no, retrocede.</li>
  *   <li>Un sector sin dato (desconocido) cuyo vecino ve algo a menos de VECINO_CERCA_MM se toma como pegado:
  *       el sensor da -1 por debajo de 40 mm.</li>
@@ -26,11 +27,10 @@ public final class ReflejoSeguridad {
     static final double AVANCE_PARA_GIRAR_MM = 100;
     /** Un desconocido con un vecino más cerca que esto se toma como pegado. */
     static final double VECINO_CERCA_MM = 200;
-    /**
-     * Distancia mínima (desde el sensor) por sector para poder girar en el lugar sin que las esquinas
-     * toquen: más en los costados que en el frente, porque el sensor está adelante del centro de giro.
-     */
-    static final double[] LIBRE_PARA_GIRAR_MM = {135, 135, 125, 110, 95, 85, 80, 85, 95, 110, 125, 135, 135};
+    /** Margen (mm) alrededor del rectángulo del robot al comprobar si un giro entra. */
+    static final double MARGEN_GIRO_MM = 15;
+    /** El giro se comprueba un 10 % más largo (ruido de la velocidad de giro). */
+    static final double GIRO_DE_MAS = 1.10;
 
     private ReflejoSeguridad() { }
 
@@ -38,11 +38,15 @@ public final class ReflejoSeguridad {
         int[] corregida = PreprocesadorTelemetria.corregir(telemetria);
         Movimiento m = orden.movimiento();
         if (m == Movimiento.GIRAR_IZQ || m == Movimiento.GIRAR_DER) {
+            double grados = orden.milisegundos() * CalibracionRobot.GRADOS_POR_SEGUNDO / 1000.0 * GIRO_DE_MAS;
+            double signo = m == Movimiento.GIRAR_IZQ ? 1 : -1;
             for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
                 if (etiquetas != null && etiquetas[s] == EtiquetaSector.LOBITO) continue;
-                if (distancia(corregida, s) < LIBRE_PARA_GIRAR_MM[s]) {
+                if (elGiroTocaria(distancia(corregida, s), s, signo * grados)) {
                     // No entra el giro: si adelante hay lugar, avanza un poco (lo ve); atrás no ve nada.
-                    if (frenteLibre(corregida, etiquetas) - MARGEN_MM > AVANCE_PARA_GIRAR_MM)
+                    // Acá cuenta todo lo que está en el camino del ancho del robot, también una canica:
+                    // detrás de ella puede haber una pared que el sensor no separa.
+                    if (corredorLibre(corregida) - MARGEN_MM > AVANCE_PARA_GIRAR_MM)
                         return new OrdenMovimiento(Movimiento.AVANZAR, CalibracionRobot.msParaAvanzar(AVANCE_PARA_GIRAR_MM));
                     return retroceder();
                 }
@@ -65,6 +69,44 @@ public final class ReflejoSeguridad {
         for (int s = PRIMER_FRENTE; s <= ULTIMO_FRENTE; s++) {
             if (etiquetas != null && etiquetas[s] == EtiquetaSector.LOBITO) continue;
             libre = Math.min(libre, distancia(corregida, s) - CalibracionRobot.SENSOR_AL_FRENTE_MM);
+        }
+        return libre;
+    }
+
+    /**
+     * True si al girar en el lugar (sobre el eje de las ruedas) el rectángulo del robot tocaría lo que el
+     * sector s ve a d mm del sensor. Se prueba cada 2° hasta el ángulo pedido (positivo = izquierda).
+     * Detrás del robot el sensor no ve: eso no se puede comprobar.
+     */
+    static boolean elGiroTocaria(double d, int s, double grados) {
+        if (d == Double.MAX_VALUE) return false;
+        double theta = Math.toRadians((s - 6) * 15.0);
+        double eje = CalibracionRobot.LARGO_MM - CalibracionRobot.EJE_AL_FRENTE_MM;
+        double sensor = CalibracionRobot.EJE_AL_FRENTE_MM - CalibracionRobot.SENSOR_AL_FRENTE_MM;
+        double px = sensor + d * Math.cos(theta), py = d * Math.sin(theta);   // Desde el eje: x adelante, y izquierda.
+        int pasos = Math.max(1, (int) Math.ceil(Math.abs(grados) / 2));
+        for (int k = 0; k <= pasos; k++) {
+            double fi = Math.toRadians(grados * k / pasos);
+            double x = px * Math.cos(fi) + py * Math.sin(fi), y = -px * Math.sin(fi) + py * Math.cos(fi);
+            if (x <= CalibracionRobot.EJE_AL_FRENTE_MM + MARGEN_GIRO_MM && x >= -eje - MARGEN_GIRO_MM
+                    && Math.abs(y) <= CalibracionRobot.ANCHO_MM / 2 + MARGEN_GIRO_MM) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Distancia libre delante del frente en el corredor del ancho del robot (más 20 mm por lado), con
+     * todos los sectores que caen en ese corredor y sin mirar las etiquetas; MAX_VALUE si no se sabe.
+     */
+    static double corredorLibre(int[] corregida) {
+        double libre = Double.MAX_VALUE;
+        for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
+            double d = distancia(corregida, s);
+            if (d == Double.MAX_VALUE) continue;
+            double theta = Math.toRadians((s - 6) * 15.0);
+            double lateral = d * Math.sin(theta), adelante = d * Math.cos(theta) - CalibracionRobot.SENSOR_AL_FRENTE_MM;
+            if (Math.abs(lateral) <= CalibracionRobot.ANCHO_MM / 2 + 20 && adelante > -CalibracionRobot.SENSOR_AL_FRENTE_MM)
+                libre = Math.min(libre, adelante);
         }
         return libre;
     }

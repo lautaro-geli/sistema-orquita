@@ -94,10 +94,10 @@ public class NavegacionRedesTest {
     }
 
     @Test public void reflejoAcortaElAvanceSiElFrenteEstaCerca() {
-        int[] t = con(todo(1200), 6, 200); // Pared a 200 mm del sensor: 170 mm del frente.
+        int[] t = con(todo(1200), 6, 200); // Pared a 200 mm del sensor: 160 mm del frente.
         OrdenMovimiento o = ReflejoSeguridad.ajustar(new OrdenMovimiento(Movimiento.AVANZAR, 1500), t, null);
         assertEquals(Movimiento.AVANZAR, o.movimiento());
-        assertEquals(CalibracionRobot.msParaAvanzar(170 - ReflejoSeguridad.MARGEN_MM), o.milisegundos());
+        assertEquals(CalibracionRobot.msParaAvanzar(200 - CalibracionRobot.SENSOR_AL_FRENTE_MM - ReflejoSeguridad.MARGEN_MM), o.milisegundos());
     }
 
     @Test public void reflejoNoFrenaAnteUnLobito() {
