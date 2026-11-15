@@ -70,6 +70,31 @@ Consecuencias cuando se cambie:
 - Hoy: 200 × 150 mm, 250 mm/s, 120 °/s, boca de 60 mm, sensor 30 mm detrás del frente, 10 % de ruido de velocidad, todo estimado.
 - Hay que tener: las medidas reales (bloque 1, calibración) y, si se puede, el error real de los giros y avances (cuánto varía de una vez a otra) para usarlo como ruido.
 
+Medido por el equipo (15/11/2026):
+
+- **Avance: 10 cm en 0,5 s → 200 mm/s** (hoy el simulador usa 250).
+- **Giro en el lugar: 360° en ~1,7 s → ~212 °/s** (hoy usa 120). Gira sobre su propio eje (una rueda adelante y la otra atrás).
+- **Eje de las ruedas (centro de giro): 8 cm detrás de la boca, 12 cm delante de la cola, centrado (7,5 cm a cada lado).** El robot sigue midiendo 20 × 15 cm, pero gira 2 cm por delante del centro del rectángulo (hoy el simulador gira sobre el centro). Al girar, la cola barre un círculo de radio √(120² + 75²) ≈ 141 mm (Ø ≈ 28 cm, casi el ancho de la salida); la trompa, uno de ≈ 110 mm.
+- **Boca: un embudo que va del frente hasta el eje, donde una puerta giratoria atrapa la canica.** La canica cuenta como capturada cuando llega a la puerta (8 cm adentro), no cuando toca el frente (hoy: boca de 60 mm en el frente).
+
+Cambios en el simulador cuando se implemente (todavía no):
+
+- `CalibracionRobot`: `MM_POR_SEGUNDO = 200`, `GRADOS_POR_SEGUNDO = 212`, nueva constante `EJE_AL_FRENTE_MM = 80`.
+- `RobotSimulado`: la pose pasa a ser la del eje; los giros rotan alrededor del eje; el rectángulo va de +80 a −120 mm.
+- `RobotSimulado.interactuarConCanicas`: la zona del embudo no empuja la canica; la captura ocurre al llegar al eje. Una canica a medio camino en el embudo puede escaparse si el robot retrocede.
+- `Maestro` (cuánto avanzar para capturar, chequeo de giro con el nuevo círculo) y la partida (`Bahia.PARTIDA_*`).
+- Volver a entrenar A/B/C con la calibración nueva (el script `herramientas_pc/orquita_corridas_abc.ps1` toma los commits de arriba del archivo).
+
+Falta medir:
+
+- [ ] Ancho del embudo en el frente (y si es recto o curvo hasta la puerta).
+- [ ] Si la puerta retiene las 3 canicas y si una canica puede salirse del embudo al retroceder o girar.
+- [ ] Dónde está el sensor respecto del eje (cm hacia adelante y altura del suelo).
+- [ ] Repetibilidad: repetir 3–5 veces el avance de 0,5 s y la vuelta completa (con pilas cargadas y gastadas) para el ruido.
+- [ ] La orden más corta que mueve de verdad (por ejemplo 100 ms) y si arranca/frena en seco.
+- [ ] Desvío lateral al avanzar 1 m en línea recta.
+- [ ] Partida: si los 15–20 cm son al costado del robot o a su centro.
+
 ---
 
 ## Simulación repartida entre núcleos ✅ (implementado el 14/11/2026, rama `hito3-bloques-2-5-6`)
