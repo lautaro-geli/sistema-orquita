@@ -76,11 +76,19 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  * Guarda percepcion.nnet, movimiento.nnet y un reporte en docs/evidencias/.
  */
 public class EntrenamientoSimulado {
-    static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]";
-    static final long SEMILLA = 20261113L;
+    static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]"
+            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada]";
+    /** Semilla de la recolección, de los pesos iniciales y de las mezclas (--semilla=N la cambia; la evaluación no). */
+    static long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
     static final int OCULTAS_PERCEPCION = 24;
     static final int OCULTAS_MOVIMIENTO = 20;
+    /** Capa oculta de la red de movimiento cuando recibe la telemetría cruda (184 entradas o más). */
+    static final int OCULTAS_MOVIMIENTO_CRUDA = 48;
+    /** Variante de entradas de la red de movimiento (--entradas=...). */
+    static RedMovimiento.Variante VARIANTE = RedMovimiento.Variante.REPRESENTACION_MEMORIA;
+    /** --percepcion-reforzada: el doble de épocas para la percepción y más peso a OBSTACULO y SALIDA. */
+    static boolean PERCEPCION_REFORZADA = false;
     static final double PROBABILIDAD_ORDEN_AL_AZAR = 0.15;
     static final int CANICAS = 3, UMBRAL = 3;
     /** Tope de repeticiones de una clase rara de meta al balancear la red de movimiento. */
@@ -114,6 +122,7 @@ public class EntrenamientoSimulado {
         try {
             posicionales = posicionales(args);
             hilos = hilos(args);
+            opciones(args);
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
             System.err.println(USO);
@@ -137,8 +146,12 @@ public class EntrenamientoSimulado {
 
         MultiLayerPerceptron percepcion = nuevaRed(RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED);
         // La percepción tiene ~8 filas por barrido (una por sector, balanceadas): necesita menos épocas.
-        entrenar(percepcion, datosPercepcion(datos), Math.max(5, epocas / 3), "percepción");
-        MultiLayerPerceptron movimiento = nuevaRed(RedMovimiento.ENTRADAS, OCULTAS_MOVIMIENTO, RedMovimiento.SALIDAS);
+        int factorPercepcion = PERCEPCION_REFORZADA ? 2 : 1;
+        entrenar(percepcion, datosPercepcion(datos), factorPercepcion * Math.max(5, epocas / 3), "percepción");
+        int ocultas = ocultasMovimiento();
+        log("Red de movimiento: variante " + VARIANTE + " (" + VARIANTE.entradas + " entradas, " + ocultas + " ocultas)"
+                + "; semilla " + SEMILLA + (PERCEPCION_REFORZADA ? "; percepción reforzada" : ""));
+        MultiLayerPerceptron movimiento = nuevaRed(VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS);
         entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), epocas, "movimiento");
 
         for (int ronda = 1; ronda <= rondas; ronda++) {
@@ -146,7 +159,7 @@ public class EntrenamientoSimulado {
                     SEMILLA + 10_000L * ronda, hilos);
             datos.addAll(nuevos);
             log("DAgger ronda " + ronda + ": +" + contar(nuevos) + " ejemplos (total " + contar(datos) + ")");
-            entrenar(percepcion, datosPercepcion(datos), Math.max(3, epocas / 6), "percepción");
+            entrenar(percepcion, datosPercepcion(datos), factorPercepcion * Math.max(3, epocas / 6), "percepción");
             entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), Math.max(10, epocas / 2), "movimiento");
         }
 
@@ -173,9 +186,11 @@ public class EntrenamientoSimulado {
                        cal.mmPorSegundo(), cal.gradosPorSegundo(), cal.largoMm(), cal.anchoMm()))
                .append(String.format(Locale.ROOT, "- Redes: percepción por ventana %d-%d-%d (x 13 sectores), movimiento %d-%d-%d (sigmoide, MomentumBackpropagation).%n",
                        RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED,
-                       RedMovimiento.ENTRADAS, OCULTAS_MOVIMIENTO, RedMovimiento.SALIDAS))
-               .append(String.format(Locale.ROOT, "- Entradas de la red de movimiento: %d de la representación intermedia y %d de la memoria.%n%n",
-                       RepresentacionIntermedia.ENTRADAS, MemoriaNavegacion.ENTRADAS))
+                       VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS))
+               .append(String.format(Locale.ROOT, "- Entradas de la red de movimiento: variante %s (%d).%n",
+                       VARIANTE, VARIANTE.entradas))
+               .append(String.format(Locale.ROOT, "- Semilla de recolección: %d; percepción reforzada: %s.%n%n",
+                       SEMILLA, PERCEPCION_REFORZADA ? "sí" : "no"))
                .append("## Pruebas completas (").append(pruebas).append(" bahías nuevas, 7 min, 3 Lobitos)\n\n")
                .append("| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |\n|---|---|---|---|---|---|\n")
                .append(maestro.fila("Maestro (geometría real)")).append('\n')
@@ -219,11 +234,26 @@ public class EntrenamientoSimulado {
     }
 
     /** Los argumentos que no son opciones (episodios, épocas, carpeta y rondas), en orden. */
+    /** Opciones de los experimentos: --entradas=VARIANTE, --semilla=N, --percepcion-reforzada. */
+    static void opciones(String[] args) {
+        for (String a : args) {
+            if (a.startsWith("--entradas=")) VARIANTE = RedMovimiento.Variante.valueOf(a.substring(11).toUpperCase(Locale.ROOT));
+            else if (a.startsWith("--semilla=")) SEMILLA = Long.parseLong(a.substring(10));
+            else if (a.equals("--percepcion-reforzada")) PERCEPCION_REFORZADA = true;
+        }
+    }
+
+    /** 48 ocultas si la red recibe la telemetría cruda (como la corrida A), 20 si no. */
+    static int ocultasMovimiento() {
+        return VARIANTE.entradas >= RedMovimiento.CRUDAS ? OCULTAS_MOVIMIENTO_CRUDA : OCULTAS_MOVIMIENTO;
+    }
+
     static List<String> posicionales(String[] args) {
         List<String> posicionales = new ArrayList<>();
         for (String a : args) {
             if (!a.startsWith("--")) posicionales.add(a);
-            else if (!a.startsWith("--hilos=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
+            else if (!a.startsWith("--hilos=") && !a.startsWith("--entradas=") && !a.startsWith("--semilla=")
+                    && !a.equals("--percepcion-reforzada")) throw new IllegalArgumentException("Argumento desconocido: " + a);
         }
         return posicionales;
     }
@@ -354,6 +384,7 @@ public class EntrenamientoSimulado {
                 for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
                     EtiquetaSector et = e.etiquetas()[s];
                     int veces = et == EtiquetaSector.LOBITO ? 4 : et == EtiquetaSector.PARED ? (azar.nextInt(2) == 0 ? 1 : 0) : 1;
+                    if (PERCEPCION_REFORZADA && (et == EtiquetaSector.OBSTACULO || et == EtiquetaSector.SALIDA)) veces = 3;
                     if (veces == 0) continue;
                     DataSetRow fila = new DataSetRow(PreprocesadorTelemetria.entradasVentana(entradas, s), RedPercepcion.salidaDeseada(et));
                     for (int i = 0; i < veces; i++) filas.add(fila);
@@ -373,7 +404,7 @@ public class EntrenamientoSimulado {
      * giro en particular es raro.
      */
     static DataSet datosMovimiento(List<List<Ejemplo>> episodios, RedPercepcion percepcion) {
-        return mezclado(RedMovimiento.ENTRADAS, RedMovimiento.SALIDAS, filasMovimiento(episodios, percepcion));
+        return mezclado(VARIANTE.entradas, RedMovimiento.SALIDAS, filasMovimiento(episodios, percepcion));
     }
 
     /** Las filas de datosMovimiento, en el orden de los episodios (sin mezclar). */
@@ -388,7 +419,7 @@ public class EntrenamientoSimulado {
             MemoriaNavegacion memoria = new MemoriaNavegacion(); // Una por prueba, como en el Servidor.
             for (Ejemplo e : episodio) {
                 double[] p = percepcion.probabilidades(e.telemetria());
-                double[] entradas = RedMovimiento.entradasDelCiclo(e.telemetria(), p, e.modo(), memoria);
+                double[] entradas = RedMovimiento.entradasDelCicloDe(VARIANTE, e.telemetria(), p, e.modo(), memoria);
                 memoria.registrarOrden(e.ejecutada());
                 DataSetRow fila = new DataSetRow(entradas, RedMovimiento.salidaDeseada(e.orden()));
                 int c = cuenta[MetaMovimiento.desde(e.orden()).clase()];
@@ -560,7 +591,8 @@ public class EntrenamientoSimulado {
             SensorSimulado.Barrido b = sim.medir();
             OrdenMovimiento maestro = Maestro.decidir(sim, b);
             double[] p = redes.percepcion().probabilidades(b.telemetria());
-            OrdenMovimiento red = redes.movimiento().decidir(RedMovimiento.entradasDelCiclo(b.telemetria(), p, sim.modo(), memoria));
+            OrdenMovimiento red = redes.movimiento().decidir(
+                    RedMovimiento.entradasDelCicloDe(redes.movimiento().variante(), b.telemetria(), p, sim.modo(), memoria));
             if (red.movimiento() == maestro.movimiento()) iguales++;
             total++;
             sim.ejecutar(maestro);

@@ -43,7 +43,7 @@ public interface Piloto {
                 if (sim.modo() == ModoOperativo.LIBERADA) return new Decision(new OrdenMovimiento(Movimiento.DETENER, 0), null);
                 double[] probabilidades = percepcion.probabilidades(b.telemetria());
                 EtiquetaSector[] etiquetas = RedPercepcion.etiquetas(probabilidades);
-                double[] entradas = RedMovimiento.entradasDelCiclo(b.telemetria(), probabilidades, sim.modo(), memoria);
+                double[] entradas = RedMovimiento.entradasDelCicloDe(movimiento.variante(), b.telemetria(), probabilidades, sim.modo(), memoria);
                 OrdenMovimiento orden = movimiento.decidir(entradas);
                 OrdenMovimiento segura = ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas);
                 return new Decision(atasco.revisar(b.telemetria(), segura), etiquetas);

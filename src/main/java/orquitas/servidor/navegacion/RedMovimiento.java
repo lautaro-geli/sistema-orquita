@@ -14,6 +14,65 @@ import org.neuroph.core.NeuralNetwork;
  */
 public class RedMovimiento {
     public static final int ENTRADAS = RepresentacionIntermedia.ENTRADAS + MemoriaNavegacion.ENTRADAS;
+
+    /** Memoria sin la orden anterior (ni cuánto duró): atasco, hace cuánto y dónde se vio la meta, rumbo. */
+    public static final int MEMORIA_SIN_ORDEN = MemoriaNavegacion.ENTRADAS - MemoriaNavegacion.ATASCO;
+    /** Telemetría preprocesada, probabilidades de la percepción y modo (BUSQUEDA, ESCAPE) como 0/1. */
+    public static final int CRUDAS = PreprocesadorTelemetria.ENTRADAS + RedPercepcion.SALIDAS + 2;
+
+    /**
+     * Qué recibe la red de movimiento. La variante sale de la cantidad de entradas del modelo, así el
+     * Servidor usa la misma que se usó al entrenar. REPRESENTACION_MEMORIA (24) es la normal; las otras
+     * son para comparar en la simulación.
+     */
+    public enum Variante {
+        /** 14 de la representación intermedia + 10 de la memoria. */
+        REPRESENTACION_MEMORIA(ENTRADAS),
+        /** Solo la representación intermedia (14). */
+        REPRESENTACION(RepresentacionIntermedia.ENTRADAS),
+        /** Representación (14) + memoria sin la orden anterior (5). */
+        REPRESENTACION_MEMORIA_SIN_ORDEN(RepresentacionIntermedia.ENTRADAS + MEMORIA_SIN_ORDEN),
+        /** Telemetría, percepción y modo (184), como antes del bloque 5. */
+        CRUDA(CRUDAS),
+        /** Cruda (184) + memoria sin la orden anterior (5). */
+        CRUDA_MEMORIA_SIN_ORDEN(CRUDAS + MEMORIA_SIN_ORDEN),
+        /** Cruda (184) + representación intermedia (14). */
+        CRUDA_REPRESENTACION(CRUDAS + RepresentacionIntermedia.ENTRADAS);
+
+        public final int entradas;
+
+        Variante(int entradas) { this.entradas = entradas; }
+
+        public static Variante porEntradas(int n) {
+            for (Variante v : values()) if (v.entradas == n) return v;
+            throw new IllegalArgumentException("Ninguna variante de la red de movimiento tiene " + n + " entradas");
+        }
+
+        /** Arma las entradas de esta variante a partir de lo que ya se calculó en el ciclo. */
+        double[] armar(int[] telemetria, double[] percepcion, ModoOperativo modo, double[] representacion, double[] memoria) {
+            double[] e = new double[entradas];
+            int i = 0;
+            if (this == CRUDA || this == CRUDA_MEMORIA_SIN_ORDEN || this == CRUDA_REPRESENTACION) {
+                double[] tel = PreprocesadorTelemetria.entradas(telemetria);
+                System.arraycopy(tel, 0, e, i, tel.length); i += tel.length;
+                System.arraycopy(percepcion, 0, e, i, percepcion.length); i += percepcion.length;
+                e[i++] = modo == ModoOperativo.BUSQUEDA ? 1 : 0;
+                e[i++] = modo == ModoOperativo.ESCAPE ? 1 : 0;
+            }
+            if (this != CRUDA && this != CRUDA_MEMORIA_SIN_ORDEN) {
+                System.arraycopy(representacion, 0, e, i, representacion.length); i += representacion.length;
+            }
+            if (this == REPRESENTACION_MEMORIA) {
+                System.arraycopy(memoria, 0, e, i, memoria.length); i += memoria.length;
+            } else if (this == REPRESENTACION_MEMORIA_SIN_ORDEN || this == CRUDA_MEMORIA_SIN_ORDEN) {
+                System.arraycopy(memoria, MemoriaNavegacion.ATASCO, e, i, MEMORIA_SIN_ORDEN); i += MEMORIA_SIN_ORDEN;
+            }
+            if (i != entradas) throw new IllegalStateException("Variante " + this + ": armó " + i + " de " + entradas);
+            return e;
+        }
+    }
+
+    private final Variante variante;
     public static final int CLASES = MetaMovimiento.CLASES;
     public static final int SALIDAS = CLASES + 1;
     private final NeuralNetwork<?> red;
@@ -27,15 +86,29 @@ public class RedMovimiento {
     }
 
     private RedMovimiento(NeuralNetwork<?> red, String origen) {
-        if (red.getInputsCount() != ENTRADAS || red.getOutputsCount() != SALIDAS)
+        Variante v = null;
+        for (Variante x : Variante.values()) if (x.entradas == red.getInputsCount()) v = x;
+        if (v == null || red.getOutputsCount() != SALIDAS)
             throw new IllegalArgumentException("Modelo de movimiento incompatible (" + origen + "): se esperan " + ENTRADAS
-                    + " entradas y " + SALIDAS + " salidas, tiene " + red.getInputsCount() + " y " + red.getOutputsCount());
+                    + " entradas (u otra variante) y " + SALIDAS + " salidas, tiene " + red.getInputsCount() + " y " + red.getOutputsCount());
         this.red = red;
+        this.variante = v;
     }
 
-    /** Solo para subclases de prueba. */
+    /** Solo para subclases de prueba (variante normal, 24 entradas). */
     protected RedMovimiento() {
         red = null;
+        variante = Variante.REPRESENTACION_MEMORIA;
+    }
+
+    /** Variante de entradas con la que se entrenó este modelo. */
+    public Variante variante() { return variante; }
+
+    /** Pasos 2 a 4 del ciclo de la memoria para la variante v (la memoria observa siempre, se use o no). */
+    public static double[] entradasDelCicloDe(Variante v, int[] telemetria, double[] percepcion, ModoOperativo modo, MemoriaNavegacion memoria) {
+        double[] representacion = RepresentacionIntermedia.calcular(telemetria, percepcion, modo);
+        memoria.observar(telemetria, representacion);
+        return v.armar(telemetria, percepcion, modo, representacion, memoria.entradas());
     }
 
     /**
@@ -76,8 +149,8 @@ public class RedMovimiento {
 
     /** Decide la orden a partir de las 24 entradas ya armadas con entradas() o entradasDelCiclo(). */
     public synchronized OrdenMovimiento decidir(double[] entradas) {
-        if (entradas == null || entradas.length != ENTRADAS)
-            throw new IllegalArgumentException("Se esperan " + ENTRADAS + " entradas");
+        if (entradas == null || entradas.length != variante.entradas)
+            throw new IllegalArgumentException("Se esperan " + variante.entradas + " entradas");
         red.setInput(entradas);
         red.calculate();
         return interpretar(red.getOutput());

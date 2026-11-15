@@ -164,14 +164,44 @@ public class NavegacionRedesTest {
         assertEquals(Movimiento.DETENER, n.obtenerMovimientoDecidido()); // Pasó a LIBERADA.
     }
 
+    @Test public void cadaVarianteArmaSusEntradasYSeReconocePorLaCantidad() {
+        int[] t = con(todo(900), 6, 300);
+        double[] p = new double[RedPercepcion.SALIDAS];
+        for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) p[s * RedPercepcion.ETIQUETAS + 1] = 1; // Todo PARED.
+        int[] esperadas = {24, 14, 19, 184, 189, 198};
+        RedMovimiento.Variante[] variantes = RedMovimiento.Variante.values();
+        for (int i = 0; i < variantes.length; i++) {
+            RedMovimiento.Variante v = variantes[i];
+            assertEquals(v.toString(), esperadas[i], v.entradas);
+            assertEquals(v, RedMovimiento.Variante.porEntradas(v.entradas));
+            MemoriaNavegacion memoria = new MemoriaNavegacion();
+            RedMovimiento.entradasDelCicloDe(v, t, p, ModoOperativo.BUSQUEDA, memoria);
+            memoria.registrarOrden(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 300));
+            double[] e = RedMovimiento.entradasDelCicloDe(v, t, p, ModoOperativo.BUSQUEDA, memoria);
+            assertEquals(v.entradas, e.length);
+            assertEquals(v, new RedMovimiento(new MultiLayerPerceptron(TransferFunctionType.SIGMOID, v.entradas, 4, RedMovimiento.SALIDAS)).variante());
+        }
+        // Sin orden: las 5 últimas son atasco, ciclos desde la meta, ángulo de la meta y rumbo (sin la orden anterior).
+        MemoriaNavegacion memoria = new MemoriaNavegacion();
+        memoria.registrarOrden(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 300));
+        double[] e = RedMovimiento.entradasDelCicloDe(RedMovimiento.Variante.REPRESENTACION_MEMORIA_SIN_ORDEN, t, p, ModoOperativo.BUSQUEDA, memoria);
+        assertArrayEquals(java.util.Arrays.copyOfRange(memoria.entradas(), MemoriaNavegacion.ATASCO, MemoriaNavegacion.ENTRADAS),
+                java.util.Arrays.copyOfRange(e, RepresentacionIntermedia.ENTRADAS, e.length), 0);
+        // Cruda: empieza con la telemetría preprocesada.
+        double[] cruda = RedMovimiento.entradasDelCicloDe(RedMovimiento.Variante.CRUDA, t, p, ModoOperativo.ESCAPE, new MemoriaNavegacion());
+        assertArrayEquals(PreprocesadorTelemetria.entradas(t), java.util.Arrays.copyOf(cruda, PreprocesadorTelemetria.ENTRADAS), 0);
+        assertEquals(0, cruda[RedMovimiento.CRUDAS - 2], 0);
+        assertEquals(1, cruda[RedMovimiento.CRUDAS - 1], 0);
+    }
+
     @Test public void redesRechazanModelosDeOtraDimension() throws Exception {
         Path dir = Files.createTempDirectory("orquita-redes-");
         Path p = dir.resolve("p.nnet");
         new MultiLayerPerceptron(TransferFunctionType.SIGMOID, 39, 4, 4).save(p.toString());
         try { new RedPercepcion(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
         try { new RedMovimiento(p); fail("aceptó 39 entradas"); } catch (IllegalArgumentException esperado) { }
-        // Los formatos anteriores de la red de movimiento (184 entradas, o 14 sin memoria) ya no son compatibles.
-        for (int entradas : new int[] {184, 14, 23, 25}) {
+        // Solo se aceptan las cantidades de entradas de alguna variante (24, 14, 19, 184, 189, 198).
+        for (int entradas : new int[] {23, 25, 100, 185}) {
             Path vieja = dir.resolve("vieja" + entradas + ".nnet");
             new MultiLayerPerceptron(TransferFunctionType.SIGMOID, entradas, 4, RedMovimiento.SALIDAS).save(vieja.toString());
             try { new RedMovimiento(vieja); fail("aceptó " + entradas + " entradas"); } catch (IllegalArgumentException esperado) { }

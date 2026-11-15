@@ -90,8 +90,9 @@ public class Navegacion {
         }
         if (modoOperativo == ModoOperativo.LIBERADA) return new OrdenMovimiento(Movimiento.DETENER, 0);
         // Ciclo de la memoria (ver MemoriaNavegacion): representación, observar y las 24 entradas...
-        double[] entradas = RedMovimiento.entradasDelCiclo(telemetria, percepcion, modoOperativo, memoria);
-        System.out.println("[Navegación] " + RepresentacionIntermedia.describir(entradas, modoOperativo)
+        double[] entradas = RedMovimiento.entradasDelCicloDe(redMovimiento.variante(), telemetria, percepcion, modoOperativo, memoria);
+        System.out.println("[Navegación] " + RepresentacionIntermedia.describir(
+                RepresentacionIntermedia.calcular(telemetria, percepcion, modoOperativo), modoOperativo)
                 + " | [Memoria] " + memoria.describir());
         // ...red de movimiento, reflejo y atasco...
         OrdenMovimiento deLaRed = redMovimiento.decidir(entradas);
