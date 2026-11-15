@@ -1,0 +1,41 @@
+[Entrenamiento] Ejemplos del maestro: 10130
+[Entrenamiento] percepción: 26 épocas, error 0.16746, 0.9 min
+[Entrenamiento] movimiento: 80 épocas, error 0.18516, 10.0 min
+[Entrenamiento] DAgger ronda 1: +5285 ejemplos (total 15415)
+[Entrenamiento] percepción: 13 épocas, error 0.16113, 0.7 min
+[Entrenamiento] movimiento: 40 épocas, error 0.22953, 7.5 min
+[Entrenamiento] DAgger ronda 2: +5620 ejemplos (total 21035)
+[Entrenamiento] percepción: 13 épocas, error 0.15778, 0.9 min
+[Entrenamiento] movimiento: 40 épocas, error 0.25536, 10.3 min
+# Entrenamiento con la Bahía de Caza simulada (2026-11-15)
+
+Generado por `orquitas.herramientas.EntrenamientoSimulado`. Datos SINTÉTICOS del simulador 2D: sirven para entrenar y comparar estrategias, no reemplazan la prueba en la pista real.
+
+- Episodios del maestro: 300; rondas DAgger: 2; épocas: 80; ejemplos: 21035; tiempo: 30.9 min.
+- Calibración usada: 200 mm/s, 212 °/s, robot 200 x 150 mm [A CONFIRMAR con el robot real].
+- Redes: percepción por ventana 46-24-5 (x 13 sectores), movimiento 184-48-15 (sigmoide, MomentumBackpropagation).
+
+## Pruebas completas (100 bahías nuevas, 7 min, 3 Lobitos)
+
+| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |
+|---|---|---|---|---|---|
+| Maestro (geometría real) | 87/100 (87 %) | 2.88 | 0.01 | 75.3 | 217 |
+| Redes (solo telemetría) | 17/100 (17 %) | 2.35 | 1.02 | 29.5 | 399 |
+
+Acuerdo de dirección red/maestro en barridos nuevos: 69.2 %.
+
+## Percepción por sector (barridos nuevos)
+
+Filas: etiqueta real. Columnas: etiqueta de la red.
+
+| real \ red | LIBRE | PARED | OBSTACULO | LOBITO | SALIDA | acierto |
+|---|---|---|---|---|---|---|
+| LIBRE | 158 | 1 | 0 | 2 | 42 | 77.8 % |
+| PARED | 27 | 10022 | 204 | 145 | 468 | 92.2 % |
+| OBSTACULO | 3 | 391 | 959 | 133 | 61 | 62.0 % |
+| LOBITO | 12 | 35 | 63 | 304 | 47 | 65.9 % |
+| SALIDA | 46 | 386 | 131 | 33 | 1134 | 65.5 % |
+
+Acierto total por sector: 84.9 %.
+
+[Entrenamiento] Modelos: modelos\percepcion.nnet, modelos\movimiento.nnet. Reporte: docs\evidencias\entrenamiento_simulado_20261115.md
