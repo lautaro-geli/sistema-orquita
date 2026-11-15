@@ -107,8 +107,13 @@ public final class Bahia {
     static final double OBSTACULO_A_PARTIDA_MM = 340, CANICA_A_PARTIDA_MM = 280;
     /** Zona libre delante del estrecho: sin obstáculos ni canicas cerca de estos puntos. */
     static final double OBSTACULO_A_ESTRECHO_MM = 300, CANICA_A_ESTRECHO_MM = 200;
-    /** Distancia mínima de una canica a las paredes, al centro de un obstáculo y a otra canica. */
-    static final double MARGEN_CANICA_MM = 70, CANICA_A_OBSTACULO_MM = 130, SEPARACION_CANICAS_MM = 150;
+    /**
+     * Distancia mínima de una canica a las paredes, al centro de un obstáculo y a otra canica. El equipo
+     * (15/11/2026): las canicas quedan a unos 15 cm de paredes y obstáculos, como para que el robot no
+     * choque al tragarlas [A CONFIRMAR con el reglamento]. Al obstáculo: 150 mm desde cualquier punto del
+     * cuadrado de 90 mm (medio diagonal ≈ 64 mm) → 215 mm desde el centro.
+     */
+    static final double MARGEN_CANICA_MM = 150, CANICA_A_OBSTACULO_MM = 215, SEPARACION_CANICAS_MM = 150;
 
     /**
      * Bahía al azar: obstáculos girados al azar, separados entre sí, de la partida y del estrecho para

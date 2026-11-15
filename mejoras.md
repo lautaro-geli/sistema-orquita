@@ -93,7 +93,7 @@ Resultado del maestro (100 bahías, semillas 900000+, local): **54 % misiones co
 
 **Hallazgo:** casi todas las canicas que el maestro no consigue están a **70–110 mm de una pared u obstáculo**. Con el embudo de 8 cm de profundidad, para que la canica llegue a la puerta el frente tiene que pasarla 8 cm: si está a menos de ~8 cm de una pared, el robot choca antes de tragarla (y de costado tampoco entra: medio ancho = 7,5 cm). En el simulador hoy las canicas se ponen a ≥ 70 mm de las paredes (`Bahia.MARGEN_CANICA_MM`).
 
-- [ ] Preguntar/medir: ¿en la competencia una canica puede quedar pegada a la pared o a un obstáculo? ¿Al empujarla con el embudo contra la pared rueda y entra igual?
+- [x] Respuesta del equipo (15/11/2026): las canicas **no quedan pegadas**; están a unos **15 cm** de paredes y obstáculos (no confirmado, pero a una distancia en la que el robot no choca). Si la canica entra a la puerta, está bien. Implementado: `MARGEN_CANICA_MM = 150` y `CANICA_A_OBSTACULO_MM = 215` (150 mm desde el borde del obstáculo). Maestro (100 bahías): **87 % misiones completas, 2,88 capturas, 0,01 choques**.
 
 Medidas pedidas:
 
