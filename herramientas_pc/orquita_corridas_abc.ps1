@@ -4,16 +4,18 @@
 #   C = + memoria (24 entradas), simulación repartida en hilos
 # Cada corrida usa su propia copia del repo (git worktree) en Documents\orquita-corridas\A, B y C.
 # El núcleo 0 queda libre para Windows: los tres procesos corren en los núcleos 1..N-1 y con prioridad baja.
+# Hilos: A y B simulan en 1 hilo (esas versiones no reparten) y C en 3 → 5 núcleos ocupados mientras simulan.
 # Resultados (reportes, modelos, registros e imágenes) en Documents\orquita-corridas\resultados_<fecha>.
 $ErrorActionPreference = 'Continue'
 
 # ---- Configuración (se cambia acá si recalibramos y hay que repetir) ----
-# Las tres con la calibración medida el 15/11/2026 (200 mm/s, 212 °/s, giro sobre el eje, embudo).
+# Las tres con la calibración medida el 15/11/2026 (200 mm/s, 212 °/s, giro sobre el eje, embudo)
+# y las canicas a 15 cm de paredes y obstáculos.
 # A y B son las ramas corrida-A y corrida-B (bloque 2 y bloque 5 + esa calibración); C es la rama principal.
 $Corridas = [ordered]@{
-    A = @{ Commit = 'd60e7aa'; Nombre = 'A_bahia_nueva';    Hilos = 0 }   # sin --hilos (esa versión no lo tiene)
-    B = @{ Commit = '9d5c995'; Nombre = 'B_representacion'; Hilos = 0 }
-    C = @{ Commit = '96f6be4'; Nombre = 'C_memoria';        Hilos = 3 }
+    A = @{ Commit = '7839ae5'; Nombre = 'A_bahia_nueva';    Hilos = 0 }   # sin --hilos (esa versión no lo tiene)
+    B = @{ Commit = '1bbeb4d'; Nombre = 'B_representacion'; Hilos = 0 }
+    C = @{ Commit = 'eb613cb'; Nombre = 'C_memoria';        Hilos = 3 }
 }
 $Episodios = 300; $Epocas = 80; $RondasDagger = 2
 $SemillasVisor = 900000, 900001, 900002
