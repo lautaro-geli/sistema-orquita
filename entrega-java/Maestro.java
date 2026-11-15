@@ -56,9 +56,10 @@ public final class Maestro {
             boolean cerrada = sim.modo() != ModoOperativo.ESCAPE;
             double dx = meta[0] - r.x(), dy = meta[1] - r.y();
             double rumboMeta = Math.atan2(dy, dx);
-            double distancia = Math.hypot(dx, dy) - cal.largoMm() / 2;
+            double distancia = Math.hypot(dx, dy) - cal.ejeAlFrenteMm();   // del frente a la meta
             double direccion = rumboMeta;
-            double avanceMaximo = distancia + (sim.modo() == ModoOperativo.ESCAPE ? 60 : 40);
+            // En búsqueda la canica se captura en la puerta, sobre el eje: hay que pasarle por encima.
+            double avanceMaximo = sim.modo() == ModoOperativo.ESCAPE ? distancia + 60 : Math.hypot(dx, dy) + 15;
             double despejeMeta = despejeEnDireccion(bahia, r, rumboMeta, cerrada);
             if (Math.abs(Math.toDegrees(normalizar(rumboMeta - r.rumbo()))) <= TOLERANCIA_GRADOS)
                 despejeMeta = Math.min(despejeMeta, despeje);
@@ -195,7 +196,7 @@ public final class Maestro {
             Bahia.Impacto imp = bahia.lanzarRayo(ox, oy, ang, 3000, false);
             minimo = Math.min(minimo, salidaCerrada && imp.cruzaSalida() ? imp.distanciaSalida() : imp.distancia());
         }
-        return minimo - cal.largoMm() / 2;
+        return minimo - cal.ejeAlFrenteMm();
     }
 
     private static boolean contiene(SensorSimulado.Barrido b, EtiquetaSector e) {

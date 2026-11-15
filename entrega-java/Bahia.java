@@ -28,15 +28,15 @@ public final class Bahia {
     public static final int OBSTACULOS = 2;
 
     /**
-     * Partida: abajo a la izquierda, mirando hacia la salida (rumbo 90°). [A CONFIRMAR] El equipo dijo
-     * "a 15-20 cm de la pared izquierda y de la base"; acá se toma como la separación entre la pared y
-     * el costado izquierdo del robot, y entre la base y la cola del robot. Si en realidad se mide al
-     * centro del robot, poner PARTIDA_BORDE_X_MM y PARTIDA_BORDE_Y_MM en 0.
+     * Partida: abajo a la izquierda, mirando hacia la salida (rumbo 90°), a 15 cm ± 2 del borde
+     * (confirmado por el equipo el 15/11/2026): entre la pared izquierda y el costado izquierdo del
+     * robot, y entre la base y la cola del robot.
      */
-    public static final double PARTIDA_SEPARACION_MINIMA_MM = 150, PARTIDA_SEPARACION_MAXIMA_MM = 200;
-    /** Del punto que se mide (costado izquierdo y cola del robot) al centro del robot. */
-    public static final double PARTIDA_BORDE_X_MM = CalibracionRobot.ANCHO_MM / 2, PARTIDA_BORDE_Y_MM = CalibracionRobot.LARGO_MM / 2;
-    /** Centro del rango de la partida (centro del robot, mm): (-510, 275) con las medidas de hoy. */
+    public static final double PARTIDA_SEPARACION_MINIMA_MM = 130, PARTIDA_SEPARACION_MAXIMA_MM = 170;
+    /** Del punto que se mide (costado izquierdo y cola del robot) al eje de las ruedas (pose del robot). */
+    public static final double PARTIDA_BORDE_X_MM = CalibracionRobot.ANCHO_MM / 2,
+            PARTIDA_BORDE_Y_MM = CalibracionRobot.LARGO_MM - CalibracionRobot.EJE_AL_FRENTE_MM;
+    /** Centro del rango de la partida (eje del robot, mm): (-535, 270) con las medidas de hoy. */
     public static final double PARTIDA_X = -BASE_MM / 2 + PARTIDA_BORDE_X_MM
             + (PARTIDA_SEPARACION_MINIMA_MM + PARTIDA_SEPARACION_MAXIMA_MM) / 2;
     public static final double PARTIDA_Y = PARTIDA_BORDE_Y_MM + (PARTIDA_SEPARACION_MINIMA_MM + PARTIDA_SEPARACION_MAXIMA_MM) / 2;

@@ -14,7 +14,7 @@ import orquitas.servidor.navegacion.OrdenMovimiento;
 public class SimuladorBahiaTest {
     private static final RobotSimulado.Calibracion CAL = RobotSimulado.Calibracion.ESTIMADA;
     private static final RobotSimulado.Calibracion SIN_RUIDO =
-            new RobotSimulado.Calibracion(CAL.mmPorSegundo(), CAL.gradosPorSegundo(), CAL.largoMm(), CAL.anchoMm(), CAL.bocaMm(), 0);
+            new RobotSimulado.Calibracion(CAL.mmPorSegundo(), CAL.gradosPorSegundo(), CAL.largoMm(), CAL.anchoMm(), CAL.ejeAlFrenteMm(), CAL.bocaMm(), 0);
 
     private static RobotSimulado robot(double x, double y, double grados) {
         return new RobotSimulado(SIN_RUIDO, x, y, Math.toRadians(grados));
@@ -99,7 +99,7 @@ public class SimuladorBahiaTest {
         RobotSimulado r = robot(0, 300, -90); // Mirando a la base.
         RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 1500), b, new Random(1));
         assertTrue(res.choco());
-        assertTrue(r.y() >= CAL.largoMm() / 2 - 1);
+        assertTrue(r.y() >= CAL.ejeAlFrenteMm() - 1); // Mirando a la base: el frente queda contra la pared.
         assertFalse(r.choca(b, r.x(), r.y(), r.rumbo()));
     }
 
@@ -111,22 +111,62 @@ public class SimuladorBahiaTest {
         assertEquals(0, Math.toDegrees(r.rumbo()), 1.5);
     }
 
-    @Test public void laCanicaQueEntraPorLaBocaSeCaptura() {
+    @Test public void laCanicaQueEntraPorLaBocaSeCapturaEnLaPuerta() {
         Bahia b = Bahia.vacia();
         b.agregarCanica(0, 500);
-        RobotSimulado r = robot(0, 300, 90);
-        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 800), b, new Random(1));
+        RobotSimulado r = robot(0, 300, 90);  // La pose es el eje: la puerta está a 200 mm de la canica.
+        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 1200), b, new Random(1));
         assertEquals(1, res.capturas());
         assertEquals(0, b.canicasLibres());
     }
 
-    @Test public void laCanicaQueTocaElCostadoSeEmpujaYNoSeCaptura() {
+    @Test public void laCanicaEnElEmbudoNoSeCapturaHastaLlegarAlEje() {
         Bahia b = Bahia.vacia();
-        b.agregarCanica(70, 500); // Fuera de la boca (60 mm), dentro del ancho del robot (150 mm).
+        b.agregarCanica(0, 500);
         RobotSimulado r = robot(0, 300, 90);
-        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 800), b, new Random(1));
+        // 150 mm: el frente ya pasó la canica (está dentro del embudo) pero el eje no llegó.
+        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 750), b, new Random(1));
         assertEquals(0, res.capturas());
         assertEquals(1, b.canicasLibres());
+    }
+
+    @Test public void elEmbudoLlevaAlCentroLaCanicaQueEntraPorUnCostadoDeLaBoca() {
+        Bahia b = Bahia.vacia();
+        b.agregarCanica(60, 500); // Dentro de la boca de 150 mm, cerca del borde.
+        RobotSimulado r = robot(0, 300, 90);
+        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 1200), b, new Random(1));
+        assertEquals(1, res.capturas());
+    }
+
+    @Test public void laCanicaQueTocaElCostadoSeEmpujaYNoSeCaptura() {
+        Bahia b = Bahia.vacia();
+        b.agregarCanica(80, 500); // Fuera de la boca (75 mm a cada lado), pero roza el costado.
+        RobotSimulado r = robot(0, 300, 90);
+        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.AVANZAR, 1200), b, new Random(1));
+        assertEquals(0, res.capturas());
+        assertEquals(1, b.canicasLibres());
+    }
+
+    @Test public void giraSobreElEjeDeLasRuedas() {
+        Bahia b = Bahia.vacia();
+        RobotSimulado r = robot(0, 500, 90);
+        r.mover(new OrdenMovimiento(Movimiento.GIRAR_IZQ, (int) Math.round(180 / CAL.gradosPorSegundo() * 1000)), b, new Random(1));
+        assertEquals(0, r.x(), 1e-9);
+        assertEquals(500, r.y(), 1e-9);
+        // El frente (80 mm delante del eje) ahora apunta hacia abajo.
+        double[][] e = r.esquinas(r.x(), r.y(), r.rumbo());
+        assertEquals(500 - CAL.ejeAlFrenteMm(), (e[0][1] + e[1][1]) / 2, 2);
+    }
+
+    @Test public void alGirarCercaDeLaParedChocaConLaCola() {
+        Bahia b = Bahia.vacia();
+        // Eje a 135 mm de la pared izquierda, cola hacia la pared (queda a 15 mm): girar 90° hace que la
+        // esquina de la cola barra un radio de √(120² + 75²) ≈ 141 mm y toque la pared.
+        RobotSimulado r = robot(-760 + 135, 570, 0);
+        assertFalse(r.choca(b, r.x(), r.y(), r.rumbo()));
+        RobotSimulado.Resultado res = r.mover(new OrdenMovimiento(Movimiento.GIRAR_IZQ,
+                (int) Math.round(90 / CAL.gradosPorSegundo() * 1000)), b, new Random(1));
+        assertTrue(res.choco());
     }
 
     @Test public void sensorVeLaCanicaCercaMasCercaEnEl4x4QueEnEl16x16() {
@@ -214,10 +254,10 @@ public class SimuladorBahiaTest {
             RobotSimulado r = sim.robot();
             assertEquals(Bahia.OBSTACULOS * 4, b.obstaculos().size()); // 2 obstáculos de 4 lados.
             assertEquals(3, b.canicas().size());
-            // Partida: costado izquierdo a 150-200 mm de la pared izquierda, cola a 150-200 mm de la base, rumbo 90° ± 3°.
-            double costado = r.x() - CAL.anchoMm() / 2 + Bahia.BASE_MM / 2, cola = r.y() - CAL.largoMm() / 2;
-            assertTrue("costado a " + costado, costado >= 150 && costado <= 200);
-            assertTrue("cola a " + cola, cola >= 150 && cola <= 200);
+            // Partida: costado izquierdo a 130-170 mm de la pared izquierda, cola a 130-170 mm de la base, rumbo 90° ± 3°.
+            double costado = r.x() - CAL.anchoMm() / 2 + Bahia.BASE_MM / 2, cola = r.y() - CAL.ejeALaColaMm();
+            assertTrue("costado a " + costado, costado >= 130 - 1e-9 && costado <= 170 + 1e-9);
+            assertTrue("cola a " + cola, cola >= 130 - 1e-9 && cola <= 170 + 1e-9);
             assertEquals(Bahia.PARTIDA_X, r.x(), Bahia.PARTIDA_RANGO_MM);
             assertEquals(Bahia.PARTIDA_Y, r.y(), Bahia.PARTIDA_RANGO_MM);
             assertEquals(90, Math.toDegrees(r.rumbo()), Bahia.PARTIDA_RANGO_GRADOS);
@@ -247,9 +287,10 @@ public class SimuladorBahiaTest {
     }
 
     @Test public void laPartidaEstaAbajoALaIzquierdaMirandoALaSalida() {
-        // Con el robot de 150 x 200 mm: centro en (-760 + 75 + 175, 100 + 175).
-        assertEquals(-510, Bahia.PARTIDA_X, 1e-9);
-        assertEquals(275, Bahia.PARTIDA_Y, 1e-9);
-        assertEquals(25, Bahia.PARTIDA_RANGO_MM, 1e-9);
+        // 15 cm ± 2 del borde; robot de 150 x 200 mm con el eje a 120 mm de la cola:
+        // eje en (-760 + 75 + 150, 120 + 150).
+        assertEquals(-535, Bahia.PARTIDA_X, 1e-9);
+        assertEquals(270, Bahia.PARTIDA_Y, 1e-9);
+        assertEquals(20, Bahia.PARTIDA_RANGO_MM, 1e-9);
     }
 }
