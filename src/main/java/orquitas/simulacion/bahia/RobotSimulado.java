@@ -7,22 +7,33 @@ import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.OrdenMovimiento;
 
 /**
- * Robot de la simulación: rectángulo de largo x ancho con el sensor adelante y la "boca" (entrada de
- * la canica al sensor FC-51) en el centro del frente. Pose (x, y, rumbo): rumbo en radianes, 0 = eje x,
- * positivo = giro a la izquierda (antihorario).
+ * Robot de la simulación: rectángulo de largo x ancho que gira sobre el eje de las ruedas. La pose
+ * (x, y, rumbo) es la del eje (centro de giro): el frente está ejeAlFrenteMm adelante y la cola
+ * largoMm - ejeAlFrenteMm atrás. Rumbo en radianes, 0 = eje x, positivo = giro a la izquierda.
+ * La boca es un embudo que va del frente (bocaMm de ancho) hasta la puerta giratoria sobre el eje:
+ * la canica se captura al llegar a la puerta y ya no se sale.
  */
 public final class RobotSimulado {
 
     /**
-     * Calibración del robot real. [A CONFIRMAR] con mediciones: cuánto avanza y gira por segundo.
+     * Calibración del robot real (medida el 15/11/2026, ± 10 % → ruidoVelocidad 0,10).
      * Si cambia, hay que volver a entrenar la red de movimiento, porque los ms dependen de esto.
      */
     public record Calibracion(double mmPorSegundo, double gradosPorSegundo, double largoMm, double anchoMm,
-                              double bocaMm, double ruidoVelocidad) {
-        /** La misma calibración que usa el Servidor (CalibracionRobot), boca de 60 mm y 10 % de ruido. */
+                              double ejeAlFrenteMm, double bocaMm, double ruidoVelocidad) {
+        /** La misma calibración que usa el Servidor (CalibracionRobot) y 10 % de ruido. */
         public static final Calibracion ESTIMADA = new Calibracion(CalibracionRobot.MM_POR_SEGUNDO,
-                CalibracionRobot.GRADOS_POR_SEGUNDO, CalibracionRobot.LARGO_MM, CalibracionRobot.ANCHO_MM, 60, 0.10);
+                CalibracionRobot.GRADOS_POR_SEGUNDO, CalibracionRobot.LARGO_MM, CalibracionRobot.ANCHO_MM,
+                CalibracionRobot.EJE_AL_FRENTE_MM, CalibracionRobot.BOCA_MM, 0.10);
+
+        /** Del eje a la cola, en mm. */
+        public double ejeALaColaMm() { return largoMm - ejeAlFrenteMm; }
     }
+
+    /** Ancho del embudo a la altura de la puerta (sobre el eje), en mm: un poco más que una canica. */
+    static final double PUERTA_MM = 20;
+    /** Deriva al avanzar, en grados (desvío estándar por orden): el robot va prácticamente recto. */
+    static final double DERIVA_GRADOS = 0.3;
 
     private static final double PASO_MM = 5;
     private static final double PASO_GRADOS = 1;
@@ -52,7 +63,7 @@ public final class RobotSimulado {
         if (m == Movimiento.AVANZAR || m == Movimiento.RETROCEDER) {
             double total = cal.mmPorSegundo() * segundos * factor;
             double signo = m == Movimiento.AVANZAR ? 1 : -1;
-            double deriva = Math.toRadians(azar.nextGaussian() * 1.5) / Math.max(1, total / PASO_MM);
+            double deriva = Math.toRadians(azar.nextGaussian() * DERIVA_GRADOS) / Math.max(1, total / PASO_MM);
             for (double hecho = 0; hecho < total; hecho += PASO_MM) {
                 double paso = Math.min(PASO_MM, total - hecho);
                 double nx = x + signo * paso * Math.cos(rumbo), ny = y + signo * paso * Math.sin(rumbo);
@@ -91,8 +102,9 @@ public final class RobotSimulado {
     }
 
     /**
-     * Canicas que tocan el robot: si entran por la boca (frente, centro) se capturan; si tocan otra parte
-     * del cuerpo se empujan hacia afuera.
+     * Canicas que tocan el robot. Entre el frente y el eje, a lo ancho de la boca, están dentro del
+     * embudo: las paredes del embudo las llevan hacia el centro y se capturan al llegar a la puerta
+     * (sobre el eje). Si tocan el cuerpo detrás del eje se empujan hacia afuera.
      */
     private int interactuarConCanicas(Bahia bahia) {
         int capturas = 0;
@@ -102,17 +114,27 @@ public final class RobotSimulado {
             if (k.capturada) continue;
             double rx = k.x - x, ry = k.y - y;
             double adelante = rx * c + ry * s, izquierda = -rx * s + ry * c;
-            double medioLargo = cal.largoMm() / 2, medioAncho = cal.anchoMm() / 2;
-            if (Math.abs(adelante) > medioLargo + r || Math.abs(izquierda) > medioAncho + r) continue;
-            if (adelante > medioLargo - 25 && Math.abs(izquierda) < cal.bocaMm() / 2) {
-                k.capturada = true;
-                capturas++;
+            double frente = cal.ejeAlFrenteMm(), cola = cal.ejeALaColaMm(), medioAncho = cal.anchoMm() / 2;
+            if (adelante > frente + r || adelante < -cola - r || Math.abs(izquierda) > medioAncho + r) continue;
+            if (adelante >= 0 && adelante <= frente + r && Math.abs(izquierda) < cal.bocaMm() / 2) {
+                if (adelante <= r) {          // llegó a la puerta
+                    k.capturada = true;
+                    capturas++;
+                    continue;
+                }
+                // Dentro del embudo: las paredes la corren hacia el centro.
+                double medioEmbudo = PUERTA_MM / 2 + (cal.bocaMm() - PUERTA_MM) / 2 * Math.min(1, adelante / frente);
+                double limite = Math.max(0, medioEmbudo - r);
+                if (Math.abs(izquierda) <= limite) continue;
+                double ni = Math.signum(izquierda) * limite;
+                double nx = x + adelante * c - ni * s, ny = y + adelante * s + ni * c;
+                if (bahia.adentroConMargen(nx, ny, r)) { k.x = nx; k.y = ny; }
                 continue;
             }
-            // Empuje: sacarla por el lado más cercano del rectángulo.
-            double fAdelante = medioLargo + r - Math.abs(adelante), fCostado = medioAncho + r - Math.abs(izquierda);
+            // Empuje: sacarla por el lado más cercano del cuerpo (costado o cola).
+            double fCola = adelante + cola + r, fCostado = medioAncho + r - Math.abs(izquierda);
             double na = adelante, ni = izquierda;
-            if (fAdelante < fCostado) na = Math.signum(adelante == 0 ? 1 : adelante) * (medioLargo + r + 1);
+            if (adelante < 0 && fCola < fCostado) na = -cola - r - 1;
             else ni = Math.signum(izquierda == 0 ? 1 : izquierda) * (medioAncho + r + 1);
             double nx = x + na * c - ni * s, ny = y + na * s + ni * c;
             if (bahia.adentroConMargen(nx, ny, r)) { k.x = nx; k.y = ny; }
@@ -123,13 +145,14 @@ public final class RobotSimulado {
     private boolean dentroDelRobot(double qx, double qy, double px, double py, double pr, double margen) {
         double rx = qx - px, ry = qy - py;
         double adelante = rx * Math.cos(pr) + ry * Math.sin(pr), izquierda = -rx * Math.sin(pr) + ry * Math.cos(pr);
-        return Math.abs(adelante) <= cal.largoMm() / 2 + margen && Math.abs(izquierda) <= cal.anchoMm() / 2 + margen;
+        return adelante <= cal.ejeAlFrenteMm() + margen && adelante >= -cal.ejeALaColaMm() - margen
+                && Math.abs(izquierda) <= cal.anchoMm() / 2 + margen;
     }
 
     /** Esquinas del rectángulo: delantera derecha, delantera izquierda, trasera izquierda, trasera derecha. */
     public double[][] esquinas(double px, double py, double pr) {
-        double l = cal.largoMm() / 2, w = cal.anchoMm() / 2;
-        double[][] loc = {{l, -w}, {l, w}, {-l, w}, {-l, -w}};
+        double f = cal.ejeAlFrenteMm(), t = cal.ejeALaColaMm(), w = cal.anchoMm() / 2;
+        double[][] loc = {{f, -w}, {f, w}, {-t, w}, {-t, -w}};
         double[][] r = new double[4][];
         for (int i = 0; i < 4; i++)
             r[i] = new double[] {px + loc[i][0] * Math.cos(pr) - loc[i][1] * Math.sin(pr),
@@ -148,8 +171,8 @@ public final class RobotSimulado {
     }
 
     /** Posición del sensor (CalibracionRobot.SENSOR_AL_FRENTE_MM detrás del frente). */
-    public double sensorX() { return x + (cal.largoMm() / 2 - CalibracionRobot.SENSOR_AL_FRENTE_MM) * Math.cos(rumbo); }
-    public double sensorY() { return y + (cal.largoMm() / 2 - CalibracionRobot.SENSOR_AL_FRENTE_MM) * Math.sin(rumbo); }
+    public double sensorX() { return x + (cal.ejeAlFrenteMm() - CalibracionRobot.SENSOR_AL_FRENTE_MM) * Math.cos(rumbo); }
+    public double sensorY() { return y + (cal.ejeAlFrenteMm() - CalibracionRobot.SENSOR_AL_FRENTE_MM) * Math.sin(rumbo); }
 
     public double x() { return x; }
     public double y() { return y; }

@@ -47,12 +47,13 @@ public class MemoriaNavegacionTest {
 
     @Test public void trasGirarALaIzquierda90Grados() {
         MemoriaNavegacion m = new MemoriaNavegacion();
-        m.registrarOrden(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 750)); // 750 ms a 120 °/s = 90°.
+        OrdenMovimiento giro = girarIzq(90);       // ms redondeados: 90° ± 0,3°.
+        m.registrarOrden(giro);
         double[] e = m.entradas();
         assertArrayEquals(new double[] {0, 0, 1, 0}, java.util.Arrays.copyOf(e, 4), 0);
-        assertEquals(0.5, e[CUANTO_ANTERIOR], 1e-12);
-        assertEquals(1, e[RUMBO_SENO], 1e-12);     // ψ = +90°.
-        assertEquals(0.5, e[RUMBO_COSENO], 1e-12);
+        assertEquals(giro.milisegundos() / 1500.0, e[CUANTO_ANTERIOR], 1e-12);
+        assertEquals(1, e[RUMBO_SENO], 1e-4);      // ψ = +90°.
+        assertEquals(0.5, e[RUMBO_COSENO], 3e-3);
         assertEquals(1, e[CICLO_DESDE_META], 0);   // Nunca vio la meta: no cambia.
         assertEquals(0.5, e[ANGULO_META_ANTERIOR], 0);
     }
@@ -79,13 +80,13 @@ public class MemoriaNavegacionTest {
         m.registrarOrden(girarDer(15));
         m.registrarOrden(new OrdenMovimiento(Movimiento.RETROCEDER, 400));
         double psi = Math.toRadians(45);
-        assertEquals((Math.sin(psi) + 1) / 2, m.entradas()[RUMBO_SENO], 1e-9);
-        assertEquals((Math.cos(psi) + 1) / 2, m.entradas()[RUMBO_COSENO], 1e-9);
+        assertEquals((Math.sin(psi) + 1) / 2, m.entradas()[RUMBO_SENO], 3e-3);
+        assertEquals((Math.cos(psi) + 1) / 2, m.entradas()[RUMBO_COSENO], 3e-3);
         // Media vuelta más un cuarto: ψ = 45 + 180 + 90 = 315° = -45°.
         m.registrarOrden(girarIzq(180));
         m.registrarOrden(girarIzq(90));
-        assertEquals((Math.sin(Math.toRadians(-45)) + 1) / 2, m.entradas()[RUMBO_SENO], 1e-9);
-        assertEquals((Math.cos(Math.toRadians(-45)) + 1) / 2, m.entradas()[RUMBO_COSENO], 1e-9);
+        assertEquals((Math.sin(Math.toRadians(-45)) + 1) / 2, m.entradas()[RUMBO_SENO], 3e-3);
+        assertEquals((Math.cos(Math.toRadians(-45)) + 1) / 2, m.entradas()[RUMBO_COSENO], 3e-3);
     }
 
     @Test public void laMetaVistaAMas30VuelveAlFrenteDespuesDeGirar30ALaIzquierda() {
@@ -94,12 +95,12 @@ public class MemoriaNavegacionTest {
         assertEquals(0, m.entradas()[CICLO_DESDE_META], 0);
         assertEquals((30 + 180) / 360.0, m.entradas()[ANGULO_META_ANTERIOR], 1e-12);
         m.registrarOrden(girarIzq(30));
-        assertEquals(0.5, m.entradas()[ANGULO_META_ANTERIOR], 1e-9); // Quedó de frente (0°).
+        assertEquals(0.5, m.entradas()[ANGULO_META_ANTERIOR], 3e-3); // Quedó de frente (0°).
         // Girar a la derecha la deja a la izquierda; avanzar no cambia el ángulo.
         m.registrarOrden(girarDer(45));
-        assertEquals((45 + 180) / 360.0, m.entradas()[ANGULO_META_ANTERIOR], 1e-9);
+        assertEquals((45 + 180) / 360.0, m.entradas()[ANGULO_META_ANTERIOR], 3e-3);
         m.registrarOrden(new OrdenMovimiento(Movimiento.AVANZAR, 500));
-        assertEquals((45 + 180) / 360.0, m.entradas()[ANGULO_META_ANTERIOR], 1e-9);
+        assertEquals((45 + 180) / 360.0, m.entradas()[ANGULO_META_ANTERIOR], 3e-3);
         // Si la vuelve a ver, vale el ángulo nuevo.
         m.observar(todo(700), conMeta(-15));
         assertEquals((-15 + 180) / 360.0, m.entradas()[ANGULO_META_ANTERIOR], 1e-12);
@@ -169,14 +170,14 @@ public class MemoriaNavegacionTest {
         m.registrarOrden(girarIzq(30));
         m.observar(todo(600), sinMeta());
         assertEquals(0.2, m.entradas()[CICLO_DESDE_META], 1e-12);
-        assertEquals(0.5, m.entradas()[ANGULO_META_ANTERIOR], 1e-9);
+        assertEquals(0.5, m.entradas()[ANGULO_META_ANTERIOR], 3e-3);
         // Primer barrido en ESCAPE: la meta ahora es la salida y todavía no se vio.
         m.observar(todo(700), representacion(false, 0, ModoOperativo.ESCAPE));
         double[] e = m.entradas();
         assertEquals(1, e[CICLO_DESDE_META], 0);
         assertEquals(0.5, e[ANGULO_META_ANTERIOR], 0);
-        assertEquals((Math.sin(Math.toRadians(30)) + 1) / 2, e[RUMBO_SENO], 1e-9); // El rumbo sigue.
-        assertEquals((Math.cos(Math.toRadians(30)) + 1) / 2, e[RUMBO_COSENO], 1e-9);
+        assertEquals((Math.sin(Math.toRadians(30)) + 1) / 2, e[RUMBO_SENO], 3e-3); // El rumbo sigue.
+        assertEquals((Math.cos(Math.toRadians(30)) + 1) / 2, e[RUMBO_COSENO], 3e-3);
         assertEquals(1, e[ORDEN_GIRAR_IZQ], 0);                                    // Y la orden anterior también.
         // Ve la salida a -45° y la sigue recordando en los ciclos siguientes de ESCAPE.
         m.observar(todo(800), representacion(true, -45, ModoOperativo.ESCAPE));
@@ -227,9 +228,11 @@ public class MemoriaNavegacionTest {
         MemoriaNavegacion m = new MemoriaNavegacion();
         assertEquals("sin orden anterior; meta no vista; rumbo +0°", m.describir());
         m.observar(todo(500), conMeta(55));
-        m.registrarOrden(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 333)); // 39,96°.
-        assertEquals("última GIRAR_IZQ 333 ms; meta vista hace 0 ciclos; rumbo +40°", m.describir());
+        OrdenMovimiento giro = girarIzq(40);
+        m.registrarOrden(giro);
+        String ms = "última GIRAR_IZQ " + giro.milisegundos() + " ms; ";
+        assertEquals(ms + "meta vista hace 0 ciclos; rumbo +40°", m.describir());
         m.observar(todo(500), sinMeta());
-        assertEquals("última GIRAR_IZQ 333 ms; meta vista hace 1 ciclo, quedó a +15°; atasco 1; rumbo +40°", m.describir());
+        assertEquals(ms + "meta vista hace 1 ciclo, quedó a +15°; atasco 1; rumbo +40°", m.describir());
     }
 }

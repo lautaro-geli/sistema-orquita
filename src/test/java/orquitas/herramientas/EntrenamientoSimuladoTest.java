@@ -34,6 +34,9 @@ import orquitas.simulacion.bahia.RobotSimulado;
  * la simulación repartida entre hilos da exactamente lo mismo que en un solo hilo.
  */
 public class EntrenamientoSimuladoTest {
+    /** ms para girar 90° con la calibración actual (redondeado: 90° ± 0,3°). */
+    private static final int MS_90 = (int) Math.round(90 / orquitas.servidor.navegacion.CalibracionRobot.GRADOS_POR_SEGUNDO * 1000);
+
     private static final RobotSimulado.Calibracion CAL = RobotSimulado.Calibracion.ESTIMADA;
 
     /** Percepción de prueba: todo PARED, salvo un Lobito en el sector 8 cuando el barrido está a 600 mm. */
@@ -60,8 +63,9 @@ public class EntrenamientoSimuladoTest {
     private static final EtiquetaSector[] SIN_ETIQUETAS = new EtiquetaSector[13];
     private static final OrdenMovimiento AVANZAR_400 = new OrdenMovimiento(Movimiento.AVANZAR, 400);
     private static final OrdenMovimiento AVANZAR_800 = new OrdenMovimiento(Movimiento.AVANZAR, 800);
-    private static final OrdenMovimiento IZQUIERDA_90 = new OrdenMovimiento(Movimiento.GIRAR_IZQ, 750);
-    private static final OrdenMovimiento DERECHA_30 = new OrdenMovimiento(Movimiento.GIRAR_DER, 250);
+    private static final OrdenMovimiento IZQUIERDA_90 = new OrdenMovimiento(Movimiento.GIRAR_IZQ, MS_90);
+    private static final OrdenMovimiento DERECHA_30 = new OrdenMovimiento(Movimiento.GIRAR_DER,
+            (int) Math.round(30 / orquitas.servidor.navegacion.CalibracionRobot.GRADOS_POR_SEGUNDO * 1000));
     private static final OrdenMovimiento ATRAS_300 = new OrdenMovimiento(Movimiento.RETROCEDER, 300);
 
     /** Dos episodios armados a mano: en el primer barrido se ejecutó una orden distinta de la del maestro. */
@@ -95,13 +99,13 @@ public class EntrenamientoSimuladoTest {
         // ...pero la memoria del segundo barrido tiene la orden que se ejecutó (girar 90° a la izquierda).
         assertEquals(1, memoria(segundo)[MemoriaNavegacion.ORDEN_GIRAR_IZQ], 0);
         assertEquals(0, memoria(segundo)[MemoriaNavegacion.ORDEN_AVANZAR], 0);
-        assertEquals(0.5, memoria(segundo)[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
-        assertEquals(1, memoria(segundo)[MemoriaNavegacion.RUMBO_SENO], 1e-12);
+        assertEquals(MS_90 / 1500.0, memoria(segundo)[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
+        assertEquals(1, memoria(segundo)[MemoriaNavegacion.RUMBO_SENO], 3e-3);
         assertEquals(0, memoria(segundo)[MemoriaNavegacion.CICLO_DESDE_META], 0); // La percepción ve el Lobito a +30°.
         assertEquals(1, segundo.getInput()[RepresentacionIntermedia.HAY_META], 0);
         // Tercer barrido, ya en ESCAPE: giró 30° a la derecha (rumbo 60°) y la meta anterior se olvidó.
         assertEquals(1, memoria(tercero)[MemoriaNavegacion.ORDEN_GIRAR_DER], 0);
-        assertEquals((Math.sin(Math.toRadians(60)) + 1) / 2, memoria(tercero)[MemoriaNavegacion.RUMBO_SENO], 1e-9);
+        assertEquals((Math.sin(Math.toRadians(60)) + 1) / 2, memoria(tercero)[MemoriaNavegacion.RUMBO_SENO], 3e-3);
         assertEquals(1, memoria(tercero)[MemoriaNavegacion.CICLO_DESDE_META], 0);
         assertEquals(1, tercero.getInput()[RepresentacionIntermedia.MODO_ESCAPE], 0);
         // El segundo episodio empieza con la memoria vacía: no arrastra nada del primero.

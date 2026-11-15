@@ -169,7 +169,7 @@ El reporte queda en `docs/evidencias/entrenamiento_simulado_AAAAMMDD.md` (redes 
 - **El resultado es exactamente el mismo con 1 hilo o con N:** cada prueba depende solo de la semilla de su índice y los ejemplos se juntan en el orden del índice, no en el que terminan los hilos.
 - Neuroph entrena las redes en un solo hilo: esa parte no se reparte.
 
-**Calibración [A CONFIRMAR]:** el Servidor y el simulador usan 250 mm/s al avanzar, 120 °/s al girar y un robot de 200 × 150 mm (`CalibracionRobot`). Los ms que decide la red dependen de esto: con las medidas reales del robot hay que cambiar esos valores y volver a entrenar.
+**Calibración (medida el 15/11/2026, ± 10 %):** el Servidor y el simulador usan 200 mm/s al avanzar, 212 °/s al girar sobre el eje de las ruedas, un robot de 200 × 150 mm con el eje a 80 mm del frente, la boca (embudo de 150 mm) que lleva la canica hasta la puerta sobre el eje y el sensor 40 mm detrás del frente (`CalibracionRobot`). Los ms que decide la red dependen de esto: si cambian, hay que volver a entrenar.
 
 ## Estructura
 

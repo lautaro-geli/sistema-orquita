@@ -15,6 +15,9 @@ import orquitas.servidor.apoyo.RedFija;
  * corrección del -1 en la navegación por reglas.
  */
 public class NavegacionRedesTest {
+    /** ms para girar 90° con la calibración actual (redondeado: 90° ± 0,3°). */
+    private static final int MS_90 = (int) Math.round(90 / orquitas.servidor.navegacion.CalibracionRobot.GRADOS_POR_SEGUNDO * 1000);
+
 
     /** Percepción de prueba: todos los sectores PARED. */
     static class PercepcionFija extends RedPercepcion {
@@ -64,23 +67,23 @@ public class NavegacionRedesTest {
     }
 
     @Test public void conRedesLaRedDeMovimientoRecibe24EntradasYLaMemoriaCambiaDespuesDeUnaOrden() {
-        MovimientoFijo mov = new MovimientoFijo(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 750)); // 90° a la izquierda.
+        MovimientoFijo mov = new MovimientoFijo(new OrdenMovimiento(Movimiento.GIRAR_IZQ, MS_90)); // 90° a la izquierda.
         Navegacion n = new Navegacion(new PercepcionFija(), mov);
         n.determinarMovimiento(todo(900));
         assertEquals(24, mov.entradasRecibidas.length);
         double[] memoriaAntes = java.util.Arrays.copyOfRange(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS, RedMovimiento.ENTRADAS);
         // Primer ciclo: la memoria está como al empezar la misión.
         assertArrayEquals(new MemoriaNavegacion().entradas(), memoriaAntes, 0);
-        assertEquals(new OrdenMovimiento(Movimiento.GIRAR_IZQ, 750), n.obtenerOrdenDecidida());
+        assertEquals(new OrdenMovimiento(Movimiento.GIRAR_IZQ, MS_90), n.obtenerOrdenDecidida());
         // Segundo ciclo: las últimas 10 entradas reflejan la orden enviada.
         n.determinarMovimiento(todo(700));
         double[] memoriaDespues = java.util.Arrays.copyOfRange(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS, RedMovimiento.ENTRADAS);
         assertEquals(MemoriaNavegacion.ENTRADAS, memoriaDespues.length);
         assertFalse(java.util.Arrays.equals(memoriaAntes, memoriaDespues));
         assertEquals(1, memoriaDespues[MemoriaNavegacion.ORDEN_GIRAR_IZQ], 0);
-        assertEquals(0.5, memoriaDespues[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
-        assertEquals(1, memoriaDespues[MemoriaNavegacion.RUMBO_SENO], 1e-12);
-        assertEquals(0.5, memoriaDespues[MemoriaNavegacion.RUMBO_COSENO], 1e-12);
+        assertEquals(MS_90 / 1500.0, memoriaDespues[MemoriaNavegacion.CUANTO_ANTERIOR], 1e-12);
+        assertEquals(1, memoriaDespues[MemoriaNavegacion.RUMBO_SENO], 3e-3);
+        assertEquals(0.5, memoriaDespues[MemoriaNavegacion.RUMBO_COSENO], 3e-3);
         // Las primeras 14 siguen siendo la representación del barrido actual.
         assertArrayEquals(RepresentacionIntermedia.calcular(todo(700), new PercepcionFija().probabilidades(todo(700)), ModoOperativo.BUSQUEDA),
                 java.util.Arrays.copyOf(mov.entradasRecibidas, RepresentacionIntermedia.ENTRADAS), 0);
@@ -193,10 +196,10 @@ public class NavegacionRedesTest {
     }
 
     @Test public void reflejoAcortaElAvanceSiElFrenteEstaCerca() {
-        int[] t = con(todo(1200), 6, 200); // Pared a 200 mm del sensor: 170 mm del frente.
+        int[] t = con(todo(1200), 6, 200); // Pared a 200 mm del sensor: 160 mm del frente.
         OrdenMovimiento o = ReflejoSeguridad.ajustar(new OrdenMovimiento(Movimiento.AVANZAR, 1500), t, null);
         assertEquals(Movimiento.AVANZAR, o.movimiento());
-        assertEquals(CalibracionRobot.msParaAvanzar(170 - ReflejoSeguridad.MARGEN_MM), o.milisegundos());
+        assertEquals(CalibracionRobot.msParaAvanzar(200 - CalibracionRobot.SENSOR_AL_FRENTE_MM - ReflejoSeguridad.MARGEN_MM), o.milisegundos());
     }
 
     @Test public void reflejoNoFrenaAnteUnLobito() {

@@ -46,6 +46,7 @@ Confirmado por el equipo (13/11/2026):
 - **Las 4 esquinas son curvas**, también las dos de la base.
 - **La salida es solo un hueco de 30 cm**, sin pasillo. Del otro lado no hay nada relacionado con la competencia: para el sensor, mirar por el hueco es "nada al alcance" (`-1` o lejos).
 - **Partida: a unos 15–20 cm de la pared izquierda y de la base**, mirando hacia la salida. Con la base de 1520 mm (x de -760 a 760) y el robot de 150 mm de ancho y 200 mm de largo, si los 15–20 cm se miden desde el costado y la cola del robot, el centro queda en x ≈ -760 + 175 + 75 = -510 mm, y ≈ 175 + 100 = 275 mm. [A CONFIRMAR si los cm son al costado del robot o a su centro.] En el simulador conviene sortear la partida dentro de ese rango (15 a 20 cm) y con unos ±3° de rumbo.
+  - **Actualizado el 15/11/2026:** 15 cm ± 2 desde el costado y la cola del robot; el eje queda en (-535, 270) ± 20 mm.
 
 Todavía a confirmar:
 
@@ -65,9 +66,9 @@ Consecuencias cuando se cambie:
 - Hoy: 13 sectores × 3 ROI (conos de 15°/20°/27° [A CONFIRMAR]), promedio ponderado por señal, ruido, `-1` fuera de 40–1300 mm, pérdidas y bloques sin eco. Se parece a los barridos reales en el patrón canica/pared, pero **no está contrastado**.
 - Hay que tener: comparación sistemática simulado vs real en las mismas escenas (pared plana a varias distancias, obstáculo, canica a 5/10/20/30 cm, mirando la salida), con el sensor nivelado. Ajustar con eso el ruido, la tasa de `-1`, los conos de cada ROI y la reflectividad de la canica.
 
-### 2.3 Robot simulado igual al real 🟡
+### 2.3 Robot simulado igual al real ✅ (calibración medida, implementado el 15/11/2026)
 
-- Hoy: 200 × 150 mm, 250 mm/s, 120 °/s, boca de 60 mm, sensor 30 mm detrás del frente, 10 % de ruido de velocidad, todo estimado.
+- Antes (hasta el 15/11/2026): 200 × 150 mm, 250 mm/s, 120 °/s, boca de 60 mm, sensor 30 mm detrás del frente, giro sobre el centro, todo estimado. Ahora: medidas reales (ver abajo).
 - Hay que tener: las medidas reales (bloque 1, calibración) y, si se puede, el error real de los giros y avances (cuánto varía de una vez a otra) para usarlo como ruido.
 
 Medido por el equipo (15/11/2026):
@@ -77,23 +78,32 @@ Medido por el equipo (15/11/2026):
 - **Eje de las ruedas (centro de giro): 8 cm detrás de la boca, 12 cm delante de la cola, centrado (7,5 cm a cada lado).** El robot sigue midiendo 20 × 15 cm, pero gira 2 cm por delante del centro del rectángulo (hoy el simulador gira sobre el centro). Al girar, la cola barre un círculo de radio √(120² + 75²) ≈ 141 mm (Ø ≈ 28 cm, casi el ancho de la salida); la trompa, uno de ≈ 110 mm.
 - **Boca: un embudo que va del frente hasta el eje, donde una puerta giratoria atrapa la canica.** La canica cuenta como capturada cuando llega a la puerta (8 cm adentro), no cuando toca el frente (hoy: boca de 60 mm en el frente).
 
-Cambios en el simulador cuando se implemente (todavía no):
+Completado por el equipo (15/11/2026): boca (embudo) de **15 cm** en el frente; **sensor 4 cm detrás del frente** (40 mm delante del eje); la puerta **retiene las 3 canicas**; ruido **± 10 %** (no se repite la medición); con **10 ms ya se mueve**; **va prácticamente recto** en 1 m; **partida a 15 cm ± 2 del borde** (costado y cola del robot).
 
-- `CalibracionRobot`: `MM_POR_SEGUNDO = 200`, `GRADOS_POR_SEGUNDO = 212`, nueva constante `EJE_AL_FRENTE_MM = 80`.
-- `RobotSimulado`: la pose pasa a ser la del eje; los giros rotan alrededor del eje; el rectángulo va de +80 a −120 mm.
-- `RobotSimulado.interactuarConCanicas`: la zona del embudo no empuja la canica; la captura ocurre al llegar al eje. Una canica a medio camino en el embudo puede escaparse si el robot retrocede.
-- `Maestro` (cuánto avanzar para capturar, chequeo de giro con el nuevo círculo) y la partida (`Bahia.PARTIDA_*`).
-- Volver a entrenar A/B/C con la calibración nueva (el script `herramientas_pc/orquita_corridas_abc.ps1` toma los commits de arriba del archivo).
+Implementado el 15/11/2026 (rama `hito3-bloques-2-5-6`) ✅:
 
-Falta medir:
+- `CalibracionRobot`: 200 mm/s, 212 °/s, `EJE_AL_FRENTE_MM = 80`, `BOCA_MM = 150`, `SENSOR_AL_FRENTE_MM = 40`.
+- `RobotSimulado`: la pose es el eje; gira sobre el eje; el embudo lleva la canica al centro y la captura al llegar a la puerta; deriva al avanzar 0,3° (antes 1,5°); ruido de velocidad 10 %.
+- `Bahia`: partida a 130–170 mm del borde (eje en (-535, 270) ± 20 mm, rumbo 90° ± 3°).
+- `Maestro`: para capturar avanza hasta pasar el eje sobre la canica.
+- `ReflejoSeguridad`: el chequeo de giro usa la geometría real del giro pedido (rectángulo que gira sobre el eje, cada 2°, con 15 mm de margen y 10 % de giro de más) en lugar de una tabla fija; el "avanzar para poder girar" mira todo el corredor del ancho del robot, también las canicas (detrás puede haber pared).
+- Pruebas: 125 (4 nuevas: captura en la puerta, embudo, giro sobre el eje, choque de la cola al girar cerca de la pared).
 
-- [ ] Ancho del embudo en el frente (y si es recto o curvo hasta la puerta).
-- [ ] Si la puerta retiene las 3 canicas y si una canica puede salirse del embudo al retroceder o girar.
-- [ ] Dónde está el sensor respecto del eje (cm hacia adelante y altura del suelo).
-- [ ] Repetibilidad: repetir 3–5 veces el avance de 0,5 s y la vuelta completa (con pilas cargadas y gastadas) para el ruido.
-- [ ] La orden más corta que mueve de verdad (por ejemplo 100 ms) y si arranca/frena en seco.
-- [ ] Desvío lateral al avanzar 1 m en línea recta.
-- [ ] Partida: si los 15–20 cm son al costado del robot o a su centro.
+Resultado del maestro (100 bahías, semillas 900000+, local): **54 % misiones completas, 2,50 capturas, 0,07 choques** (con la calibración vieja: 61 %, 2,62, 0,26).
+
+**Hallazgo:** casi todas las canicas que el maestro no consigue están a **70–110 mm de una pared u obstáculo**. Con el embudo de 8 cm de profundidad, para que la canica llegue a la puerta el frente tiene que pasarla 8 cm: si está a menos de ~8 cm de una pared, el robot choca antes de tragarla (y de costado tampoco entra: medio ancho = 7,5 cm). En el simulador hoy las canicas se ponen a ≥ 70 mm de las paredes (`Bahia.MARGEN_CANICA_MM`).
+
+- [ ] Preguntar/medir: ¿en la competencia una canica puede quedar pegada a la pared o a un obstáculo? ¿Al empujarla con el embudo contra la pared rueda y entra igual?
+
+Medidas pedidas:
+
+- [x] Ancho del embudo en el frente: 150 mm (se toma recto hasta una puerta de ~20 mm).
+- [x] La puerta retiene las 3 canicas; no se salen.
+- [x] Sensor: 40 mm detrás del frente. [ ] Altura del suelo (queda para el bloque del sensor).
+- [x] Repetibilidad: ± 10 % (sin repetir la medición).
+- [x] Orden más corta: con 10 ms ya se mueve.
+- [x] Desvío al avanzar 1 m: prácticamente recto.
+- [x] Partida: 15 cm ± 2 del borde.
 
 ---
 
