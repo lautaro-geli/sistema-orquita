@@ -311,6 +311,20 @@ public class EntrenamientoSimuladoTest {
         }
     }
 
+    @Test public void elUmbralDeLobitoCambiaLaEtiquetaPorLaSiguienteMasProbable() {
+        double[] p = new double[RedPercepcion.SALIDAS];
+        for (int s = 0; s < 13; s++) p[s * RedPercepcion.ETIQUETAS + EtiquetaSector.PARED.ordinal()] = 0.9;
+        int base = 6 * RedPercepcion.ETIQUETAS;
+        p[base + EtiquetaSector.LOBITO.ordinal()] = 0.65;
+        p[base + EtiquetaSector.PARED.ordinal()] = 0.2;
+        p[base + EtiquetaSector.OBSTACULO.ordinal()] = 0.4;
+        assertEquals(EtiquetaSector.LOBITO, EvaluacionUmbralLobito.etiquetasConUmbral(p, 0)[6]);
+        assertEquals(EtiquetaSector.LOBITO, EvaluacionUmbralLobito.etiquetasConUmbral(p, 0.6)[6]);
+        assertEquals(EtiquetaSector.OBSTACULO, EvaluacionUmbralLobito.etiquetasConUmbral(p, 0.7)[6]);
+        assertEquals(EtiquetaSector.OBSTACULO, EvaluacionUmbralLobito.etiquetasConUmbral(p, 2)[6]);
+        assertEquals(EtiquetaSector.PARED, EvaluacionUmbralLobito.etiquetasConUmbral(p, 0.7)[5]);
+    }
+
     @Test public void laCantidadDeHilosSaleDelArgumentoOpcional() {
         int porDefecto = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         assertEquals(porDefecto, EntrenamientoSimulado.hilosPorDefecto());
