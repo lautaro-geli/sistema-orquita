@@ -4,7 +4,7 @@
 $ErrorActionPreference = 'Continue'
 
 # ---- Configuración ----
-$Commit = 'b51b885'
+$Commit = '8c87b52'
 # Red A, 600 recorridos, 2 rondas, 80 épocas, 300 bahías; igual que E1/E2 pero con entropía cruzada.
 $Corridas = @(
     @{ Nombre = 'E5_entropia_rep2_s1'; Args = @('600', '80', 'modelos', '2', '--entradas=CRUDA', '--pruebas=300', '--repeticion=2', '--error=entropia', '--semilla=20261113') },
