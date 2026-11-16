@@ -296,6 +296,21 @@ public class EntrenamientoSimuladoTest {
         }
     }
 
+    @Test public void conRepeticionUnoCadaEjemploDaUnaSolaFilaYLasOpcionesSeLeen() {
+        int antes = EntrenamientoSimulado.REPETICION_MAXIMA, pruebasAntes = EntrenamientoSimulado.PRUEBAS;
+        try {
+            EntrenamientoSimulado.opciones(new String[] {"300", "--repeticion=1", "--pruebas=300"});
+            assertEquals(1, EntrenamientoSimulado.REPETICION_MAXIMA);
+            assertEquals(300, EntrenamientoSimulado.PRUEBAS);
+            List<DataSetRow> filas = EntrenamientoSimulado.filasMovimiento(episodiosDePrueba(), new PercepcionFija());
+            assertEquals(4, filas.size()); // 4 ejemplos, ninguno repetido.
+            assertEquals(List.of("300"), EntrenamientoSimulado.posicionales(new String[] {"300", "--repeticion=1", "--pruebas=300"}));
+        } finally {
+            EntrenamientoSimulado.REPETICION_MAXIMA = antes;
+            EntrenamientoSimulado.PRUEBAS = pruebasAntes;
+        }
+    }
+
     @Test public void laCantidadDeHilosSaleDelArgumentoOpcional() {
         int porDefecto = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         assertEquals(porDefecto, EntrenamientoSimulado.hilosPorDefecto());
