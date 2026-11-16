@@ -199,9 +199,10 @@ public class EntrenamientoSimulado {
                .append(String.format(Locale.ROOT, "- Hilos de simulación: %d (el resultado no depende de la cantidad de hilos; las redes se entrenan en uno solo).%n", hilos))
                .append(String.format(Locale.ROOT, "- Calibración usada: %.0f mm/s, %.0f °/s, robot %.0f x %.0f mm [A CONFIRMAR con el robot real].%n",
                        cal.mmPorSegundo(), cal.gradosPorSegundo(), cal.largoMm(), cal.anchoMm()))
-               .append(String.format(Locale.ROOT, "- Redes: percepción por ventana %d-%d-%d (x 13 sectores), movimiento %d-%d-%d (sigmoide, MomentumBackpropagation).%n",
+               .append(String.format(Locale.ROOT, "- Redes: percepción por ventana %d-%d-%d (x 13 sectores), movimiento %d-%d-%d (%s, MomentumBackpropagation).%n",
                        RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED,
-                       VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS))
+                       VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS,
+                       ENTROPIA ? "salida lineal, entropía cruzada" : "sigmoide, error cuadrático"))
                .append(String.format(Locale.ROOT, "- Entradas de la red de movimiento: variante %s (%d).%n",
                        VARIANTE, VARIANTE.entradas))
                .append(String.format(Locale.ROOT, "- Semilla de recolección: %d; percepción reforzada: %s; repetición máxima de clases (movimiento): %d.%n%n",
