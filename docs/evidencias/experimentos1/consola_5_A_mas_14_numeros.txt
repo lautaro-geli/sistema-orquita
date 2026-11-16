@@ -1,0 +1,46 @@
+[Entrenamiento] Simulación repartida en 1 hilo(s) (núcleos disponibles: 6); las redes se entrenan en uno solo
+[Entrenamiento] Ejemplos del maestro: 9924 en 300 episodios
+[Entrenamiento] percepción: 26 épocas, error 0.16875, 1.0 min
+[Entrenamiento] Red de movimiento: variante CRUDA_REPRESENTACION (198 entradas, 48 ocultas); semilla 20261113
+[Entrenamiento] movimiento: 80 épocas, error 0.18008, 11.8 min
+[Entrenamiento] DAgger ronda 1: +5262 ejemplos (total 15186)
+[Entrenamiento] percepción: 13 épocas, error 0.16463, 0.8 min
+[Entrenamiento] movimiento: 40 épocas, error 0.22821, 9.2 min
+[Entrenamiento] DAgger ronda 2: +5128 ejemplos (total 20314)
+[Entrenamiento] percepción: 13 épocas, error 0.16102, 1.0 min
+[Entrenamiento] movimiento: 40 épocas, error 0.25062, 12.3 min
+# Entrenamiento con la Bahía de Caza simulada (2026-11-15)
+
+Generado por `orquitas.herramientas.EntrenamientoSimulado`. Datos SINTÉTICOS del simulador 2D: sirven para entrenar y comparar estrategias, no reemplazan la prueba en la pista real.
+
+- Episodios del maestro: 300; rondas DAgger: 2; épocas: 80; ejemplos: 20314; tiempo: 36.7 min.
+- Hilos de simulación: 1 (el resultado no depende de la cantidad de hilos; las redes se entrenan en uno solo).
+- Calibración usada: 200 mm/s, 212 °/s, robot 200 x 150 mm [A CONFIRMAR con el robot real].
+- Redes: percepción por ventana 46-24-5 (x 13 sectores), movimiento 198-48-15 (sigmoide, MomentumBackpropagation).
+- Entradas de la red de movimiento: variante CRUDA_REPRESENTACION (198).
+- Semilla de recolección: 20261113; percepción reforzada: no.
+
+## Pruebas completas (100 bahías nuevas, 7 min, 3 Lobitos)
+
+| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |
+|---|---|---|---|---|---|
+| Maestro (geometría real) | 87/100 (87 %) | 2.88 | 0.01 | 75.3 | 217 |
+| Redes (solo telemetría) | 27/100 (27 %) | 2.46 | 1.70 | 32.1 | 392 |
+
+Acuerdo de dirección red/maestro en barridos nuevos: 69.1 %.
+
+## Percepción por sector (barridos nuevos)
+
+Filas: etiqueta real. Columnas: etiqueta de la red.
+
+| real \ red | LIBRE | PARED | OBSTACULO | LOBITO | SALIDA | acierto |
+|---|---|---|---|---|---|---|
+| LIBRE | 198 | 0 | 0 | 0 | 5 | 97.5 % |
+| PARED | 49 | 9969 | 209 | 236 | 403 | 91.7 % |
+| OBSTACULO | 5 | 333 | 817 | 356 | 36 | 52.8 % |
+| LOBITO | 16 | 24 | 45 | 349 | 27 | 75.7 % |
+| SALIDA | 63 | 392 | 146 | 96 | 1033 | 59.7 % |
+
+Acierto total por sector: 83.5 %.
+
+[Entrenamiento] Modelos: modelos\percepcion.nnet, modelos\movimiento.nnet. Reporte: docs\evidencias\entrenamiento_simulado_20261115.md
