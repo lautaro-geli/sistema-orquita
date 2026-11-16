@@ -29,6 +29,10 @@ import java.util.function.Supplier;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
+import org.neuroph.core.Neuron;
+import org.neuroph.core.learning.error.ErrorFunction;
+import org.neuroph.core.learning.error.MeanSquaredError;
+import org.neuroph.core.transfer.Linear;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
 import org.neuroph.util.TransferFunctionType;
@@ -77,7 +81,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  */
 public class EntrenamientoSimulado {
     static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]"
-            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N]";
+            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia]";
     /** Semilla de la recolección, de los pesos iniciales y de las mezclas (--semilla=N la cambia; la evaluación no). */
     static long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
@@ -93,6 +97,11 @@ public class EntrenamientoSimulado {
     static final int CANICAS = 3, UMBRAL = 3;
     /** Tope de repeticiones de una clase rara de meta al balancear la red de movimiento. */
     static int REPETICION_MAXIMA = 6;
+    /**
+     * --error=entropia: la red de movimiento se entrena con entropía cruzada (softmax en las 14 clases,
+     * salida lineal); por defecto, error cuadrático con salida sigmoide.
+     */
+    static boolean ENTROPIA = false;
     /** Bahías nuevas de la evaluación final (--pruebas=N). */
     static int PRUEBAS = 100;
 
@@ -152,10 +161,11 @@ public class EntrenamientoSimulado {
         entrenar(percepcion, datosPercepcion(datos), factorPercepcion * Math.max(5, epocas / 3), "percepción");
         int ocultas = ocultasMovimiento();
         log("Red de movimiento: variante " + VARIANTE + " (" + VARIANTE.entradas + " entradas, " + ocultas + " ocultas)"
-                + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
+                + "; error " + (ENTROPIA ? "entropía cruzada" : "cuadrático") + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
                 + (PERCEPCION_REFORZADA ? "; percepción reforzada" : ""));
         MultiLayerPerceptron movimiento = nuevaRed(VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS);
-        entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), epocas, "movimiento");
+        if (ENTROPIA) salidaLineal(movimiento);
+        entrenarMovimiento(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), epocas);
 
         for (int ronda = 1; ronda <= rondas; ronda++) {
             List<List<Ejemplo>> nuevos = recolectarConRedes(episodios / 2, cal, copiasDe(percepcion, movimiento),
@@ -163,11 +173,13 @@ public class EntrenamientoSimulado {
             datos.addAll(nuevos);
             log("DAgger ronda " + ronda + ": +" + contar(nuevos) + " ejemplos (total " + contar(datos) + ")");
             entrenar(percepcion, datosPercepcion(datos), factorPercepcion * Math.max(3, epocas / 6), "percepción");
-            entrenar(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), Math.max(10, epocas / 2), "movimiento");
+            entrenarMovimiento(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), Math.max(10, epocas / 2));
         }
 
         Path rutaPercepcion = carpeta.resolve("percepcion.nnet"), rutaMovimiento = carpeta.resolve("movimiento.nnet");
         percepcion.save(rutaPercepcion.toString());
+        // El modelo guardado no depende de la función de error del entrenamiento.
+        if (movimiento.getLearningRule() != null) movimiento.getLearningRule().setErrorFunction(new MeanSquaredError());
         movimiento.save(rutaMovimiento.toString());
 
         // Evaluación con bahías nuevas: cada hilo carga sus redes de los archivos recién guardados.
@@ -245,6 +257,11 @@ public class EntrenamientoSimulado {
             else if (a.equals("--percepcion-reforzada")) PERCEPCION_REFORZADA = true;
             else if (a.startsWith("--repeticion=")) REPETICION_MAXIMA = Math.max(1, Integer.parseInt(a.substring(13)));
             else if (a.startsWith("--pruebas=")) PRUEBAS = Math.max(1, Integer.parseInt(a.substring(10)));
+            else if (a.startsWith("--error=")) {
+                String e = a.substring(8).toLowerCase(Locale.ROOT);
+                if (!e.equals("entropia") && !e.equals("cuadratico")) throw new IllegalArgumentException("--error=entropia o --error=cuadratico");
+                ENTROPIA = e.equals("entropia");
+            }
         }
     }
 
@@ -258,7 +275,8 @@ public class EntrenamientoSimulado {
         for (String a : args) {
             if (!a.startsWith("--")) posicionales.add(a);
             else if (!a.startsWith("--hilos=") && !a.startsWith("--entradas=") && !a.startsWith("--semilla=")
-                    && !a.equals("--percepcion-reforzada") && !a.startsWith("--repeticion=") && !a.startsWith("--pruebas=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
+                    && !a.equals("--percepcion-reforzada") && !a.startsWith("--repeticion=") && !a.startsWith("--pruebas=")
+                    && !a.startsWith("--error=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
         }
         return posicionales;
     }
@@ -355,8 +373,22 @@ public class EntrenamientoSimulado {
         return red;
     }
 
+    /** Capa de salida lineal (para --error=entropia): la red da puntajes y la clase es la de mayor puntaje. */
+    static void salidaLineal(MultiLayerPerceptron red) {
+        for (Neuron n : red.getOutputNeurons()) n.setTransferFunction(new Linear(1));
+    }
+
+    static void entrenarMovimiento(MultiLayerPerceptron red, DataSet datos, int epocas) {
+        entrenar(red, datos, epocas, "movimiento", ENTROPIA ? new EntropiaCruzadaMovimiento(RedMovimiento.CLASES) : null);
+    }
+
     static void entrenar(MultiLayerPerceptron red, DataSet datos, int epocas, String nombre) {
+        entrenar(red, datos, epocas, nombre, null);
+    }
+
+    static void entrenar(MultiLayerPerceptron red, DataSet datos, int epocas, String nombre, ErrorFunction error) {
         MomentumBackpropagation regla = new MomentumBackpropagation();
+        if (error != null) regla.setErrorFunction(error);
         regla.setLearningRate(0.1);
         regla.setMomentum(0.6);
         regla.setMaxIterations(epocas);

@@ -325,6 +325,51 @@ public class EntrenamientoSimuladoTest {
         assertEquals(EtiquetaSector.PARED, EvaluacionUmbralLobito.etiquetasConUmbral(p, 0.7)[5]);
     }
 
+    @Test public void laEntropiaCruzadaDevuelveProbabilidadMenosDeseadoYCuadraticoEnLosMm() {
+        EntropiaCruzadaMovimiento f = new EntropiaCruzadaMovimiento(3);
+        double[] salida = {0, Math.log(3), 0, 0.7}, deseada = {0, 1, 0, 0.5};
+        double[] e = f.addPatternError(salida, deseada);
+        assertEquals(0.2, e[0], 1e-12);   // softmax(0, ln3, 0) = (0,2; 0,6; 0,2)
+        assertEquals(-0.4, e[1], 1e-12);
+        assertEquals(0.2, e[2], 1e-12);
+        assertEquals(0.2, e[3], 1e-12);   // mm: salida - deseada
+        assertEquals(-Math.log(0.6) + 0.5 * 0.04, f.getTotalError(), 1e-12);
+        f.reset();
+        assertEquals(0, f.getTotalError(), 0);
+    }
+
+    @Test(timeout = 60000) public void conEntropiaLaRedDeMovimientoAprendeYSeGuardaSinDependerDeLaFuncion() throws Exception {
+        boolean antes = EntrenamientoSimulado.ENTROPIA;
+        try {
+            EntrenamientoSimulado.opciones(new String[] {"--error=entropia"});
+            assertTrue(EntrenamientoSimulado.ENTROPIA);
+            org.neuroph.nnet.MultiLayerPerceptron red = EntrenamientoSimulado.nuevaRed(4, 6, RedMovimiento.SALIDAS);
+            EntrenamientoSimulado.salidaLineal(red);
+            DataSet ds = new DataSet(4, RedMovimiento.SALIDAS);
+            int[] clases = {6, 2, 10, 13};
+            for (int k = 0; k < 4; k++) {
+                double[] x = new double[4]; x[k] = 1;
+                double[] d = new double[RedMovimiento.SALIDAS]; d[clases[k]] = 1; d[RedMovimiento.CLASES] = 0.25 * k;
+                for (int r = 0; r < 5; r++) ds.add(new DataSetRow(x, d));
+            }
+            EntrenamientoSimulado.entrenarMovimiento(red, ds, 300);
+            red.getLearningRule().setErrorFunction(new org.neuroph.core.learning.error.MeanSquaredError());
+            java.nio.file.Path archivo = java.nio.file.Files.createTempFile("movimiento", ".nnet");
+            red.save(archivo.toString());
+            org.neuroph.core.NeuralNetwork<?> leida = org.neuroph.core.NeuralNetwork.createFromFile(archivo.toFile());
+            for (int k = 0; k < 4; k++) {
+                double[] x = new double[4]; x[k] = 1;
+                leida.setInput(x); leida.calculate();
+                assertEquals(clases[k], RedMovimiento.meta(leida.getOutput()).clase());
+            }
+            EntrenamientoSimulado.opciones(new String[] {"--error=cuadratico"});
+            assertFalse(EntrenamientoSimulado.ENTROPIA);
+            try { EntrenamientoSimulado.opciones(new String[] {"--error=otro"}); fail("aceptó --error=otro"); } catch (IllegalArgumentException esperado) { }
+        } finally {
+            EntrenamientoSimulado.ENTROPIA = antes;
+        }
+    }
+
     @Test public void laCantidadDeHilosSaleDelArgumentoOpcional() {
         int porDefecto = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         assertEquals(porDefecto, EntrenamientoSimulado.hilosPorDefecto());
