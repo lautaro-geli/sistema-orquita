@@ -20,6 +20,10 @@ import java.util.List;
 public final class Seguimiento {
     public static final int VISTAS_PARA_CONFIRMAR = 2;
     public static final double ASOCIAR_MM = 130;
+    /** Una detección se asocia a un Lobito recordado si está en su dirección (±). */
+    public static final double ASOCIAR_GRADOS = 22;
+    /** Distancia que se supone a una canica cuando el sensor no la mide. */
+    public static final double RANGO_SUPUESTO_MM = 350;
     public static final int FALTAS_PARA_OLVIDAR = 2;
     public static final int CICLOS_PARA_OLVIDAR = 12;
     /** Más lejos que esto no se cree un Lobito (las canicas se distinguen de cerca). */
@@ -41,7 +45,10 @@ public final class Seguimiento {
 
         Lobito(double x, double y, int ciclo) { this.x = x; this.y = y; this.vistas = 1; this.ultimoCiclo = ciclo; }
 
-        public boolean confirmado() { return vistas >= VISTAS_PARA_CONFIRMAR; }
+        /** El 4x4 la midió (firma de canica): con eso alcanza para confirmarla. */
+        public boolean medido;
+
+        public boolean confirmado() { return vistas >= VISTAS_PARA_CONFIRMAR || medido; }
     }
 
     private double x, y, rumbo;
@@ -114,7 +121,7 @@ public final class Seguimiento {
             while (fin + 1 < etiquetas.length && etiquetas[fin + 1] == EtiquetaSector.LOBITO) fin++;
             double mejor = Double.MAX_VALUE, angulo = 0;
             for (int k = s; k <= fin; k++) {
-                double d = ReflejoSeguridad.distancia(corregida, k);
+                double d = distanciaCanica(corregida, k);
                 if (d < mejor) { mejor = d; angulo = (k - MetaMovimiento.FRENTE) * MetaMovimiento.GRADOS_POR_SECTOR; }
             }
             // Ancho: sectores (del grupo y vecinos) que ven algo a la misma distancia. Una canica de 16 mm
@@ -127,32 +134,40 @@ public final class Seguimiento {
             boolean ancho = parecidos > SECTORES_CANICA && mejor > 150;
             if (ancho || mejor == Double.MAX_VALUE || mejor > LOBITO_MAXIMO_MM)
                 for (int k = s; k <= fin; k++) filtradas[k] = EtiquetaSector.OBSTACULO;
-            if (mejor != Double.MAX_VALUE && mejor <= LOBITO_MAXIMO_MM && !ancho) {
-                // La distancia es a la cara de la canica; el centro está un poco más lejos.
-                double a = rumbo + Math.toRadians(angulo), d = mejor + 8;
-                detecciones.add(new double[] {sx + d * Math.cos(a), sy + d * Math.sin(a)});
+            if (mejor != Double.MAX_VALUE && !ancho) {
+                // El sensor casi nunca mide la canica de lejos: ve la pared de atrás. Solo si el 4x4 da
+                // bastante menos que los otros ROI se toma esa distancia; si no, se supone RANGO_SUPUESTO_MM
+                // (sin pasar de lo que se ve atrás).
+                int k = (int) Math.round(angulo / MetaMovimiento.GRADOS_POR_SECTOR) + MetaMovimiento.FRENTE;
+                double rango = rangoCanica(corregida, k);
+                double a = rumbo + Math.toRadians(angulo);
+                boolean medido = rango != Math.min(RANGO_SUPUESTO_MM, rango) || rangoMedido(corregida, k);
+                detecciones.add(new double[] {sx + rango * Math.cos(a), sy + rango * Math.sin(a), a, rango, medido ? 1 : 0});
             }
             s = fin;
         }
         for (Lobito l : lobitos) l.vistoAhora = false;
         for (double[] p : detecciones) {
             int mejor = -1;
-            double mejorD = ASOCIAR_MM;
+            double mejorDif = ASOCIAR_GRADOS;
             for (int i = 0; i < lobitos.size(); i++) {
-                double d = Math.hypot(lobitos.get(i).x - p[0], lobitos.get(i).y - p[1]);
-                if (d < mejorD) { mejorD = d; mejor = i; }
+                Lobito l = lobitos.get(i);
+                double dif = Math.abs(Math.toDegrees(normalizar(Math.atan2(l.y - sy, l.x - sx) - p[2])));
+                if (dif < mejorDif) { mejorDif = dif; mejor = i; }
             }
             if (mejor >= 0) {
                 Lobito l = lobitos.get(mejor);
-                l.x = (l.x * l.vistas + p[0]) / (l.vistas + 1);
-                l.y = (l.y * l.vistas + p[1]) / (l.vistas + 1);
+                l.x = p[0];
+                l.y = p[1];
                 l.vistas++;
                 l.faltas = 0;
                 l.ultimoCiclo = ciclo;
                 l.vistoAhora = true;
+                if (p[4] > 0) l.medido = true;
             } else {
                 Lobito nuevo = new Lobito(p[0], p[1], ciclo);
                 nuevo.vistoAhora = true;
+                nuevo.medido = p[4] > 0;
                 lobitos.add(nuevo);
             }
         }
@@ -164,8 +179,10 @@ public final class Seguimiento {
             double rel = Math.toDegrees(normalizar(Math.atan2(l.y - sy, l.x - sx) - rumbo));
             if (d < DEBERIA_VERSE_MM && d > 60 && Math.abs(rel) < 80) {
                 int sector = (int) Math.round(rel / MetaMovimiento.GRADOS_POR_SECTOR) + MetaMovimiento.FRENTE;
-                double medido = ReflejoSeguridad.distancia(corregida, Math.max(0, Math.min(12, sector)));
-                if (medido > d - 80) l.faltas++; // Si algo lo tapa, no cuenta.
+                boolean cerca = false;
+                for (int k = Math.max(0, sector - 1); k <= Math.min(etiquetas.length - 1, sector + 1); k++)
+                    if (etiquetas[k] == EtiquetaSector.LOBITO) cerca = true;
+                if (!cerca) l.faltas++;
             }
             if (l.faltas >= FALTAS_PARA_OLVIDAR || ciclo - l.ultimoCiclo > CICLOS_PARA_OLVIDAR
                     || (!l.confirmado() && ciclo - l.ultimoCiclo > 2)) lobitos.remove(i);
@@ -242,6 +259,37 @@ public final class Seguimiento {
         for (int i = 1; i <= pasos; i++)
             if (tocaria(x + mm * 1.1 * i / pasos * Math.cos(rumboDespues), y + mm * 1.1 * i / pasos * Math.sin(rumboDespues), rumboDespues, margen)) return true;
         return false;
+    }
+
+    /**
+     * Distancia a una canica en el sector: la menor de los 3 ROI. El 8x8 y el 16x16 mezclan la canica con la
+     * pared de atrás (miden de más); el 4x4, el más angosto, es el que mejor la ve.
+     */
+    static double distanciaCanica(int[] corregida, int s) {
+        double d = Double.MAX_VALUE;
+        for (int r = 0; r < PreprocesadorTelemetria.ROIS; r++) {
+            int v = corregida[s * PreprocesadorTelemetria.ROIS + r];
+            if (!PreprocesadorTelemetria.esDesconocido(v)) d = Math.min(d, v);
+        }
+        return d;
+    }
+
+    static boolean rangoMedido(int[] corregida, int k) {
+        k = Math.max(0, Math.min(PreprocesadorTelemetria.SECTORES - 1, k));
+        int c4 = corregida[k * PreprocesadorTelemetria.ROIS];
+        double otros = ReflejoSeguridad.distancia(corregida, k);
+        return !PreprocesadorTelemetria.esDesconocido(c4) && (otros == Double.MAX_VALUE || c4 < otros - 40);
+    }
+
+    /** Rango a una canica en el sector k: el 4x4 si mide claramente menos que los otros ROI; si no, supuesto. */
+    static double rangoCanica(int[] corregida, int k) {
+        k = Math.max(0, Math.min(PreprocesadorTelemetria.SECTORES - 1, k));
+        int c4 = corregida[k * PreprocesadorTelemetria.ROIS];
+        double otros = ReflejoSeguridad.distancia(corregida, k);
+        if (!PreprocesadorTelemetria.esDesconocido(c4) && (otros == Double.MAX_VALUE || c4 < otros - 40)) return c4 + 8;
+        if (otros != Double.MAX_VALUE && otros < 120) return Math.max(40, otros);
+        double fondo = otros == Double.MAX_VALUE ? 1300 : otros;
+        return Math.min(RANGO_SUPUESTO_MM, fondo - 60);
     }
 
     /** El Lobito confirmado más cercano, o null. */
