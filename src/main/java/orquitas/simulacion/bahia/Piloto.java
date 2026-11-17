@@ -6,6 +6,7 @@ import orquitas.servidor.navegacion.DetectorAtasco;
 import orquitas.servidor.navegacion.EtiquetaSector;
 import orquitas.servidor.navegacion.MemoriaNavegacion;
 import orquitas.servidor.navegacion.MetaMovimiento;
+import orquitas.servidor.navegacion.PilotoSeguimiento;
 import orquitas.servidor.navegacion.ModoOperativo;
 import orquitas.servidor.navegacion.Movimiento;
 import orquitas.servidor.navegacion.OrdenMovimiento;
@@ -41,6 +42,23 @@ public interface Piloto {
     default void registrar(Decision ejecutada) {
         registrarOrden(ejecutada.orden());
         if (ejecutada.avanceDespues() != null) registrarOrden(ejecutada.avanceDespues());
+    }
+
+    /**
+     * Piloto de reglas con seguimiento (ver PilotoSeguimiento): ve solo la telemetría y las etiquetas de la
+     * red de percepción (o, si percepcion es null, las etiquetas reales: percepción perfecta). Uno por prueba.
+     */
+    static Piloto seguimiento(RedPercepcion percepcion, boolean giroYAvance) {
+        PilotoSeguimiento p = new PilotoSeguimiento(giroYAvance);
+        return new Piloto() {
+            @Override public Decision decidir(SimuladorBahia sim, SensorSimulado.Barrido b) {
+                EtiquetaSector[] etiquetas = percepcion == null ? b.etiquetas() : RedPercepcion.etiquetas(percepcion.probabilidades(b.telemetria()));
+                PilotoSeguimiento.Plan plan = p.decidir(b.telemetria(), etiquetas, sim.modo(), sim.capturas());
+                return new Decision(plan.orden(), etiquetas, plan.avanceDespues());
+            }
+
+            @Override public void registrarOrden(OrdenMovimiento ejecutada) { p.registrarOrden(ejecutada); }
+        };
     }
 
     /** Maestro v2 (ver MaestroV2): uno por prueba, porque puede tener memoria. */
