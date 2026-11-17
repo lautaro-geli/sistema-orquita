@@ -1,0 +1,35 @@
+# Entrenamiento con la Bahía de Caza simulada (2026-11-17)
+
+Generado por `orquitas.herramientas.EntrenamientoSimulado`. Datos SINTÉTICOS del simulador 2D: sirven para entrenar y comparar estrategias, no reemplazan la prueba en la pista real.
+
+- Episodios del maestro: 600; rondas DAgger: 2; épocas: 80; ejemplos: 34935; tiempo: 28.7 min.
+- Hilos de simulación: 1 (el resultado no depende de la cantidad de hilos; las redes se entrenan en uno solo).
+- Calibración usada: 200 mm/s, 212 °/s, robot 200 x 150 mm [A CONFIRMAR con el robot real].
+- Redes: percepción por ventana 46-24-5 (x 13 sectores), movimiento 184-48-15 (sigmoide, error cuadrático, MomentumBackpropagation).
+- Entradas de la red de movimiento: variante CRUDA (184).
+- Semilla de recolección: 20261999; percepción reforzada: no; repetición máxima de clases (movimiento): 2.
+- Milímetros: en todas las filas, peso 1.0; episodios que arrancan en escape: 0 (+0 por ronda DAgger).
+- Maestro: v2 Opciones[giroYAvance=true, memoria=false, toleranciaEmbudo=true, memoriaSuave=false, giroSeguro=true]; barrido 1.91 s; ruido por ROI (4x4, 8x8, 16x16) x1.51,1.73,1.94.
+
+## Pruebas completas (300 bahías nuevas, 7 min, 3 Lobitos)
+
+| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |
+|---|---|---|---|---|---|
+| Maestro v2 (geometría real) | 293/300 (98 %) | 2.97 | 0.14 | 84.4 | 101 |
+| Redes (solo telemetría) | 227/300 (76 %) | 2.78 | 6.78 | 34.7 | 247 |
+
+Acuerdo de dirección red/maestro en barridos nuevos: 67.8 %.
+
+## Percepción por sector (barridos nuevos)
+
+Filas: etiqueta real. Columnas: etiqueta de la red.
+
+| real \ red | LIBRE | PARED | OBSTACULO | LOBITO | SALIDA | acierto |
+|---|---|---|---|---|---|---|
+| LIBRE | 200 | 0 | 0 | 0 | 1 | 99.5 % |
+| PARED | 44 | 12352 | 366 | 219 | 520 | 91.5 % |
+| OBSTACULO | 5 | 422 | 1364 | 181 | 57 | 67.2 % |
+| LOBITO | 14 | 32 | 78 | 336 | 40 | 67.2 % |
+| SALIDA | 58 | 535 | 257 | 157 | 1014 | 50.2 % |
+
+Acierto total por sector: 83.6 %.
