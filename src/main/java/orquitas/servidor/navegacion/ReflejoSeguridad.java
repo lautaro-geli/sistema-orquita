@@ -66,6 +66,33 @@ public final class ReflejoSeguridad {
         return seguro.movimiento() == Movimiento.AVANZAR ? retroceder() : seguro;
     }
 
+    /** Avance mínimo que vale la pena mandar después de un giro. */
+    static final double AVANCE_TRAS_GIRO_MINIMO_MM = 40;
+
+    /**
+     * "Girar y avanzar": el avance que sigue al giro hacia el sector de la meta, sin barrido nuevo. Se
+     * acorta a lo que el barrido vio en ese sector y sus vecinos (menos MARGEN_MM) y a menos cuanto más
+     * grande el giro (el giro real puede quedar corto o largo). En BUSQUEDA no avanza hacia un sector
+     * SALIDA. Null si no hay giro, si no hay mm o si no queda lugar.
+     */
+    public static OrdenMovimiento avanceTrasGiro(MetaMovimiento meta, int[] telemetria, EtiquetaSector[] etiquetas,
+                                                 ModoOperativo modo) {
+        int s = meta.clase();
+        if (s == MetaMovimiento.FRENTE || s == MetaMovimiento.ATRAS || meta.mm() < AVANCE_TRAS_GIRO_MINIMO_MM) return null;
+        if (modo == ModoOperativo.BUSQUEDA && etiquetas != null && etiquetas[s] == EtiquetaSector.SALIDA) return null;
+        int[] corregida = PreprocesadorTelemetria.corregir(telemetria);
+        double libre = Double.MAX_VALUE;
+        for (int v = Math.max(0, s - 1); v <= Math.min(PreprocesadorTelemetria.SECTORES - 1, s + 1); v++) {
+            if (etiquetas != null && etiquetas[v] == EtiquetaSector.LOBITO && v == s) continue;
+            libre = Math.min(libre, distancia(corregida, v));
+        }
+        double grados = Math.abs(s - MetaMovimiento.FRENTE) * MetaMovimiento.GRADOS_POR_SECTOR;
+        double mm = meta.mm() * (1 - grados / 300);
+        if (libre != Double.MAX_VALUE) mm = Math.min(mm, libre - CalibracionRobot.SENSOR_AL_FRENTE_MM - MARGEN_MM);
+        if (mm < AVANCE_TRAS_GIRO_MINIMO_MM) return null;
+        return new OrdenMovimiento(Movimiento.AVANZAR, CalibracionRobot.msParaAvanzar(mm));
+    }
+
     /**
      * True si el frente no ve nada (LIBRE o SALIDA) y al menos ABIERTOS_ESTRECHO sectores tampoco: adentro
      * de la bahía un abanico así siempre ve paredes; pasa cuando el robot está en el hueco mirando afuera.

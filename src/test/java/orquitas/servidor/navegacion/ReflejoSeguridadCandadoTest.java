@@ -72,4 +72,32 @@ public class ReflejoSeguridadCandadoTest {
         Arrays.fill(e, EtiquetaSector.PARED);
         assertEquals(AVANZAR, ReflejoSeguridad.candadoSalida(AVANZAR, tel, e, ModoOperativo.BUSQUEDA));
     }
+
+    @Test
+    public void avanceTrasGiroSeAcortaAloQueVioElSector() {
+        int[] tel = telemetria(900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 300, 900, 900);
+        // Giro de 60° a la izquierda (sector 10) con 400 mm: el sector 10 ve algo a 300 mm.
+        OrdenMovimiento a = ReflejoSeguridad.avanceTrasGiro(new MetaMovimiento(10, 400), tel, etiquetas("PPPPPPPPPPPPP"), ModoOperativo.BUSQUEDA);
+        assertNotNull(a);
+        assertEquals(Movimiento.AVANZAR, a.movimiento());
+        assertTrue(CalibracionRobot.mmEn(a.milisegundos()) <= 300 - CalibracionRobot.SENSOR_AL_FRENTE_MM - ReflejoSeguridad.MARGEN_MM + 1);
+    }
+
+    @Test
+    public void sinAvanceTrasGiroHaciaLaSalidaEnBusquedaNiSinMm() {
+        int[] tel = telemetria(900, 900, 900, 900, 900, 900, 900, 900, 900, 900, 1200, 900, 900);
+        assertNull(ReflejoSeguridad.avanceTrasGiro(new MetaMovimiento(10, 400), tel, etiquetas("PPPPPPPPPPSPP"), ModoOperativo.BUSQUEDA));
+        assertNotNull(ReflejoSeguridad.avanceTrasGiro(new MetaMovimiento(10, 400), tel, etiquetas("PPPPPPPPPPSPP"), ModoOperativo.ESCAPE));
+        assertNull(ReflejoSeguridad.avanceTrasGiro(new MetaMovimiento(10, 0), tel, etiquetas("PPPPPPPPPPPPP"), ModoOperativo.ESCAPE));
+        assertNull(ReflejoSeguridad.avanceTrasGiro(new MetaMovimiento(MetaMovimiento.FRENTE, 400), tel, etiquetas("PPPPPPPPPPPPP"), ModoOperativo.ESCAPE));
+    }
+
+    @Test
+    public void laMetaDeGirarYAvanzarLlevaLosMmDelAvance() {
+        OrdenMovimiento giro = new OrdenMovimiento(Movimiento.GIRAR_IZQ, (int) Math.round(30 / CalibracionRobot.GRADOS_POR_SEGUNDO * 1000));
+        MetaMovimiento m = MetaMovimiento.desdePlan(giro, new OrdenMovimiento(Movimiento.AVANZAR, CalibracionRobot.msParaAvanzar(250)));
+        assertEquals(MetaMovimiento.FRENTE + 2, m.clase());
+        assertEquals(250, m.mm(), 3);
+        assertEquals(0, MetaMovimiento.desdePlan(giro, null).mm(), 0);
+    }
 }

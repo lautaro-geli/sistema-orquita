@@ -46,7 +46,9 @@ import orquitas.servidor.navegacion.PreprocesadorTelemetria;
 import orquitas.servidor.navegacion.RedMovimiento;
 import orquitas.servidor.navegacion.RedPercepcion;
 import orquitas.servidor.navegacion.RepresentacionIntermedia;
+import orquitas.servidor.navegacion.MetaMovimiento;
 import orquitas.simulacion.bahia.Maestro;
+import orquitas.simulacion.bahia.MaestroV2;
 import orquitas.simulacion.bahia.Piloto;
 import orquitas.simulacion.bahia.RobotSimulado;
 import orquitas.simulacion.bahia.SensorSimulado;
@@ -81,7 +83,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  */
 public class EntrenamientoSimulado {
     static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]"
-            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia] [--mm-solo-avance] [--peso-mm=X] [--escapes=N]";
+            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia] [--mm-solo-avance] [--peso-mm=X] [--escapes=N] [--maestro=actual|v2|opciones]";
     /** Semilla de la recolección, de los pesos iniciales y de las mezclas (--semilla=N la cambia; la evaluación no). */
     static long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
@@ -111,6 +113,12 @@ public class EntrenamientoSimulado {
      * al azar (y N/2 en cada ronda DAgger), para tener más ejemplos de escape.
      */
     static int ESCAPES = 0;
+    /**
+     * --maestro=v2 (o --maestro=giro+seguro+embudo, etc.): enseña el Maestro v2 en lugar del actual. Con
+     * "giro", la red aprende "girar hacia el sector y avanzar X mm" en el mismo barrido (los mm de un giro
+     * son el avance que sigue) y así se la evalúa. Null = Maestro actual.
+     */
+    static MaestroV2.Opciones MAESTRO_V2 = null;
     /** Bahías nuevas de la evaluación final (--pruebas=N). */
     static int PRUEBAS = 100;
 
@@ -120,7 +128,12 @@ public class EntrenamientoSimulado {
      * o la de las redes en DAgger), que es la que entra en la memoria del ciclo siguiente.
      */
     record Ejemplo(int[] telemetria, EtiquetaSector[] etiquetas, ModoOperativo modo, OrdenMovimiento orden,
-                   OrdenMovimiento ejecutada) { }
+                   OrdenMovimiento ejecutada, MetaMovimiento meta, OrdenMovimiento avanceEjecutado) {
+        /** Sin "girar y avanzar": la meta sale de la orden y no hubo avance después del giro. */
+        Ejemplo(int[] telemetria, EtiquetaSector[] etiquetas, ModoOperativo modo, OrdenMovimiento orden, OrdenMovimiento ejecutada) {
+            this(telemetria, etiquetas, modo, orden, ejecutada, MetaMovimiento.desde(orden), null);
+        }
+    }
 
     /** Las dos redes que usa un hilo de simulación: sus propias copias, que no comparte con otro hilo. */
     record Redes(RedPercepcion percepcion, RedMovimiento movimiento) { }
@@ -177,7 +190,8 @@ public class EntrenamientoSimulado {
         log("Red de movimiento: variante " + VARIANTE + " (" + VARIANTE.entradas + " entradas, " + ocultas + " ocultas)"
                 + "; error " + (ENTROPIA ? "entropía cruzada" : "cuadrático")
                 + (MM_SOLO_AVANCE ? "; mm solo en avances" : "") + (PESO_MM != 1 ? "; peso mm " + PESO_MM : "")
-                + (ESCAPES > 0 ? "; episodios de escape " + ESCAPES : "") + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
+                + (ESCAPES > 0 ? "; episodios de escape " + ESCAPES : "")
+                + "; maestro " + (MAESTRO_V2 == null ? "actual" : "v2 " + MAESTRO_V2) + "; barrido " + SimuladorBahia.SEGUNDOS_BARRIDO + " s" + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
                 + (PERCEPCION_REFORZADA ? "; percepción reforzada" : ""));
         MultiLayerPerceptron movimiento = nuevaRed(VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS);
         if (ENTROPIA) salidaLineal(movimiento);
@@ -231,11 +245,14 @@ public class EntrenamientoSimulado {
                        VARIANTE, VARIANTE.entradas))
                .append(String.format(Locale.ROOT, "- Semilla de recolección: %d; percepción reforzada: %s; repetición máxima de clases (movimiento): %d.%n",
                        SEMILLA, PERCEPCION_REFORZADA ? "sí" : "no", REPETICION_MAXIMA))
-               .append(String.format(Locale.ROOT, "- Milímetros: %s, peso %.1f; episodios que arrancan en escape: %d (+%d por ronda DAgger).%n%n",
+               .append(String.format(Locale.ROOT, "- Milímetros: %s, peso %.1f; episodios que arrancan en escape: %d (+%d por ronda DAgger).%n",
                        MM_SOLO_AVANCE ? "solo en avances y retrocesos" : "en todas las filas", PESO_MM, ESCAPES, ESCAPES / 2))
+               .append(String.format(Locale.ROOT, "- Maestro: %s; barrido %.2f s; ruido por ROI (4x4, 8x8, 16x16) x%s.%n%n",
+                       MAESTRO_V2 == null ? "actual" : "v2 " + MAESTRO_V2, SimuladorBahia.SEGUNDOS_BARRIDO,
+                       System.getProperty("orquita.ruidoRoi", "1,1,1")))
                .append("## Pruebas completas (").append(pruebas).append(" bahías nuevas, 7 min, 3 Lobitos)\n\n")
                .append("| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |\n|---|---|---|---|---|---|\n")
-               .append(maestro.fila("Maestro (geometría real)")).append('\n')
+               .append(maestro.fila(MAESTRO_V2 == null ? "Maestro (geometría real)" : "Maestro v2 (geometría real)")).append('\n')
                .append(redes.fila("Redes (solo telemetría)")).append("\n\n")
                .append(String.format(Locale.ROOT, "Acuerdo de dirección red/maestro en barridos nuevos: %.1f %%.%n%n", acuerdo * 100))
                .append("## Percepción por sector (barridos nuevos)\n\nFilas: etiqueta real. Columnas: etiqueta de la red.\n\n")
@@ -292,6 +309,10 @@ public class EntrenamientoSimulado {
             else if (a.equals("--mm-solo-avance")) MM_SOLO_AVANCE = true;
             else if (a.startsWith("--peso-mm=")) PESO_MM = Double.parseDouble(a.substring(10));
             else if (a.startsWith("--escapes=")) ESCAPES = Math.max(0, Integer.parseInt(a.substring(10)));
+            else if (a.startsWith("--maestro=")) {
+                String m = a.substring(10).toLowerCase(Locale.ROOT);
+                MAESTRO_V2 = m.equals("actual") ? null : MaestroV2.Opciones.desde(m.equals("v2") ? "giro+seguro+embudo" : m);
+            }
         }
     }
 
@@ -307,7 +328,7 @@ public class EntrenamientoSimulado {
             else if (!a.startsWith("--hilos=") && !a.startsWith("--entradas=") && !a.startsWith("--semilla=")
                     && !a.equals("--percepcion-reforzada") && !a.startsWith("--repeticion=") && !a.startsWith("--pruebas=")
                     && !a.startsWith("--error=") && !a.equals("--mm-solo-avance") && !a.startsWith("--peso-mm=")
-                    && !a.startsWith("--escapes=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
+                    && !a.startsWith("--escapes=") && !a.startsWith("--maestro=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
         }
         return posicionales;
     }
@@ -482,7 +503,7 @@ public class EntrenamientoSimulado {
     static List<DataSetRow> filasMovimiento(List<List<Ejemplo>> episodios, RedPercepcion percepcion) {
         int[] cuenta = new int[RedMovimiento.CLASES];
         for (List<Ejemplo> episodio : episodios)
-            for (Ejemplo e : episodio) cuenta[MetaMovimiento.desde(e.orden()).clase()]++;
+            for (Ejemplo e : episodio) cuenta[e.meta().clase()]++;
         int maximo = 0;
         for (int c : cuenta) maximo = Math.max(maximo, c);
         List<DataSetRow> filas = new ArrayList<>();
@@ -492,8 +513,9 @@ public class EntrenamientoSimulado {
                 double[] p = percepcion.probabilidades(e.telemetria());
                 double[] entradas = RedMovimiento.entradasDelCicloDe(VARIANTE, e.telemetria(), p, e.modo(), memoria);
                 memoria.registrarOrden(e.ejecutada());
-                DataSetRow fila = new DataSetRow(entradas, RedMovimiento.salidaDeseada(e.orden()));
-                int c = cuenta[MetaMovimiento.desde(e.orden()).clase()];
+                if (e.avanceEjecutado() != null) memoria.registrarOrden(e.avanceEjecutado());
+                DataSetRow fila = new DataSetRow(entradas, RedMovimiento.salidaDeseada(e.meta()));
+                int c = cuenta[e.meta().clase()];
                 int veces = Math.max(1, Math.min(REPETICION_MAXIMA, Math.round(maximo / (float) c)));
                 for (int i = 0; i < veces; i++) filas.add(fila);
             }
@@ -542,13 +564,14 @@ public class EntrenamientoSimulado {
         Random azar = azarDelEpisodio(semilla);
         int umbral = 1 + azar.nextInt(UMBRAL); // También pruebas con umbral 1 y 2 (más escapes).
         SimuladorBahia sim = simuladorDelEpisodio(semilla, umbral, cal, escape);
+        Piloto maestro = maestroDelEpisodio();
         List<Ejemplo> episodio = new ArrayList<>();
         while (!sim.terminada()) {
             SensorSimulado.Barrido b = sim.medir();
-            OrdenMovimiento maestro = Maestro.decidir(sim, b);
-            OrdenMovimiento ejecutada = azar.nextDouble() < PROBABILIDAD_ORDEN_AL_AZAR ? ordenAlAzar(azar) : maestro;
-            episodio.add(new Ejemplo(b.telemetria(), b.etiquetas(), sim.modo(), maestro, ejecutada));
-            sim.ejecutar(ejecutada);
+            Piloto.Decision d = maestro.decidir(sim, b);
+            Piloto.Decision ejecutada = azar.nextDouble() < PROBABILIDAD_ORDEN_AL_AZAR ? new Piloto.Decision(ordenAlAzar(azar), null) : d;
+            episodio.add(ejemplo(b, sim.modo(), d, ejecutada));
+            ejecutada.ejecutarEn(sim);
         }
         return episodio;
     }
@@ -573,20 +596,37 @@ public class EntrenamientoSimulado {
 
     static List<Ejemplo> episodioConRedes(long semilla, RobotSimulado.Calibracion cal, Redes redes, boolean escape) {
         Random azar = azarDelEpisodio(semilla);
-        Piloto piloto = Piloto.redes(redes.percepcion(), redes.movimiento());
+        Piloto piloto = pilotoDeRedes(redes);
         int umbral = 1 + azar.nextInt(UMBRAL);
         SimuladorBahia sim = simuladorDelEpisodio(semilla, umbral, cal, escape);
+        Piloto maestro = maestroDelEpisodio();
         List<Ejemplo> episodio = new ArrayList<>();
         while (!sim.terminada()) {
             SensorSimulado.Barrido b = sim.medir();
-            OrdenMovimiento maestro = Maestro.decidir(sim, b);
-            OrdenMovimiento deLasRedes = piloto.decidir(sim, b).orden();
-            OrdenMovimiento ejecutada = azar.nextDouble() < 0.5 ? deLasRedes : maestro;
-            episodio.add(new Ejemplo(b.telemetria(), b.etiquetas(), sim.modo(), maestro, ejecutada));
-            sim.ejecutar(ejecutada);
-            piloto.registrarOrden(ejecutada);
+            Piloto.Decision delMaestro = maestro.decidir(sim, b);
+            Piloto.Decision deLasRedes = piloto.decidir(sim, b);
+            Piloto.Decision ejecutada = azar.nextDouble() < 0.5 ? deLasRedes : delMaestro;
+            episodio.add(ejemplo(b, sim.modo(), delMaestro, ejecutada));
+            ejecutada.ejecutarEn(sim);
+            piloto.registrar(ejecutada);
         }
         return episodio;
+    }
+
+    /** Maestro que enseña: el actual o el v2 (uno por episodio). */
+    static Piloto maestroDelEpisodio() {
+        return MAESTRO_V2 == null ? Piloto.maestro() : Piloto.maestroV2(MAESTRO_V2);
+    }
+
+    /** Piloto de redes: con "girar y avanzar" si el maestro v2 lo usa. */
+    static Piloto pilotoDeRedes(Redes redes) {
+        return Piloto.redes(redes.percepcion(), redes.movimiento(), MAESTRO_V2 != null && MAESTRO_V2.giroYAvance());
+    }
+
+    /** Ejemplo de un barrido: se enseña la decisión del maestro (giro y avance juntos) y se recuerda la ejecutada. */
+    static Ejemplo ejemplo(SensorSimulado.Barrido b, ModoOperativo modo, Piloto.Decision maestro, Piloto.Decision ejecutada) {
+        return new Ejemplo(b.telemetria(), b.etiquetas(), modo, maestro.orden(), ejecutada.orden(),
+                MetaMovimiento.desdePlan(maestro.orden(), maestro.avanceDespues()), ejecutada.avanceDespues());
     }
 
     static OrdenMovimiento ordenAlAzar(Random azar) {
@@ -596,21 +636,21 @@ public class EntrenamientoSimulado {
 
     /** Pruebas completas con el maestro (la prueba i usa la semilla SEMILLA_EVALUACION + i). */
     static Resumen evaluarMaestro(int pruebas, RobotSimulado.Calibracion cal, int hilos) {
-        return resumir(repartir(pruebas, hilos, i -> pruebaCompleta(SEMILLA_EVALUACION + i, Piloto.maestro(), cal)));
+        return resumir(repartir(pruebas, hilos, i -> pruebaCompleta(SEMILLA_EVALUACION + i, maestroDelEpisodio(), cal)));
     }
 
     /** Las mismas pruebas con las redes: un piloto nuevo por prueba (con su memoria y su detector de atasco). */
     static Resumen evaluarRedes(Supplier<Redes> redesPorHilo, int pruebas, RobotSimulado.Calibracion cal, int hilos) {
         return resumir(repartir(pruebas, hilos, redesPorHilo,
-                (redes, i) -> pruebaCompleta(SEMILLA_EVALUACION + i, Piloto.redes(redes.percepcion(), redes.movimiento()), cal)));
+                (redes, i) -> pruebaCompleta(SEMILLA_EVALUACION + i, pilotoDeRedes(redes), cal)));
     }
 
     static Prueba pruebaCompleta(long semilla, Piloto piloto, RobotSimulado.Calibracion cal) {
         SimuladorBahia sim = SimuladorBahia.alAzar(semilla, CANICAS, UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
         while (!sim.terminada()) {
-            OrdenMovimiento orden = piloto.decidir(sim, sim.medir()).orden();
-            sim.ejecutar(orden);
-            piloto.registrarOrden(orden);
+            Piloto.Decision d = piloto.decidir(sim, sim.medir());
+            d.ejecutarEn(sim);
+            piloto.registrar(d);
         }
         return new Prueba(sim.modo() == ModoOperativo.LIBERADA, sim.capturas(), sim.choques(), sim.puntaje(), sim.segundos());
     }
@@ -672,16 +712,19 @@ public class EntrenamientoSimulado {
         int iguales = 0, total = 0;
         SimuladorBahia sim = SimuladorBahia.alAzar(SEMILLA_EVALUACION + 800 + i, CANICAS, 1 + i % UMBRAL, cal, SensorSimulado.Ruido.NORMAL);
         MemoriaNavegacion memoria = new MemoriaNavegacion();
+        Piloto delMaestro = maestroDelEpisodio();
         while (!sim.terminada()) {
             SensorSimulado.Barrido b = sim.medir();
-            OrdenMovimiento maestro = Maestro.decidir(sim, b);
+            Piloto.Decision dm = delMaestro.decidir(sim, b);
+            OrdenMovimiento maestro = dm.orden();
             double[] p = redes.percepcion().probabilidades(b.telemetria());
             OrdenMovimiento red = redes.movimiento().decidir(
                     RedMovimiento.entradasDelCicloDe(redes.movimiento().variante(), b.telemetria(), p, sim.modo(), memoria));
             if (red.movimiento() == maestro.movimiento()) iguales++;
             total++;
-            sim.ejecutar(maestro);
+            dm.ejecutarEn(sim);
             memoria.registrarOrden(maestro);
+            if (dm.avanceDespues() != null) memoria.registrarOrden(dm.avanceDespues());
         }
         return new int[] {iguales, total};
     }

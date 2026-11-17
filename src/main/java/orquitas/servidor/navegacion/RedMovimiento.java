@@ -140,7 +140,11 @@ public class RedMovimiento {
 
     /** Salida deseada para entrenar: la orden (del maestro) pasada a sector meta one-hot y distancia. */
     public static double[] salidaDeseada(OrdenMovimiento orden) {
-        MetaMovimiento meta = MetaMovimiento.desde(orden);
+        return salidaDeseada(MetaMovimiento.desde(orden));
+    }
+
+    /** Salida deseada para una meta (con "girar y avanzar", un giro puede tener mm: el avance después). */
+    public static double[] salidaDeseada(MetaMovimiento meta) {
         double[] d = new double[SALIDAS];
         d[meta.clase()] = 1;
         d[CLASES] = meta.mm() / MetaMovimiento.MAXIMO_MM;
@@ -154,6 +158,15 @@ public class RedMovimiento {
         red.setInput(entradas);
         red.calculate();
         return interpretar(red.getOutput());
+    }
+
+    /** Como decidir, pero devuelve la meta (sector y mm) en lugar de la orden. */
+    public synchronized MetaMovimiento decidirMeta(double[] entradas) {
+        if (entradas == null || entradas.length != variante.entradas)
+            throw new IllegalArgumentException("Se esperan " + variante.entradas + " entradas");
+        red.setInput(entradas);
+        red.calculate();
+        return meta(red.getOutput());
     }
 
     /** Meta = salida mayor entre las 14 primeras; distancia = la última. */

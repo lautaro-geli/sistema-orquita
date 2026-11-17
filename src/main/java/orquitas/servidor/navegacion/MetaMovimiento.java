@@ -45,6 +45,16 @@ public record MetaMovimiento(int clase, double mm) {
         }
     }
 
+    /**
+     * Meta de "girar y avanzar": el sector del giro y, como mm, el avance que sigue (0 si no hay).
+     * Sin giro (avance, retroceso), igual que desde(orden).
+     */
+    public static MetaMovimiento desdePlan(OrdenMovimiento orden, OrdenMovimiento avanceDespues) {
+        MetaMovimiento m = desde(orden);
+        if (avanceDespues == null || m.clase() == FRENTE || m.clase() == ATRAS) return m;
+        return new MetaMovimiento(m.clase(), CalibracionRobot.mmEn(avanceDespues.milisegundos()));
+    }
+
     /** Orden con milisegundos para la Orquita. */
     public OrdenMovimiento comoOrden() {
         if (clase == ATRAS) return new OrdenMovimiento(Movimiento.RETROCEDER, CalibracionRobot.msParaAvanzar(mm));
