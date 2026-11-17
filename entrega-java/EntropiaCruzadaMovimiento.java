@@ -16,11 +16,31 @@ import org.neuroph.core.learning.error.ErrorFunction;
 public final class EntropiaCruzadaMovimiento implements ErrorFunction, Serializable {
     private static final long serialVersionUID = 1L;
     private final int clases;
+    /** Si es true, el error de los mm solo cuenta cuando la clase deseada es avanzar o retroceder. */
+    private final boolean mmSoloAvance;
+    /** Peso del error de los mm frente al de la dirección. */
+    private final double pesoMm;
+    /** Clases en las que los mm importan (avanzar y retroceder). */
+    private final int frente, atras;
     private transient double total;
     private transient long patrones;
 
     public EntropiaCruzadaMovimiento(int clases) {
+        this(clases, false, 1, -1, -1);
+    }
+
+    /**
+     * @param mmSoloAvance si es true, en las filas cuya clase deseada no es {@code frente} ni {@code atras}
+     *                     (los giros, con mm deseados = 0) el error de los mm vale 0: la salida aprende
+     *                     "cuánto avanzar si avanza" en lugar de un promedio con ceros.
+     * @param pesoMm       multiplica el error de los mm (para equilibrarlo con el de la dirección).
+     */
+    public EntropiaCruzadaMovimiento(int clases, boolean mmSoloAvance, double pesoMm, int frente, int atras) {
         this.clases = clases;
+        this.mmSoloAvance = mmSoloAvance;
+        this.pesoMm = pesoMm;
+        this.frente = frente;
+        this.atras = atras;
     }
 
     /** Softmax de las primeras n salidas (restando el máximo para que no desborde). */
@@ -42,9 +62,14 @@ public final class EntropiaCruzadaMovimiento implements ErrorFunction, Serializa
             error[i] = p[i] - deseada[i];
             if (deseada[i] > 0) total -= deseada[i] * Math.log(Math.max(p[i], 1e-12));
         }
+        int deseadaClase = 0;
+        for (int i = 1; i < clases; i++) if (deseada[i] > deseada[deseadaClase]) deseadaClase = i;
+        boolean cuentanMm = !mmSoloAvance || deseadaClase == frente || deseadaClase == atras;
         for (int i = clases; i < salida.length; i++) {
-            error[i] = salida[i] - deseada[i];
-            total += 0.5 * error[i] * error[i];
+            if (!cuentanMm) continue;
+            double e = salida[i] - deseada[i];
+            error[i] = pesoMm * e;
+            total += 0.5 * pesoMm * e * e;
         }
         patrones++;
         return error;

@@ -370,6 +370,55 @@ public class EntrenamientoSimuladoTest {
         }
     }
 
+    @Test public void conMmSoloAvanceLosGirosNoCorrigenLosMmYElPesoMultiplica() {
+        // 3 clases: 0 = giro, 1 = frente, 2 = atrás; salida 3 = mm.
+        EntropiaCruzadaMovimiento f = new EntropiaCruzadaMovimiento(3, true, 5, 1, 2);
+        double[] salida = {0, 0, 0, 0.7};
+        assertEquals(0, f.addPatternError(salida, new double[] {1, 0, 0, 0})[3], 0);        // giro: no cuenta
+        assertEquals(5 * 0.2, f.addPatternError(salida, new double[] {0, 1, 0, 0.5})[3], 1e-12); // frente
+        assertEquals(5 * 0.4, f.addPatternError(salida, new double[] {0, 0, 1, 0.3})[3], 1e-12); // atrás
+        EntropiaCruzadaMovimiento normal = new EntropiaCruzadaMovimiento(3);
+        assertEquals(0.7, normal.addPatternError(salida, new double[] {1, 0, 0, 0})[3], 1e-12);
+    }
+
+    @Test public void lasOpcionesDeMmYEscapesSeLeenYExigenEntropia() {
+        boolean e = EntrenamientoSimulado.ENTROPIA, m = EntrenamientoSimulado.MM_SOLO_AVANCE;
+        double p = EntrenamientoSimulado.PESO_MM; int x = EntrenamientoSimulado.ESCAPES;
+        try {
+            EntrenamientoSimulado.opciones(new String[] {"--mm-solo-avance", "--peso-mm=5", "--escapes=200"});
+            assertTrue(EntrenamientoSimulado.MM_SOLO_AVANCE);
+            assertEquals(5, EntrenamientoSimulado.PESO_MM, 0);
+            assertEquals(200, EntrenamientoSimulado.ESCAPES);
+            assertEquals(List.of("300"), EntrenamientoSimulado.posicionales(new String[] {"300", "--mm-solo-avance", "--peso-mm=5", "--escapes=200"}));
+            EntrenamientoSimulado.ENTROPIA = false;
+            try {
+                EntrenamientoSimulado.entrenarMovimiento(EntrenamientoSimulado.nuevaRed(2, 2, RedMovimiento.SALIDAS),
+                        new DataSet(2, RedMovimiento.SALIDAS), 1);
+                fail("aceptó --mm-solo-avance sin --error=entropia");
+            } catch (IllegalArgumentException esperado) { }
+        } finally {
+            EntrenamientoSimulado.ENTROPIA = e; EntrenamientoSimulado.MM_SOLO_AVANCE = m;
+            EntrenamientoSimulado.PESO_MM = p; EntrenamientoSimulado.ESCAPES = x;
+        }
+    }
+
+    @Test public void losEpisodiosDeEscapeArrancanEnEscapeEnLugaresDistintos() {
+        java.util.Set<Long> lugares = new java.util.HashSet<>();
+        for (long s = 0; s < 20; s++) {
+            orquitas.simulacion.bahia.SimuladorBahia sim = orquitas.simulacion.bahia.SimuladorBahia.enEscapeAlAzar(s, 3,
+                    orquitas.simulacion.bahia.RobotSimulado.Calibracion.ESTIMADA, orquitas.simulacion.bahia.SensorSimulado.Ruido.NORMAL);
+            assertEquals(ModoOperativo.ESCAPE, sim.modo());
+            assertEquals(3, sim.capturas());
+            assertTrue(sim.bahia().adentro(sim.robot().x(), sim.robot().y()));
+            assertFalse(sim.robot().choca(sim.bahia(), sim.robot().x(), sim.robot().y(), sim.robot().rumbo()));
+            lugares.add(Math.round(sim.robot().x() / 100) * 1000 + Math.round(sim.robot().y() / 100));
+        }
+        assertTrue(lugares.size() > 10);
+        List<Ejemplo> episodio = EntrenamientoSimulado.episodioConMaestro(123, orquitas.simulacion.bahia.RobotSimulado.Calibracion.ESTIMADA, true);
+        assertFalse(episodio.isEmpty());
+        assertEquals(ModoOperativo.ESCAPE, episodio.get(0).modo());
+    }
+
     @Test public void laCantidadDeHilosSaleDelArgumentoOpcional() {
         int porDefecto = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
         assertEquals(porDefecto, EntrenamientoSimulado.hilosPorDefecto());

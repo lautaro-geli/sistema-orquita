@@ -56,6 +56,31 @@ public final class SimuladorBahia {
         }
     }
 
+    /**
+     * Prueba que arranca ya en Modo Escape (para entrenar el escape con más ejemplos): bahía con 2
+     * obstáculos y entre 0 y 2 canicas libres, robot en un lugar y rumbo al azar dentro de la bahía (sin
+     * tocar nada y al menos a {@code margenMm} de las paredes), con las capturas del umbral ya hechas.
+     * Todo sale del Random de la prueba: con la misma semilla, la misma bahía y la misma pose.
+     */
+    public static SimuladorBahia enEscapeAlAzar(long semilla, int umbral, RobotSimulado.Calibracion cal,
+                                                SensorSimulado.Ruido ruido) {
+        Random azar = new Random(semilla);
+        double margenMm = 160;
+        while (true) {
+            Bahia bahia = Bahia.generar(azar, Bahia.OBSTACULOS, azar.nextInt(3));
+            double x = (azar.nextDouble() * 2 - 1) * (Bahia.BASE_MM / 2 - margenMm);
+            double y = margenMm + azar.nextDouble() * (Bahia.ALTO_MM - 2 * margenMm);
+            double rumbo = azar.nextDouble() * 2 * Math.PI;
+            if (!bahia.adentroConMargen(x, y, margenMm)) continue;
+            RobotSimulado robot = new RobotSimulado(cal, x, y, rumbo);
+            if (robot.choca(bahia, x, y, rumbo)) continue;
+            SimuladorBahia sim = new SimuladorBahia(bahia, robot, new SensorSimulado(ruido), azar, umbral);
+            sim.capturas = umbral;
+            sim.modo = ModoOperativo.ESCAPE;
+            return sim;
+        }
+    }
+
     /** Barrido desde la pose actual. */
     public SensorSimulado.Barrido medir() {
         return sensor.medir(bahia, robot, azar);

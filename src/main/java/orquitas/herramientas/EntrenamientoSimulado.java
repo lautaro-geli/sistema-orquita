@@ -81,7 +81,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  */
 public class EntrenamientoSimulado {
     static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]"
-            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia]";
+            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia] [--mm-solo-avance] [--peso-mm=X] [--escapes=N]";
     /** Semilla de la recolección, de los pesos iniciales y de las mezclas (--semilla=N la cambia; la evaluación no). */
     static long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
@@ -102,6 +102,15 @@ public class EntrenamientoSimulado {
      * salida lineal); por defecto, error cuadrático con salida sigmoide.
      */
     static boolean ENTROPIA = false;
+    /** --mm-solo-avance: el error de los mm solo cuenta en avances y retrocesos (requiere --error=entropia). */
+    static boolean MM_SOLO_AVANCE = false;
+    /** --peso-mm=X: peso del error de los mm (requiere --error=entropia). */
+    static double PESO_MM = 1;
+    /**
+     * --escapes=N: además de los episodios normales, N episodios que arrancan en Modo Escape desde un lugar
+     * al azar (y N/2 en cada ronda DAgger), para tener más ejemplos de escape.
+     */
+    static int ESCAPES = 0;
     /** Bahías nuevas de la evaluación final (--pruebas=N). */
     static int PRUEBAS = 100;
 
@@ -153,6 +162,11 @@ public class EntrenamientoSimulado {
 
         // Cada elemento es un episodio (una prueba) con sus ejemplos en orden.
         List<List<Ejemplo>> datos = recolectarConMaestro(episodios, cal, hilos);
+        if (ESCAPES > 0) {
+            List<List<Ejemplo>> escapes = repartir(ESCAPES, hilos, i -> episodioConMaestro(SEMILLA + 500_000L + i, cal, true));
+            datos.addAll(escapes);
+            log("Episodios que arrancan en escape (maestro): " + escapes.size() + ", " + contar(escapes) + " ejemplos");
+        }
         log("Ejemplos del maestro: " + contar(datos) + " en " + datos.size() + " episodios");
 
         MultiLayerPerceptron percepcion = nuevaRed(RedPercepcion.ENTRADAS, OCULTAS_PERCEPCION, RedPercepcion.SALIDAS_RED);
@@ -161,7 +175,9 @@ public class EntrenamientoSimulado {
         entrenar(percepcion, datosPercepcion(datos), factorPercepcion * Math.max(5, epocas / 3), "percepción");
         int ocultas = ocultasMovimiento();
         log("Red de movimiento: variante " + VARIANTE + " (" + VARIANTE.entradas + " entradas, " + ocultas + " ocultas)"
-                + "; error " + (ENTROPIA ? "entropía cruzada" : "cuadrático") + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
+                + "; error " + (ENTROPIA ? "entropía cruzada" : "cuadrático")
+                + (MM_SOLO_AVANCE ? "; mm solo en avances" : "") + (PESO_MM != 1 ? "; peso mm " + PESO_MM : "")
+                + (ESCAPES > 0 ? "; episodios de escape " + ESCAPES : "") + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
                 + (PERCEPCION_REFORZADA ? "; percepción reforzada" : ""));
         MultiLayerPerceptron movimiento = nuevaRed(VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS);
         if (ENTROPIA) salidaLineal(movimiento);
@@ -171,6 +187,14 @@ public class EntrenamientoSimulado {
             List<List<Ejemplo>> nuevos = recolectarConRedes(episodios / 2, cal, copiasDe(percepcion, movimiento),
                     SEMILLA + 10_000L * ronda, hilos);
             datos.addAll(nuevos);
+            if (ESCAPES > 0) {
+                long base = SEMILLA + 500_000L + 10_000L * ronda;
+                List<List<Ejemplo>> escapes = repartir(ESCAPES / 2, hilos, copiasDe(percepcion, movimiento),
+                        (redes, i) -> episodioConRedes(base + i, cal, redes, true));
+                datos.addAll(escapes);
+                nuevos = new ArrayList<>(nuevos);
+                nuevos.addAll(escapes);
+            }
             log("DAgger ronda " + ronda + ": +" + contar(nuevos) + " ejemplos (total " + contar(datos) + ")");
             entrenar(percepcion, datosPercepcion(datos), factorPercepcion * Math.max(3, epocas / 6), "percepción");
             entrenarMovimiento(movimiento, datosMovimiento(datos, new RedPercepcion(percepcion)), Math.max(10, epocas / 2));
@@ -205,8 +229,10 @@ public class EntrenamientoSimulado {
                        ENTROPIA ? "salida lineal, entropía cruzada" : "sigmoide, error cuadrático"))
                .append(String.format(Locale.ROOT, "- Entradas de la red de movimiento: variante %s (%d).%n",
                        VARIANTE, VARIANTE.entradas))
-               .append(String.format(Locale.ROOT, "- Semilla de recolección: %d; percepción reforzada: %s; repetición máxima de clases (movimiento): %d.%n%n",
+               .append(String.format(Locale.ROOT, "- Semilla de recolección: %d; percepción reforzada: %s; repetición máxima de clases (movimiento): %d.%n",
                        SEMILLA, PERCEPCION_REFORZADA ? "sí" : "no", REPETICION_MAXIMA))
+               .append(String.format(Locale.ROOT, "- Milímetros: %s, peso %.1f; episodios que arrancan en escape: %d (+%d por ronda DAgger).%n%n",
+                       MM_SOLO_AVANCE ? "solo en avances y retrocesos" : "en todas las filas", PESO_MM, ESCAPES, ESCAPES / 2))
                .append("## Pruebas completas (").append(pruebas).append(" bahías nuevas, 7 min, 3 Lobitos)\n\n")
                .append("| Piloto | Misión completa | Capturas | Choques | Puntaje | Segundos |\n|---|---|---|---|---|---|\n")
                .append(maestro.fila("Maestro (geometría real)")).append('\n')
@@ -263,6 +289,9 @@ public class EntrenamientoSimulado {
                 if (!e.equals("entropia") && !e.equals("cuadratico")) throw new IllegalArgumentException("--error=entropia o --error=cuadratico");
                 ENTROPIA = e.equals("entropia");
             }
+            else if (a.equals("--mm-solo-avance")) MM_SOLO_AVANCE = true;
+            else if (a.startsWith("--peso-mm=")) PESO_MM = Double.parseDouble(a.substring(10));
+            else if (a.startsWith("--escapes=")) ESCAPES = Math.max(0, Integer.parseInt(a.substring(10)));
         }
     }
 
@@ -277,7 +306,8 @@ public class EntrenamientoSimulado {
             if (!a.startsWith("--")) posicionales.add(a);
             else if (!a.startsWith("--hilos=") && !a.startsWith("--entradas=") && !a.startsWith("--semilla=")
                     && !a.equals("--percepcion-reforzada") && !a.startsWith("--repeticion=") && !a.startsWith("--pruebas=")
-                    && !a.startsWith("--error=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
+                    && !a.startsWith("--error=") && !a.equals("--mm-solo-avance") && !a.startsWith("--peso-mm=")
+                    && !a.startsWith("--escapes=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
         }
         return posicionales;
     }
@@ -380,7 +410,10 @@ public class EntrenamientoSimulado {
     }
 
     static void entrenarMovimiento(MultiLayerPerceptron red, DataSet datos, int epocas) {
-        entrenar(red, datos, epocas, "movimiento", ENTROPIA ? new EntropiaCruzadaMovimiento(RedMovimiento.CLASES) : null);
+        if (!ENTROPIA && (MM_SOLO_AVANCE || PESO_MM != 1))
+            throw new IllegalArgumentException("--mm-solo-avance y --peso-mm requieren --error=entropia");
+        entrenar(red, datos, epocas, "movimiento", ENTROPIA ? new EntropiaCruzadaMovimiento(RedMovimiento.CLASES,
+                MM_SOLO_AVANCE, PESO_MM, MetaMovimiento.FRENTE, MetaMovimiento.ATRAS) : null);
     }
 
     static void entrenar(MultiLayerPerceptron red, DataSet datos, int epocas, String nombre) {
@@ -496,9 +529,19 @@ public class EntrenamientoSimulado {
     }
 
     static List<Ejemplo> episodioConMaestro(long semilla, RobotSimulado.Calibracion cal) {
+        return episodioConMaestro(semilla, cal, false);
+    }
+
+    /** Simulador del episodio: normal, o (escape = true) arrancando en Modo Escape desde un lugar al azar. */
+    static SimuladorBahia simuladorDelEpisodio(long semilla, int umbral, RobotSimulado.Calibracion cal, boolean escape) {
+        return escape ? SimuladorBahia.enEscapeAlAzar(semilla, umbral, cal, SensorSimulado.Ruido.NORMAL)
+                : SimuladorBahia.alAzar(semilla, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
+    }
+
+    static List<Ejemplo> episodioConMaestro(long semilla, RobotSimulado.Calibracion cal, boolean escape) {
         Random azar = azarDelEpisodio(semilla);
         int umbral = 1 + azar.nextInt(UMBRAL); // También pruebas con umbral 1 y 2 (más escapes).
-        SimuladorBahia sim = SimuladorBahia.alAzar(semilla, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
+        SimuladorBahia sim = simuladorDelEpisodio(semilla, umbral, cal, escape);
         List<Ejemplo> episodio = new ArrayList<>();
         while (!sim.terminada()) {
             SensorSimulado.Barrido b = sim.medir();
@@ -525,10 +568,14 @@ public class EntrenamientoSimulado {
      * así su memoria sigue lo que pasó en la prueba aunque haya manejado el maestro.
      */
     static List<Ejemplo> episodioConRedes(long semilla, RobotSimulado.Calibracion cal, Redes redes) {
+        return episodioConRedes(semilla, cal, redes, false);
+    }
+
+    static List<Ejemplo> episodioConRedes(long semilla, RobotSimulado.Calibracion cal, Redes redes, boolean escape) {
         Random azar = azarDelEpisodio(semilla);
         Piloto piloto = Piloto.redes(redes.percepcion(), redes.movimiento());
         int umbral = 1 + azar.nextInt(UMBRAL);
-        SimuladorBahia sim = SimuladorBahia.alAzar(semilla, CANICAS, umbral, cal, SensorSimulado.Ruido.NORMAL);
+        SimuladorBahia sim = simuladorDelEpisodio(semilla, umbral, cal, escape);
         List<Ejemplo> episodio = new ArrayList<>();
         while (!sim.terminada()) {
             SensorSimulado.Barrido b = sim.medir();
