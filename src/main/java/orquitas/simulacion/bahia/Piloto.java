@@ -45,8 +45,8 @@ public interface Piloto {
                 EtiquetaSector[] etiquetas = RedPercepcion.etiquetas(probabilidades);
                 double[] entradas = RedMovimiento.entradasDelCicloDe(movimiento.variante(), b.telemetria(), probabilidades, sim.modo(), memoria);
                 OrdenMovimiento orden = movimiento.decidir(entradas);
-                OrdenMovimiento segura = ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas);
-                return new Decision(atasco.revisar(b.telemetria(), segura), etiquetas);
+                OrdenMovimiento segura = ReflejoSeguridad.ajustar(orden, b.telemetria(), etiquetas, sim.modo());
+                return new Decision(ReflejoSeguridad.candadoSalida(atasco.revisar(b.telemetria(), segura), b.telemetria(), etiquetas, sim.modo()), etiquetas);
             }
 
             @Override public void registrarOrden(OrdenMovimiento ejecutada) {

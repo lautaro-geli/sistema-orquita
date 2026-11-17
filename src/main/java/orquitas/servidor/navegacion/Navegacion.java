@@ -96,8 +96,8 @@ public class Navegacion {
                 + " | [Memoria] " + memoria.describir());
         // ...red de movimiento, reflejo y atasco...
         OrdenMovimiento deLaRed = redMovimiento.decidir(entradas);
-        OrdenMovimiento segura = ReflejoSeguridad.ajustar(deLaRed, telemetria, ultimasEtiquetas);
-        OrdenMovimiento elegida = atasco.revisar(telemetria, segura);
+        OrdenMovimiento segura = ReflejoSeguridad.ajustar(deLaRed, telemetria, ultimasEtiquetas, modoOperativo);
+        OrdenMovimiento elegida = ReflejoSeguridad.candadoSalida(atasco.revisar(telemetria, segura), telemetria, ultimasEtiquetas, modoOperativo);
         if (elegida != segura) System.out.println("[Navegación] Atasco detectado: " + segura.movimiento() + " -> " + elegida.movimiento());
         // ...y la orden final (la que se envía) queda en la memoria para el ciclo siguiente.
         memoria.registrarOrden(elegida);

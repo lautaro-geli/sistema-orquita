@@ -13,6 +13,9 @@ package orquitas.servidor.navegacion;
  *       avanza un poco si el frente está libre (atrás el sensor no ve) y si no, retrocede.</li>
  *   <li>Un sector sin dato (desconocido) cuyo vecino ve algo a menos de VECINO_CERCA_MM se toma como pegado:
  *       el sensor da -1 por debajo de 40 mm.</li>
+ *   <li>Candado de la salida: en BUSQUEDA (todavía sin los 3 Lobitos) no se avanza hacia un frente que la
+ *       percepción marca SALIDA (salir sin completar la misión descalifica): se gira hacia el lado más
+ *       abierto que no sea la salida.</li>
  * </ul>
  */
 public final class ReflejoSeguridad {
@@ -33,6 +36,91 @@ public final class ReflejoSeguridad {
     static final double GIRO_DE_MAS = 1.10;
 
     private ReflejoSeguridad() { }
+
+    /** Como ajustar(orden, telemetria, etiquetas), más el candado de la salida si el modo es BUSQUEDA. */
+    public static OrdenMovimiento ajustar(OrdenMovimiento orden, int[] telemetria, EtiquetaSector[] etiquetas,
+                                         ModoOperativo modo) {
+        OrdenMovimiento conCandado = candadoSalida(orden, telemetria, etiquetas, modo);
+        if (conCandado != orden) return conCandado; // El candado ya pasó su orden por el reflejo.
+        return ajustar(orden, telemetria, etiquetas);
+    }
+
+    /**
+     * Candado de la salida (salir sin los 3 Lobitos descalifica). En BUSQUEDA no deja avanzar si el robot
+     * ya está en el estrecho mirando afuera (retrocede) ni hacia un frente marcado SALIDA (gira hacia lo
+     * más abierto que no sea la salida). Se aplica también después del DetectorAtasco.
+     */
+    public static OrdenMovimiento candadoSalida(OrdenMovimiento orden, int[] telemetria, EtiquetaSector[] etiquetas,
+                                                ModoOperativo modo) {
+        if (modo != ModoOperativo.BUSQUEDA || orden.movimiento() != Movimiento.AVANZAR) return orden;
+        int[] corregida = PreprocesadorTelemetria.corregir(telemetria);
+        if (enElEstrecho(etiquetas, corregida)) return retroceder();
+        if (!saleDeFrente(etiquetas, corregida)) return orden;
+        // Giro de a lo sumo GIRO_CANDADO_GRADOS: con 90° o marcha atrás chocaba más (atrás no ve).
+        double grados = anguloLejosDeLaSalida(corregida, etiquetas);
+        grados = Math.signum(grados) * Math.min(GIRO_CANDADO_GRADOS, Math.abs(grados));
+        OrdenMovimiento giro = new OrdenMovimiento(grados > 0 ? Movimiento.GIRAR_IZQ : Movimiento.GIRAR_DER,
+                (int) Math.round(Math.abs(grados) / CalibracionRobot.GRADOS_POR_SEGUNDO * 1000));
+        // El giro también pasa por el reflejo; si no entra, retrocede (avanzar acercaría a la salida).
+        OrdenMovimiento seguro = ajustar(giro, telemetria, etiquetas);
+        return seguro.movimiento() == Movimiento.AVANZAR ? retroceder() : seguro;
+    }
+
+    /**
+     * True si el frente no ve nada (LIBRE o SALIDA) y al menos ABIERTOS_ESTRECHO sectores tampoco: adentro
+     * de la bahía un abanico así siempre ve paredes; pasa cuando el robot está en el hueco mirando afuera.
+     */
+    static boolean enElEstrecho(EtiquetaSector[] etiquetas, int[] corregida) {
+        if (etiquetas == null) return false;
+        int abiertos = 0;
+        for (int s = 0; s < etiquetas.length; s++) {
+            boolean abierto = etiquetas[s] == EtiquetaSector.LIBRE || etiquetas[s] == EtiquetaSector.SALIDA
+                    || (etiquetas[s] == EtiquetaSector.LOBITO && !lobitoCerca(corregida, s));
+            if (s >= PRIMER_FRENTE && s <= ULTIMO_FRENTE && !abierto) return false;
+            if (abierto) abiertos++;
+        }
+        return abiertos >= ABIERTOS_ESTRECHO;
+    }
+
+    /** Sectores sin nada (LIBRE o SALIDA) a partir de los cuales se considera que está en el estrecho. */
+    static final int ABIERTOS_ESTRECHO = 7;
+
+    /**
+     * Un LOBITO que el sensor no ve cerca (sin dato o a más de LOBITO_CERCA_MM) se toma como falso: mirando
+     * por el estrecho la red a veces ve Lobitos donde no hay nada.
+     */
+    static boolean lobitoCerca(int[] corregida, int s) {
+        return distancia(corregida, s) < LOBITO_CERCA_MM;
+    }
+
+    static final double LOBITO_CERCA_MM = 600;
+    /** Giro máximo del candado de la salida. */
+    static final double GIRO_CANDADO_GRADOS = 45;
+
+    /** True si algún sector del frente es SALIDA y ninguno es un LOBITO cercano. */
+    static boolean saleDeFrente(EtiquetaSector[] etiquetas, int[] corregida) {
+        if (etiquetas == null) return false;
+        boolean salida = false;
+        for (int s = PRIMER_FRENTE; s <= ULTIMO_FRENTE; s++) {
+            if (etiquetas[s] == EtiquetaSector.LOBITO && lobitoCerca(corregida, s)) return false;
+            if (etiquetas[s] == EtiquetaSector.SALIDA) salida = true;
+        }
+        return salida;
+    }
+
+    /** Grados (positivo = izquierda) hacia el sector más lejano que no sea frente ni SALIDA; si no hay, 90°. */
+    static double anguloLejosDeLaSalida(int[] corregida, EtiquetaSector[] etiquetas) {
+        int mejor = -1;
+        double mejorDistancia = 0;
+        for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
+            if (s >= PRIMER_FRENTE - 1 && s <= ULTIMO_FRENTE + 1) continue;
+            if (etiquetas[s] == EtiquetaSector.SALIDA) continue;
+            double d = distancia(corregida, s);
+            if (d == Double.MAX_VALUE) d = 1300;
+            if (d > mejorDistancia) { mejor = s; mejorDistancia = d; }
+        }
+        return mejor < 0 ? 90 : (mejor - 6) * 15.0;
+    }
 
     public static OrdenMovimiento ajustar(OrdenMovimiento orden, int[] telemetria, EtiquetaSector[] etiquetas) {
         int[] corregida = PreprocesadorTelemetria.corregir(telemetria);

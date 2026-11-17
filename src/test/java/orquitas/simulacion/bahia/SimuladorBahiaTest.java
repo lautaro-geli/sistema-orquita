@@ -349,4 +349,48 @@ public class SimuladorBahiaTest {
         assertEquals(270, Bahia.PARTIDA_Y, 1e-9);
         assertEquals(20, Bahia.PARTIDA_RANGO_MM, 1e-9);
     }
+
+    @Test
+    public void giroYAvanceGastaUnSoloBarrido() {
+        SimuladorBahia sim = SimuladorBahia.alAzar(900000L, 3, 3, SIN_RUIDO, SensorSimulado.Ruido.NINGUNO);
+        OrdenMovimiento giro = new OrdenMovimiento(Movimiento.GIRAR_IZQ, 100), avance = new OrdenMovimiento(Movimiento.AVANZAR, 200);
+        RobotSimulado.Resultado r = sim.ejecutarGiroYAvance(giro, avance);
+        assertFalse(r.choco());
+        assertEquals(1, sim.ciclos());
+        assertEquals(SimuladorBahia.SEGUNDOS_BARRIDO + 0.3, sim.segundos(), 1e-9);
+    }
+
+    @Test
+    public void maestroV2SinOpcionesDecideComoElMaestro() {
+        MaestroV2.Opciones nada = MaestroV2.Opciones.desde("");
+        for (long semilla = 900000L; semilla < 900005L; semilla++) {
+            SimuladorBahia sim = SimuladorBahia.alAzar(semilla, 3, 3, CAL, SensorSimulado.Ruido.NORMAL);
+            MaestroV2 v2 = new MaestroV2(nada);
+            for (int i = 0; i < 40 && !sim.terminada(); i++) {
+                SensorSimulado.Barrido b = sim.medir();
+                OrdenMovimiento o = Maestro.decidir(sim, b);
+                MaestroV2.Plan p = v2.decidir(sim, b);
+                assertEquals(o, p.orden());
+                assertNull(p.avanceDespues());
+                sim.ejecutar(o);
+            }
+        }
+    }
+
+    @Test
+    public void maestroV2ConGiroYAvanceMandaElAvanceDespuesDelGiro() {
+        MaestroV2 v2 = new MaestroV2(MaestroV2.Opciones.desde("giro"));
+        SimuladorBahia sim = SimuladorBahia.alAzar(900000L, 3, 3, CAL, SensorSimulado.Ruido.NORMAL);
+        boolean alguno = false;
+        for (int i = 0; i < 60 && !sim.terminada(); i++) {
+            MaestroV2.Plan p = v2.decidir(sim, sim.medir());
+            if (p.avanceDespues() != null) {
+                alguno = true;
+                assertTrue(p.orden().movimiento() == Movimiento.GIRAR_IZQ || p.orden().movimiento() == Movimiento.GIRAR_DER);
+                assertEquals(Movimiento.AVANZAR, p.avanceDespues().movimiento());
+                sim.ejecutarGiroYAvance(p.orden(), p.avanceDespues());
+            } else sim.ejecutar(p.orden());
+        }
+        assertTrue(alguno);
+    }
 }

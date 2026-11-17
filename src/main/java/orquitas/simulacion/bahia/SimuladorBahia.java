@@ -12,8 +12,12 @@ import orquitas.servidor.navegacion.OrdenMovimiento;
  * Lleva capturas, choques, modo (BUSQUEDA, ESCAPE, LIBERADA), tiempo estimado y puntaje del reglamento.
  */
 public final class SimuladorBahia {
-    /** Tiempo de un barrido real (13 posiciones), en segundos. */
-    public static final double SEGUNDOS_BARRIDO = 4.8;
+    /**
+     * Tiempo de un barrido real (13 posiciones), en segundos. 4,8 s con el sketch actual; se puede
+     * cambiar con -Dorquita.barrido=2.18 (33 ms en todos los ROI) o 1.91 (20/25/33 ms) para simular
+     * un barrido más corto.
+     */
+    public static final double SEGUNDOS_BARRIDO = Double.parseDouble(System.getProperty("orquita.barrido", "4.8"));
     /** Tope de tiempo de la prueba de clasificación (7 minutos). */
     public static final double SEGUNDOS_MAXIMOS = 7 * 60;
 
@@ -97,6 +101,19 @@ public final class SimuladorBahia {
         if (modo == ModoOperativo.ESCAPE && bahia.afuera(robot.x(), robot.y())) modo = ModoOperativo.LIBERADA;
         recorrido.add(new double[] {robot.x(), robot.y()});
         return r;
+    }
+
+    /**
+     * Gira y, sin un barrido nuevo, avanza: las dos órdenes con un solo barrido (el robot ya vio esa
+     * dirección en el barrido anterior). Cuenta como un ciclo; si el giro choca, no avanza.
+     */
+    public RobotSimulado.Resultado ejecutarGiroYAvance(OrdenMovimiento giro, OrdenMovimiento avance) {
+        RobotSimulado.Resultado r1 = ejecutar(giro);
+        if (r1.choco() || terminada() || avance == null || avance.milisegundos() <= 0) return r1;
+        ciclos--;
+        segundos -= SEGUNDOS_BARRIDO;
+        RobotSimulado.Resultado r2 = ejecutar(avance);
+        return new RobotSimulado.Resultado(r2.choco(), r1.capturas() + r2.capturas());
     }
 
     public boolean terminada() {

@@ -36,6 +36,19 @@ public final class SensorSimulado {
     }
 
     private final Ruido ruido;
+    /**
+     * Multiplica el ruido (desvío y pérdidas) de cada ROI (4x4, 8x8, 16x16) para simular un tiempo de
+     * medición más corto: el desvío crece como la raíz de (75 ms / tiempo nuevo). Por ejemplo
+     * -Dorquita.ruidoRoi=1.51,1.73,1.94 para 33/25/20 ms. Por defecto 1,1,1 (75 ms).
+     */
+    static final double[] FACTOR_RUIDO_ROI = leerFactores(System.getProperty("orquita.ruidoRoi", "1,1,1"));
+
+    private static double[] leerFactores(String texto) {
+        String[] p = texto.split(",");
+        double[] f = new double[ROIS];
+        for (int r = 0; r < ROIS; r++) f[r] = Double.parseDouble(p[Math.min(r, p.length - 1)].trim());
+        return f;
+    }
 
     public SensorSimulado(Ruido ruido) {
         this.ruido = ruido;
@@ -79,10 +92,10 @@ public final class SensorSimulado {
                     valor = -1;
                 } else {
                     double d = suma / sumaPeso;
-                    d += azar.nextGaussian() * (ruido.sigmaBaseMm() + ruido.sigmaRelativa() * d);
+                    d += azar.nextGaussian() * (ruido.sigmaBaseMm() + ruido.sigmaRelativa() * d) * FACTOR_RUIDO_ROI[r];
                     valor = (d < MINIMO_MM || d > MAXIMO_MM) ? -1 : (int) Math.round(d);
                     maxParteCanica = Math.max(maxParteCanica, pesoCanica / sumaPeso);
-                    double perdida = (r == 0 ? ruido.perdida4x4() : ruido.perdida());
+                    double perdida = (r == 0 ? ruido.perdida4x4() : ruido.perdida()) * FACTOR_RUIDO_ROI[r];
                     if (cosenoMedio / RAYOS < 0.25) perdida += 0.2 * Math.signum(ruido.perdida()); // Muy oblicuo.
                     if (azar.nextDouble() < perdida) valor = -1;
                 }
