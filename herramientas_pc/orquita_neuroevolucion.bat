@@ -1,3 +1,3 @@
 @echo off
-REM Neuroevolucion (refuerzo) de la red de movimiento desde E2 y desde E7b; 2 semillas cada una, unas 2 horas.
+REM Neuroevolucion larga (unas 2 h) desde NE40 semilla 2: premio por tiempo 8 contra 2; 4 corridas.
 powershell -NoExit -NoProfile -ExecutionPolicy Bypass -File "%~dp0orquita_neuroevolucion.ps1"

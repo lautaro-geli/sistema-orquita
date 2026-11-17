@@ -1,22 +1,22 @@
 ﻿# Neuroevolución (aprendizaje por refuerzo) de la red de movimiento, partiendo de una red ya entrenada.
 # Prueba variantes de los pesos en el simulador y se queda con las que sacan más puntaje (no imita al Maestro).
-# Desde E2 (sin girar y avanzar) y desde E7b (con girar y avanzar), 2 semillas cada una, 4 a la vez. Resultados en Documents\orquita-corridas\neuroevolucion_<fecha>.
+# Continúa desde la mejor de la neuroevolución corta (NE40 semilla 2). Compara premiar el tiempo
+# (8 puntos por minuto ahorrado y 10 menos si no termina) contra seguir igual (2 puntos, sin castigo). 4 a la vez. Resultados en Documents\orquita-corridas\neuroevolucion2_<fecha>.
 $ErrorActionPreference = 'Continue'
 
 # ---- Configuración ----
-$Commit = 'bbb0172'
+$Commit = '09eff43'
 $Jvm = @('-Dorquita.barrido=1.91', '-Dorquita.ruidoRoi=1.51,1.73,1.94')
 $Corridas_ = Join-Path $env:USERPROFILE 'Documents\orquita-corridas'
 # Redes de partida (carpetas con percepcion.nnet y movimiento.nnet).
-$E2 = Join-Path $Corridas_ 'experimentos2_20261116_1544\modelos_E2_repeticion_2_s3'
-$E7b = Join-Path $Corridas_ 'experimentos5_20261117_1406\modelos_E7b_v2_s1'
+$NE40 = Join-Path $Corridas_ 'neuroevolucion40_20261117_1713\modelos_NE40_E2_s2'
 # Cada corrida usa 1 núcleo; corta a los 120 min y hace la evaluación final (unos 5 min más).
 $Base = @('--generaciones=400', '--minutos=120', '--pares=20', '--bahias=20', '--sigma=0.01', '--paso=0.01', '--validacion=200', '--cada=10', '--pruebas=300', '--hilos=1')
 $Corridas = @(
-    @{ Nombre = 'NE_E2_s1';  Partida = $E2;  Args = $Base + @('--semilla=1') },
-    @{ Nombre = 'NE_E2_s2';  Partida = $E2;  Args = $Base + @('--semilla=2') },
-    @{ Nombre = 'NE_E7b_s1'; Partida = $E7b; Args = $Base + @('--giro', '--semilla=1') },
-    @{ Nombre = 'NE_E7b_s2'; Partida = $E7b; Args = $Base + @('--giro', '--semilla=2') }
+    @{ Nombre = 'NE2_tiempo8_s1'; Partida = $NE40; Args = $Base + @('--peso-tiempo=8', '--castigo-sin-terminar=10', '--semilla=11') },
+    @{ Nombre = 'NE2_tiempo8_s2'; Partida = $NE40; Args = $Base + @('--peso-tiempo=8', '--castigo-sin-terminar=10', '--semilla=12') },
+    @{ Nombre = 'NE2_tiempo2_s1'; Partida = $NE40; Args = $Base + @('--peso-tiempo=2', '--semilla=13') },
+    @{ Nombre = 'NE2_tiempo2_s2'; Partida = $NE40; Args = $Base + @('--peso-tiempo=2', '--semilla=14') }
 )
 # -----------------------
 
@@ -25,7 +25,7 @@ $repo = Join-Path $docs 'sistema-orquita'
 $base = Join-Path $docs 'orquita-corridas'
 $compilado = Join-Path $base 'ne-compilado'
 $fecha = Get-Date -Format 'yyyyMMdd_HHmm'
-$resultados = Join-Path $base "neuroevolucion_$fecha"
+$resultados = Join-Path $base "neuroevolucion2_$fecha"
 New-Item -ItemType Directory -Force -Path $resultados | Out-Null
 Start-Transcript -Path (Join-Path $resultados 'registro_general.txt') -Force | Out-Null
 
