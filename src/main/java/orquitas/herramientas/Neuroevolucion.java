@@ -31,7 +31,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  * se le cambian los pesos.
  *
  * <p>Uso: {@code Neuroevolucion carpetaModelos carpetaSalida [--generaciones=300] [--minutos=0] [--pares=20]
- * [--bahias=20] [--sigma=0.01] [--paso=0.01] [--peso-tiempo=2] [--tope-choques=5] [--giro] [--hilos=N]
+ * [--bahias=20] [--sigma=0.01] [--paso=0.01] [--peso-tiempo=2] [--tope-choques=5] [--castigo-sin-terminar=0] [--giro] [--hilos=N]
  * [--semilla=N] [--validacion=200] [--cada=10] [--pruebas=300]}. El barrido y el ruido salen de -Dorquita.barrido y
  * -Dorquita.ruidoRoi, como en EntrenamientoSimulado.
  */
@@ -43,6 +43,8 @@ public final class Neuroevolucion {
      * partida trabada con decenas de choques tapaba todo lo demás y la señal quedaba en puro ruido.
      */
     static int topeChoques = 5;
+    /** Puntos que se restan en la recompensa (no en el reporte) si la partida no termina liberada. */
+    static double castigoSinTerminar = 0;
     static boolean giro = false;
     static long semilla = 20261117L;
     static final long SEMILLAS_ENTRENAMIENTO = 3_000_000L, SEMILLAS_VALIDACION = 7_000_000L;
@@ -79,6 +81,7 @@ public final class Neuroevolucion {
             else if (a.startsWith("--cada=")) cada = Math.max(1, Integer.parseInt(v));
             else if (a.startsWith("--pruebas=")) pruebas = Integer.parseInt(v);
             else if (a.startsWith("--tope-choques=")) topeChoques = Integer.parseInt(v);
+            else if (a.startsWith("--castigo-sin-terminar=")) castigoSinTerminar = Double.parseDouble(v);
             else throw new IllegalArgumentException("Argumento desconocido: " + a);
         }
         if (pos.size() < 2) throw new IllegalArgumentException("Uso: Neuroevolucion carpetaModelos carpetaSalida [opciones]");
@@ -169,7 +172,7 @@ public final class Neuroevolucion {
                 + String.format(Locale.ROOT, "- Red de partida: `%s` (%d pesos de movimiento; la percepción no cambia).%n", entrada, n)
                 + String.format(Locale.ROOT, "- %d generaciones de %d pares (+/- ruido) en %d bahías; sigma %.3f, paso %.3f (Adam); semilla %d; %.0f min.%n",
                         g > generaciones ? generaciones : g, pares, bahias, sigma, paso, semilla, total)
-                + String.format(Locale.ROOT, "- Recompensa: puntaje de la grilla (choques hasta %d por partida) + %.1f puntos por cada minuto que sobra de los 7 al liberarse.%n", topeChoques, pesoTiempo)
+                + String.format(Locale.ROOT, "- Recompensa: puntaje de la grilla (choques hasta %d por partida) + %.1f puntos por cada minuto que sobra de los 7 al liberarse; %.1f menos si no se libera.%n", topeChoques, pesoTiempo, castigoSinTerminar)
                 + String.format(Locale.ROOT, "- Girar y avanzar: %s; barrido %.2f s; ruido por ROI x%s.%n", giro ? "sí" : "no",
                         SimuladorBahia.SEGUNDOS_BARRIDO, System.getProperty("orquita.ruidoRoi", "1,1,1"))
                 + String.format(Locale.ROOT, "- Mejor red: generación %d (elegida por la validación en %d bahías).%n%n", mejorGeneracion, validacion)
@@ -245,7 +248,7 @@ public final class Neuroevolucion {
             piloto.registrar(d);
         }
         boolean liberada = sim.modo() == ModoOperativo.LIBERADA;
-        double recompensa = sim.puntaje() + 5 * Math.max(0, sim.choques() - topeChoques) + (liberada ? pesoTiempo * Math.max(0, SimuladorBahia.SEGUNDOS_MAXIMOS - sim.segundos()) / 60 : 0);
+        double recompensa = sim.puntaje() + 5 * Math.max(0, sim.choques() - topeChoques) + (liberada ? pesoTiempo * Math.max(0, SimuladorBahia.SEGUNDOS_MAXIMOS - sim.segundos()) / 60 : -castigoSinTerminar);
         return new Partida(recompensa, sim.puntaje(), liberada, sim.segundos(), sim.choques());
     }
 }

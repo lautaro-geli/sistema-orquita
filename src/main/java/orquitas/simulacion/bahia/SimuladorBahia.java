@@ -124,6 +124,10 @@ public final class SimuladorBahia {
      * Puntaje según el reglamento: 5/10/15 por capturas, +15 Modo Escape, +30 abandono, bonificación por
      * tiempo si completa la misión, -5 por choque (muros u obstáculos).
      */
+    /**
+     * Puntaje de la grilla. Tiempo, confirmado por el profesor (17/11): minuto 1 = +15; minutos 2 a 4 = +10;
+     * minutos 5 a 10 = +5.
+     */
     public int puntaje() {
         int p = 0;
         int[] porCaptura = {5, 10, 15};
