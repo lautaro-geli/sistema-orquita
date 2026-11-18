@@ -94,6 +94,7 @@ void setup() {
 }
 
 uint32_t presupuestoActual = 0;
+bool traza = false; // Imprime cada paso del primer barrido (para ver dónde se traba).
 int lecturas[SECTORES * 3];
 uint8_t estados[SECTORES * 3];
 uint16_t tiempos[SECTORES * 3];
@@ -101,8 +102,10 @@ uint16_t tiempos[SECTORES * 3];
 /** Una medición con el ROI y el presupuesto dados (el presupuesto se cambia solo si hace falta). */
 void medir(uint8_t i, uint8_t r, uint32_t presupuestoUs) {
   unsigned long t0 = millis();
+  if (traza) { Serial.print(F("#   sector ")); Serial.print(i / 3); Serial.print(F(" ROI ")); Serial.print(LADOS[r]); Serial.flush(); }
   if (presupuestoUs != presupuestoActual) {
-    sensor.setMeasurementTimingBudget(presupuestoUs);
+    bool ok = sensor.setMeasurementTimingBudget(presupuestoUs);
+    if (traza) { Serial.print(ok ? F(" presupuesto ok") : F(" presupuesto RECHAZADO")); Serial.flush(); }
     presupuestoActual = presupuestoUs;
   }
   sensor.setROISize(LADOS[r], LADOS[r]);
@@ -112,10 +115,14 @@ void medir(uint8_t i, uint8_t r, uint32_t presupuestoUs) {
   lecturas[i] = timeout ? -1 : (int) mm;
   estados[i] = timeout ? 255 : (uint8_t) sensor.ranging_data.range_status;
   tiempos[i] = (uint16_t) min(65535UL, millis() - t0);
+  if (traza) { Serial.print(F(" -> ")); Serial.print(lecturas[i]); Serial.print(F(" mm, estado ")); Serial.print(estados[i]);
+               Serial.print(F(", ")); Serial.print(tiempos[i]); Serial.println(F(" ms")); }
 }
 
 void correrConfig(char escena, const Config &c) {
   for (uint8_t n = 0; n < c.barridos; n++) {
+    traza = (n == 0 && c.nombre == 'A');
+    if (traza) Serial.println(F("# Primer barrido de A, paso a paso:"));
     barrido.write(0);
     delay(ESPERA_INICIO_BARRIDO_MS);
     unsigned long inicio = millis();
@@ -139,17 +146,45 @@ void correrConfig(char escena, const Config &c) {
   }
 }
 
+/** 's': mueve el servo de barrido de 0° a 180° y vuelve, para ver que se mueve. */
+void probarServo() {
+  Serial.println(F("# Servo: 0 -> 180 -> 0"));
+  for (int g = 0; g <= 180; g += 15) { barrido.write(g); delay(150); }
+  barrido.write(0);
+  delay(500);
+  Serial.println(F("# Servo: listo"));
+}
+
+/** 'm': una medición con cada ROI (75 ms), mirando al frente. */
+void probarSensor() {
+  barrido.write(90);
+  delay(300);
+  for (uint8_t r = 0; r < 3; r++) {
+    unsigned long t0 = millis();
+    if (presupuestoActual != 75000) { sensor.setMeasurementTimingBudget(75000); presupuestoActual = 75000; }
+    sensor.setROISize(LADOS[r], LADOS[r]);
+    sensor.setROICenter(199);
+    uint16_t mm = sensor.readSingle();
+    Serial.print(F("# ROI ")); Serial.print(LADOS[r]); Serial.print(F(": "));
+    if (sensor.timeoutOccurred()) Serial.print(F("TIMEOUT")); else { Serial.print(mm); Serial.print(F(" mm, estado ")); Serial.print(sensor.ranging_data.range_status); }
+    Serial.print(F(", ")); Serial.print(millis() - t0); Serial.println(F(" ms"));
+  }
+  barrido.write(0);
+}
+
 unsigned long ultimoAviso = 0;
 
 void loop() {
   if (millis() - ultimoAviso > 5000) {
     ultimoAviso = millis();
-    Serial.println(sensorListo ? F("# Esperando el numero de escena (1..9) y Enter.")
+    Serial.println(sensorListo ? F("# Esperando: numero de escena (1..9), o 's' = probar servo, 'm' = probar sensor; y Enter.")
                                : F("# ERROR: el VL53L1X no responde. Revisar SDA (A4), SCL (A5), VIN y GND."));
   }
   if (!sensorListo || !Serial.available()) return;
   char escena = Serial.read();
   if (escena == '\n' || escena == '\r') return;
+  if (escena == 's' || escena == 'S') { probarServo(); return; }
+  if (escena == 'm' || escena == 'M') { probarSensor(); return; }
   if (escena < '1' || escena > '9') {
     Serial.print(F("# No entiendo '")); Serial.print(escena); Serial.println(F("': escribi un numero del 1 al 9."));
     return;
