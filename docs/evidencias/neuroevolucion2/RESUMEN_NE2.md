@@ -2,7 +2,7 @@
 
 Datos SINTÉTICOS del simulador 2D.
 
-- Corrida en la PC con `herramientas_pc/orquita_neuroevolucion` (commit `b3e5c2e`).
+- Corrida en la PC con `herramientas_pc/orquita_neuroevolucion` (compila el commit `09eff43`).
 - 4 corridas de 120 minutos, con 1 hilo cada una (unas 130 generaciones), desde `neuroevolucion40_20261117_1713/modelos_NE40_E2_s2`.
 - Barrido de 1,91 s con el ruido escalado del simulador.
 - Se comparan dos recompensas, con 2 semillas cada una:
