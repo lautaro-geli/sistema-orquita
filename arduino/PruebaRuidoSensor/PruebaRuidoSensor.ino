@@ -7,11 +7,13 @@
  *   B = medición corta:        33 ms en los 3 ROI, espera 100 ms
  *   C = corta y espera corta:  33 ms en los 3 ROI, espera 60 ms   (barrido de ~2,18 s)
  *   D = mixta:                 4x4 33 ms, 8x8 25 ms, 16x16 20 ms, espera 60 ms (~1,91 s)
+ *   E = máxima precisión:      200 ms en los 3 ROI, espera 150 ms (~10 s por barrido; 10 barridos).
+ *       Sirve de referencia: lo más cerca del valor real que da el sensor.
  *
  * Uso:
  *   1. Poner el robot quieto frente a una escena fija (paredes, un obstáculo, una canica).
  *   2. Abrir el Serial Monitor (115200). Escribir el número de escena (1..9) y Enter:
- *      corre A, B, C y D y escribe las líneas de datos.
+ *      corre A, B, C, D y E y escribe las líneas de datos.
  *   3. Cambiar la escena (por ejemplo, la canica sola a 20, 35 y 50 cm adelante) y repetir con otro número.
  *   4. Copiar TODO el texto del Serial Monitor a un archivo de texto en Documentos
  *      (por ejemplo Documentos\ruido_sensor.txt).
@@ -42,13 +44,16 @@ struct Config {
   char nombre;
   uint32_t presupuestoUs[3];  // 4x4, 8x8, 16x16
   unsigned long esperaServoMs;
+  uint8_t barridos;
 };
 
-const Config CONFIGS[4] = {
-  {'A', {75000, 75000, 75000}, 100},
-  {'B', {33000, 33000, 33000}, 100},
-  {'C', {33000, 33000, 33000}, 60},
-  {'D', {33000, 25000, 20000}, 60},
+const uint8_t CANTIDAD_CONFIGS = 5;
+const Config CONFIGS[CANTIDAD_CONFIGS] = {
+  {'A', {75000, 75000, 75000}, 100, BARRIDOS},
+  {'B', {33000, 33000, 33000}, 100, BARRIDOS},
+  {'C', {33000, 33000, 33000}, 60, BARRIDOS},
+  {'D', {33000, 25000, 20000}, 60, BARRIDOS},
+  {'E', {200000, 200000, 200000}, 150, 10},
 };
 
 VL53L1X sensor;
@@ -83,7 +88,7 @@ void setup() {
 uint32_t presupuestoActual = 0;
 int lecturas[SECTORES * 3];
 uint8_t estados[SECTORES * 3];
-uint8_t tiempos[SECTORES * 3];
+uint16_t tiempos[SECTORES * 3];
 
 /** Una medición con el ROI y el presupuesto dados (el presupuesto se cambia solo si hace falta). */
 void medir(uint8_t i, uint8_t r, uint32_t presupuestoUs) {
@@ -98,11 +103,11 @@ void medir(uint8_t i, uint8_t r, uint32_t presupuestoUs) {
   bool timeout = sensor.timeoutOccurred();
   lecturas[i] = timeout ? -1 : (int) mm;
   estados[i] = timeout ? 255 : (uint8_t) sensor.ranging_data.range_status;
-  tiempos[i] = (uint8_t) min(255UL, millis() - t0);
+  tiempos[i] = (uint16_t) min(65535UL, millis() - t0);
 }
 
 void correrConfig(char escena, const Config &c) {
-  for (uint8_t n = 0; n < BARRIDOS; n++) {
+  for (uint8_t n = 0; n < c.barridos; n++) {
     barrido.write(0);
     delay(ESPERA_INICIO_BARRIDO_MS);
     unsigned long inicio = millis();
@@ -130,7 +135,7 @@ void loop() {
   if (!sensorListo || !Serial.available()) return;
   char escena = Serial.read();
   if (escena < '1' || escena > '9') return;
-  Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(": corriendo A, B, C y D (unos 5 minutos)..."));
-  for (uint8_t i = 0; i < 4; i++) correrConfig(escena, CONFIGS[i]);
+  Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(": corriendo A, B, C, D y E (unos 7 minutos)..."));
+  for (uint8_t i = 0; i < CANTIDAD_CONFIGS; i++) correrConfig(escena, CONFIGS[i]);
   Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(" lista. Cambia la escena y escribi otro numero."));
 }
