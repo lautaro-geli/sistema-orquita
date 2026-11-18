@@ -1,0 +1,382 @@
+﻿**********************
+Inicio de la transcripción de Windows PowerShell
+Hora de inicio: 20261118152720
+Nombre de usuario: DESKTOP-GV40V4L\pc
+Usuario RunAs: DESKTOP-GV40V4L\pc
+Nombre de la configuración: 
+Máquina: DESKTOP-GV40V4L (Microsoft Windows NT 10.0.19045.0)
+Aplicación host: powershell -NoExit -NoProfile -ExecutionPolicy Bypass -File C:\Users\pc\Documents\orquita_neuroevolucion2.ps1
+Id. de proceso: 15536
+PSVersion: 5.1.19041.6456
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.19041.6456
+BuildVersion: 10.0.19041.6456
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+== Java
+java : java version "21.0.9" 2025-10-21 LTS
+En C:\Users\pc\Documents\orquita_neuroevolucion2.ps1: 44 Carácter: 19
++     Paso 'Java' { java -version }
++                   ~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (java version "21.0.9" 2025-10-21 LTS:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+java version "21.0.9" 2025-10-21 LTS
+Java(TM) SE Runtime Environment (build 21.0.9+7-LTS-338)
+Java(TM) SE Runtime Environment (build 21.0.9+7-LTS-338)
+Java HotSpot(TM) 64-Bit Server VM (build 21.0.9+7-LTS-338, mixed mode, sharing)
+Java HotSpot(TM) 64-Bit Server VM (build 21.0.9+7-LTS-338, mixed mode, sharing)
+== Bajando ramas (git fetch)
+git : From https://github.com/lautaro-geli/sistema-orquita
+En C:\Users\pc\Documents\orquita_neuroevolucion2.ps1: 47 Carácter: 40
++     Paso 'Bajando ramas (git fetch)' { git fetch origin }
++                                        ~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (From https://gi...sistema-orquita:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+From https://github.com/lautaro-geli/sistema-orquita
+   6b84b13..d2dcb2d  maestro-v2 -> origin/maestro-v2
+   6b84b13..d2dcb2d  maestro-v2 -> origin/maestro-v2
+== Copia en 09eff43
+git : Preparing worktree (detached HEAD 09eff43)
+En C:\Users\pc\Documents\orquita_neuroevolucion2.ps1: 53 Carácter: 31
++ ... o "Copia en $Commit" { git worktree add --detach $compilado $Commit }
++                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Preparing workt...d HEAD 09eff43):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+Preparing worktree (detached HEAD 09eff43)
+HEAD is now at 09eff43 Neuroevoluci├│n: castigo por no terminar; grilla de tiempo confirmada
+== Compilando y probando (mvn clean package)
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< orquitas:proyecto-orquitas-linareada >----------------
+[INFO] Building proyecto-orquitas-linareada 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- clean:3.2.0:clean (default-clean) @ proyecto-orquitas-linareada ---
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ proyecto-orquitas-linareada ---
+[INFO] skip non existing resourceDirectory C:\Users\pc\Documents\orquita-corridas\ne-compilado\src\main\resources
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ proyecto-orquitas-linareada ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 37 source files with javac [debug release 17] to target\classes
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ proyecto-orquitas-linareada ---
+[INFO] skip non existing resourceDirectory C:\Users\pc\Documents\orquita-corridas\ne-compilado\src\test\resources
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ proyecto-orquitas-linareada ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 17 source files with javac [debug release 17] to target\test-classes
+[INFO]
+[INFO] --- surefire:3.5.2:test (default-test) @ proyecto-orquitas-linareada ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running orquitas.herramientas.EntrenamientoSimuladoTest
+[Entrenamiento] movimiento de prueba: 2 Úpocas, error 1.78879, 0.0 min
+[Entrenamiento] movimiento: 300 Úpocas, error 0.00443, 0.0 min
+[Navegaci¾n] sin Lobito (0,00); frente libre; lados parejos | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[Navegaci¾n] Lobito a +30░, 60 cm (1,00); frente libre; lados parejos | [Memoria] ·ltima GIRAR_IZQ 425 ms; meta vista hace 0 ciclos; rumbo +90░
+[Estado] BUSQUEDA -> ESCAPE
+[Navegaci¾n] sin Salida (0,00); frente libre; lados parejos | [Memoria] ·ltima GIRAR_DER 142 ms; meta no vista; rumbo +60░
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.662 s -- in orquitas.herramientas.EntrenamientoSimuladoTest
+[INFO] Running orquitas.herramientas.HerramientasTest
+powershell : Fila 1 ignorada: cantidad de columnas
+En C:\Users\pc\Documents\orquita_neuroevolucion2.ps1: 55 Carácter: 56
++ ... package)' { powershell -NoProfile -ExecutionPolicy Bypass -File .\pre ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Fila 1 ignorada: cantidad de columnas:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+Fila 1 ignorada: cantidad de columnas
+Entrenando MLP 39-16-4 con 320 ejemplos...
+# Entrenamiento de la red neuronal - 2026-11-18
+
+- Datos: `C:\Users\pc\AppData\Local\Temp\orquita-entrenamiento-4494272692663467121\barridos.csv` (barridos reales del robot, 400 ejemplos).
+- CategorÝas y ejemplos: LIBRE=100 OBJETO=100 LOBITO=100 SALIDA=100
+- Entrada: 39 valores (13 sectores x ROI 4x4, 8x8, 16x16), normalizados como cercanÝa con RedNeuronal.normalizar (-1 = sin eco = 0).
+- Red: MLP 39-16-4 sigmoide, MomentumBackpropagation (tasa 0,1, momento 0,7, mßx. 5000 iteraciones, error objetivo 0,01).
+- Iteraciones: 222; error final: 0.009973.
+- Validaci¾n: mezcla con semilla 20261104, 80 % entrenamiento (320) y 20 % validaci¾n (80), sin ejemplos compartidos.
+- Criterio: exactitud = aciertos / ejemplos de validaci¾n; con umbral de confianza 0.5 (por debajo, "no reconocido" cuenta como error).
+- **Exactitud de validaci¾n: 93.75 %**
+
+Matriz de confusi¾n (filas = real, columnas = predicci¾n):
+
+| real \ pred | LIBRE | OBJETO | LOBITO | SALIDA | NO RECONOCIDO |
+|---|---|---|---|---|---|
+| LIBRE | 20 | 0 | 0 | 0 | 0 |
+| OBJETO | 0 | 17 | 3 | 0 | 0 |
+| LOBITO | 0 | 0 | 17 | 0 | 0 |
+| SALIDA | 0 | 2 | 0 | 21 | 0 |
+
+Modelo guardado en `C:\Users\pc\AppData\Local\Temp\orquita-entrenamiento-4494272692663467121\entorno.nnet`.
+[1/2] OBJETO
+[2/2] OBJETO
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.945 s -- in orquitas.herramientas.HerramientasTest
+[INFO] Running orquitas.herramientas.NeuroevolucionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in orquitas.herramientas.NeuroevolucionTest
+[INFO] Running orquitas.servidor.comunicacion.EnlaceOrquitaTest
+[Enlace] Escuchando en prueba
+[Enlace] Escuchando en prueba
+[Estado] ERROR_SEGURO (sin recibir nada de la Orquita durante 305 ms)
+[Enlace] Restablecer a mano: vincular de nuevo el HC-06 y reiniciar el Servidor.
+[Captura] id=7 anotada en el est¾mago
+[Captura] id=7 anotada en el est¾mago
+[Enlace] Escuchando en prueba
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Enlace] Escuchando en prueba
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Orden] AVANZAR 400 ms
+[Enlace] Escuchando en prueba
+[Estado] ERROR_SEGURO (fall¾ el envÝo al puerto: puerto caÝdo (simulado))
+[Enlace] Restablecer a mano: vincular de nuevo el HC-06 y reiniciar el Servidor.
+[Orden] AVANZAR 400 ms
+[Escritor] No se pudo anotar la captura 1: C:\Users\pc\AppData\Local\Temp\orquita-sin-archivo-15724940631954917168
+[Escritor] No se pudo anotar la captura 1: C:\Users\pc\AppData\Local\Temp\orquita-sin-archivo-15724940631954917168
+[Orden] AVANZAR 400 ms
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.919 s -- in orquitas.servidor.comunicacion.EnlaceOrquitaTest
+[INFO] Running orquitas.servidor.comunicacion.IntegracionOrquitaTest
+[Enlace] Escuchando en prueba
+[Orden] GIRAR_DER 300 ms
+[Orden] AVANZAR 400 ms
+[Captura] id=1 anotada en el est¾mago
+[Auditor] Capturas en el est¾mago: 1/1
+[Estado] BUSQUEDA -> ESCAPE
+[Captura] id=1 anotada en el est¾mago
+[Orden] AVANZAR 400 ms
+[Estado] ESCAPE -> LIBERADA
+[Orden] DETENER 0 ms
+[Enlace] Escuchando en prueba
+[Orden] AVANZAR 400 ms
+[Estado] ERROR_SEGURO (sin recibir nada de la Orquita durante 437 ms)
+[Enlace] Restablecer a mano: vincular de nuevo el HC-06 y reiniciar el Servidor.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.622 s -- in orquitas.servidor.comunicacion.IntegracionOrquitaTest
+[INFO] Running orquitas.servidor.navegacion.MemoriaNavegacionTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in orquitas.servidor.navegacion.MemoriaNavegacionTest
+[INFO] Running orquitas.servidor.navegacion.NavegacionRedesTest
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] ESCAPE -> LIBERADA
+[Navegaci¾n] sin Lobito (0,00); frente libre; mßs abierto a la izq. | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[Navegaci¾n] sin Lobito (0,00); frente libre; lados parejos | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[Navegaci¾n] sin Lobito (0,00); frente a 20 cm; lados parejos | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[Navegaci¾n] sin Lobito (0,00); frente libre; lados parejos | [Memoria] ·ltima AVANZAR 500 ms; meta no vista; rumbo +0░
+[Estado] BUSQUEDA -> ESCAPE
+[Navegaci¾n] sin Salida (0,00); frente libre; lados parejos | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[Navegaci¾n] sin Lobito (0,00); frente libre; lados parejos | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[Navegaci¾n] sin Lobito (0,00); frente libre; lados parejos | [Memoria] ·ltima GIRAR_IZQ 425 ms; meta no vista; rumbo +90░
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] ESCAPE -> LIBERADA
+[Navegaci¾n] sin Lobito (0,00); frente a 20 cm; lados parejos | [Memoria] sin orden anterior; meta no vista; rumbo +0░
+[INFO] Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in orquitas.servidor.navegacion.NavegacionRedesTest
+[INFO] Running orquitas.servidor.navegacion.NavegacionTest
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] ESCAPE -> LIBERADA
+[Estado] BUSQUEDA -> LIBERADA
+[Estado] BUSQUEDA -> LIBERADA
+[Estado] BUSQUEDA -> LIBERADA
+[Estado] BUSQUEDA -> LIBERADA
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] BUSQUEDA -> ESCAPE
+[Estado] ESCAPE -> LIBERADA
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in orquitas.servidor.navegacion.NavegacionTest
+[INFO] Running orquitas.servidor.navegacion.PreprocesadorTelemetriaTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in orquitas.servidor.navegacion.PreprocesadorTelemetriaTest
+[INFO] Running orquitas.servidor.navegacion.RedNeuronalTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in orquitas.servidor.navegacion.RedNeuronalTest
+[INFO] Running orquitas.servidor.navegacion.ReflejoSeguridadCandadoTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in orquitas.servidor.navegacion.ReflejoSeguridadCandadoTest
+[INFO] Running orquitas.servidor.navegacion.RepresentacionIntermediaTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in orquitas.servidor.navegacion.RepresentacionIntermediaTest
+[INFO] Running orquitas.servidor.persistencia.EstomagoTest
+[Escritor] No se pudo anotar la captura 1: 
+C:\Users\pc\AppData\Local\Temp\orquita-estomago-5464514897131002531\estomago.txt
+[Escritor] No se pudo anotar la captura 1: C:\Users\pc\AppData\Local\Temp\orquita-estomago-5464514897131002531\estomago.txt
+[Auditor] Capturas en el est¾mago: 1/1
+[Estado] BUSQUEDA -> ESCAPE
+[Auditor] Capturas en el est¾mago: 2/3
+[Auditor] Capturas en el est¾mago: 3/3
+[Estado] BUSQUEDA -> ESCAPE
+[Auditor] Capturas en el est¾mago: 2/1000
+[Auditor] Capturas en el est¾mago: 27/1000
+[Auditor] Capturas en el est¾mago: 30/1000
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.539 s -- in orquitas.servidor.persistencia.EstomagoTest
+[INFO] Running orquitas.simulacion.bahia.SimuladorBahiaTest
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.144 s -- in orquitas.simulacion.bahia.SimuladorBahiaTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 147, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- jar:3.4.1:jar (default-jar) @ proyecto-orquitas-linareada ---
+[INFO] Building jar: C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\orquitas-linareada.jar
+[INFO]
+[INFO] --- dependency:3.7.0:copy-dependencies (default-cli) @ proyecto-orquitas-linareada ---
+[INFO] Copying artifact 'com.github.neuroph:neuroph-core:jar:2.98:compile' (C:\Users\pc\.m2\repository\com\github\neuroph\neuroph-core\2.98\neuroph-core-2.98.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\neuroph-core-2.98.jar
+[INFO] Copying artifact 'org.slf4j:slf4j-api:jar:1.7.5:compile' (C:\Users\pc\.m2\repository\org\slf4j\slf4j-api\1.7.5\slf4j-api-1.7.5.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\slf4j-api-1.7.5.jar
+[INFO] Copying artifact 'org.apache.commons:commons-lang3:jar:3.3.2:compile' (C:\Users\pc\.m2\repository\org\apache\commons\commons-lang3\3.3.2\commons-lang3-3.3.2.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\commons-lang3-3.3.2.jar
+[INFO] Copying artifact 'ch.qos.logback:logback-core:jar:1.1.2:compile' (C:\Users\pc\.m2\repository\ch\qos\logback\logback-core\1.1.2\logback-core-1.1.2.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\logback-core-1.1.2.jar
+[INFO] Copying artifact 'ch.qos.logback:logback-classic:jar:1.1.2:compile' (C:\Users\pc\.m2\repository\ch\qos\logback\logback-classic\1.1.2\logback-classic-1.1.2.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\logback-classic-1.1.2.jar
+[INFO] Copying artifact 'javax.visrec:visrec-api:jar:1.0.0:compile' (C:\Users\pc\.m2\repository\javax\visrec\visrec-api\1.0.0\visrec-api-1.0.0.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\visrec-api-1.0.0.jar
+[INFO] Copying artifact 'com.fazecast:jSerialComm:jar:2.11.4:compile' (C:\Users\pc\.m2\repository\com\fazecast\jSerialComm\2.11.4\jSerialComm-2.11.4.jar) to C:\Users\pc\Documents\orquita-corridas\ne-compilado\target\dependency\jSerialComm-2.11.4.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.118 s
+[INFO] Finished at: 2026-11-18T15:27:39-03:00
+[INFO] ------------------------------------------------------------------------
+== 0 min: arranca NE2_tiempo8_s1 (PID 19124)
+== 0 min: arranca NE2_tiempo8_s2 (PID 18952)
+== 0 min: arranca NE2_tiempo2_s1 (PID 4044)
+== 0 min: arranca NE2_tiempo2_s2 (PID 18032)
+   1 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   2 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   3 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   4 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   5 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   6 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   7 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   8 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   9 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   10 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   11 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   12 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   13 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   14 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   15 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   16 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   17 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   18 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   19 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   20 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   21 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   22 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   23 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   24 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   25 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   26 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   27 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   28 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   29 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   30 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   31 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   32 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   33 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   34 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   35 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   36 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   37 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   38 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   39 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   40 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   41 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   42 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   43 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   44 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   45 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   46 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   47 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   48 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   49 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   50 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   51 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   52 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   53 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   54 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   55 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   56 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   57 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   58 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   59 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   60 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   61 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   62 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   63 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   64 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   65 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   66 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   67 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   68 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   69 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   70 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   71 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   72 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   73 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   74 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   75 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   76 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   77 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   78 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   79 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   80 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   81 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   82 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   83 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   84 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   85 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   86 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   87 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   88 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   89 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   90 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   91 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   92 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   93 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   94 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   95 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   96 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   97 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   98 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   99 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   100 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   101 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   102 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   103 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   104 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   105 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   106 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   107 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   108 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   109 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   110 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   111 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   112 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   113 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   114 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   115 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   116 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   117 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   118 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   119 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+   120 min  corriendo: NE2_tiempo2_s1, NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 0
+== 121 min: terminó NE2_tiempo2_s1 (código 0, 121 min)
+   121 min  corriendo: NE2_tiempo2_s2, NE2_tiempo8_s1, NE2_tiempo8_s2  | en espera: 0  | terminadas: 1
+== 122 min: terminó NE2_tiempo2_s2 (código 0, 122 min)
+== 122 min: terminó NE2_tiempo8_s1 (código 0, 122 min)
+== 122 min: terminó NE2_tiempo8_s2 (código 0, 122 min)
+   122 min  corriendo:   | en espera: 0  | terminadas: 4
+== LISTO en 122 min. Resultados en C:\Users\pc\Documents\orquita-corridas\neuroevolucion2_20261118_1527
+   Avisale a Claude para que revise los reportes y los suba al repo (sin los .nnet).
+**********************
+Fin de la transcripción de Windows PowerShell
+Hora de finalización: 20261118172942
+**********************
