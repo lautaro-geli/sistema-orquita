@@ -62,6 +62,10 @@ bool sensorListo = false;
 
 void setup() {
   Serial.begin(115200);
+  // En placas con USB propio (Leonardo, Micro) hay que esperar a que se abra el Serial Monitor.
+  unsigned long espera = millis();
+  while (!Serial && millis() - espera < 3000) { }
+  Serial.println(F("# Prueba de ruido: arrancando..."));
   pinMode(PIN_IN1, OUTPUT); pinMode(PIN_IN2, OUTPUT);
   pinMode(PIN_IN3, OUTPUT); pinMode(PIN_IN4, OUTPUT);
   digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, LOW);
@@ -73,8 +77,12 @@ void setup() {
   barrido.write(0);
   delay(1000);
 
+  Serial.println(F("# Servos en posicion. Iniciando el sensor (I2C)..."));
   Wire.begin();
   Wire.setClock(400000);
+#if defined(WIRE_HAS_TIMEOUT)
+  Wire.setWireTimeout(25000, true); // Si el bus I2C se traba, no se queda colgado para siempre.
+#endif
   sensor.setTimeout(300);
   for (uint8_t intento = 0; intento < 3 && !sensorListo; intento++) {
     sensorListo = sensor.init();
@@ -131,10 +139,21 @@ void correrConfig(char escena, const Config &c) {
   }
 }
 
+unsigned long ultimoAviso = 0;
+
 void loop() {
+  if (millis() - ultimoAviso > 5000) {
+    ultimoAviso = millis();
+    Serial.println(sensorListo ? F("# Esperando el numero de escena (1..9) y Enter.")
+                               : F("# ERROR: el VL53L1X no responde. Revisar SDA (A4), SCL (A5), VIN y GND."));
+  }
   if (!sensorListo || !Serial.available()) return;
   char escena = Serial.read();
-  if (escena < '1' || escena > '9') return;
+  if (escena == '\n' || escena == '\r') return;
+  if (escena < '1' || escena > '9') {
+    Serial.print(F("# No entiendo '")); Serial.print(escena); Serial.println(F("': escribi un numero del 1 al 9."));
+    return;
+  }
   Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(": corriendo A, B, C, D y E (unos 7 minutos)..."));
   for (uint8_t i = 0; i < CANTIDAD_CONFIGS; i++) correrConfig(escena, CONFIGS[i]);
   Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(" lista. Cambia la escena y escribi otro numero."));
