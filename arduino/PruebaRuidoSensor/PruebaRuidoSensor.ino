@@ -1,0 +1,136 @@
+/*
+ * Prueba de ruido del VL53L1X para acortar el barrido (Proyecto Orquitas, 18/11/2026).
+ *
+ * El robot queda QUIETO (motores apagados, sin Bluetooth). Hace 20 barridos de 13 posiciones x 3 ROI con
+ * cada configuración y manda todo por USB (Serial Monitor a 115200 baudios):
+ *   A = como ahora:            75 ms en los 3 ROI, espera del servo 100 ms
+ *   B = medición corta:        33 ms en los 3 ROI, espera 100 ms
+ *   C = corta y espera corta:  33 ms en los 3 ROI, espera 60 ms   (barrido de ~2,18 s)
+ *   D = mixta:                 4x4 33 ms, 8x8 25 ms, 16x16 20 ms, espera 60 ms (~1,91 s)
+ *
+ * Uso:
+ *   1. Poner el robot quieto frente a una escena fija (paredes, un obstáculo, una canica).
+ *   2. Abrir el Serial Monitor (115200). Escribir el número de escena (1..9) y Enter:
+ *      corre A, B, C y D y escribe las líneas de datos.
+ *   3. Cambiar la escena (por ejemplo, la canica sola a 20, 35 y 50 cm adelante) y repetir con otro número.
+ *   4. Copiar TODO el texto del Serial Monitor a un archivo de texto en Documentos
+ *      (por ejemplo Documentos\ruido_sensor.txt).
+ *
+ * Formato de cada línea de datos (CSV):
+ *   D,escena,config,barrido,sector,roi,mm,estado,ms
+ *     mm = lectura (sin filtrar: -1 si timeout), estado = range_status del VL53L1X (0 = válida),
+ *     ms = tiempo de esa medición.
+ * Al final de cada barrido:  T,escena,config,barrido,ms_del_barrido
+ *
+ * Pines como en Orquita.ino: servo de barrido en D4, servo de elevación en D12 (queda abajo, 0°).
+ */
+#include <Wire.h>
+#include <VL53L1X.h>
+#include <Servo.h>
+
+const uint8_t PIN_SERVO_BARRIDO = 4;
+const uint8_t PIN_SERVO_ELEVACION = 12;
+const uint8_t PIN_IN1 = 7, PIN_IN2 = 8, PIN_IN3 = 9, PIN_IN4 = 11;
+const int PULSO_SERVO_0_US = 544, PULSO_SERVO_180_US = 2400;
+const int SENSOR_ABAJO_GRADOS = 0;
+const unsigned long ESPERA_INICIO_BARRIDO_MS = 500;
+const uint8_t SECTORES = 13;
+const uint8_t BARRIDOS = 20;
+const uint8_t LADOS[3] = {4, 8, 16};
+
+struct Config {
+  char nombre;
+  uint32_t presupuestoUs[3];  // 4x4, 8x8, 16x16
+  unsigned long esperaServoMs;
+};
+
+const Config CONFIGS[4] = {
+  {'A', {75000, 75000, 75000}, 100},
+  {'B', {33000, 33000, 33000}, 100},
+  {'C', {33000, 33000, 33000}, 60},
+  {'D', {33000, 25000, 20000}, 60},
+};
+
+VL53L1X sensor;
+Servo barrido, elevacion;
+bool sensorListo = false;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_IN1, OUTPUT); pinMode(PIN_IN2, OUTPUT);
+  pinMode(PIN_IN3, OUTPUT); pinMode(PIN_IN4, OUTPUT);
+  digitalWrite(PIN_IN1, LOW); digitalWrite(PIN_IN2, LOW);
+  digitalWrite(PIN_IN3, LOW); digitalWrite(PIN_IN4, LOW);
+
+  barrido.attach(PIN_SERVO_BARRIDO, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
+  elevacion.attach(PIN_SERVO_ELEVACION, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
+  elevacion.write(SENSOR_ABAJO_GRADOS);
+  barrido.write(0);
+  delay(1000);
+
+  Wire.begin();
+  Wire.setClock(400000);
+  sensor.setTimeout(300);
+  for (uint8_t intento = 0; intento < 3 && !sensorListo; intento++) {
+    sensorListo = sensor.init();
+    if (!sensorListo) delay(200);
+  }
+  if (sensorListo) sensorListo = sensor.setDistanceMode(VL53L1X::Short);
+  Serial.println(sensorListo ? F("# VL53L1X listo. Escribi el numero de escena (1..9) y Enter.")
+                             : F("# ERROR: VL53L1X no detectado."));
+}
+
+uint32_t presupuestoActual = 0;
+int lecturas[SECTORES * 3];
+uint8_t estados[SECTORES * 3];
+uint8_t tiempos[SECTORES * 3];
+
+/** Una medición con el ROI y el presupuesto dados (el presupuesto se cambia solo si hace falta). */
+void medir(uint8_t i, uint8_t r, uint32_t presupuestoUs) {
+  unsigned long t0 = millis();
+  if (presupuestoUs != presupuestoActual) {
+    sensor.setMeasurementTimingBudget(presupuestoUs);
+    presupuestoActual = presupuestoUs;
+  }
+  sensor.setROISize(LADOS[r], LADOS[r]);
+  sensor.setROICenter(199);
+  uint16_t mm = sensor.readSingle();
+  bool timeout = sensor.timeoutOccurred();
+  lecturas[i] = timeout ? -1 : (int) mm;
+  estados[i] = timeout ? 255 : (uint8_t) sensor.ranging_data.range_status;
+  tiempos[i] = (uint8_t) min(255UL, millis() - t0);
+}
+
+void correrConfig(char escena, const Config &c) {
+  for (uint8_t n = 0; n < BARRIDOS; n++) {
+    barrido.write(0);
+    delay(ESPERA_INICIO_BARRIDO_MS);
+    unsigned long inicio = millis();
+    for (uint8_t s = 0; s < SECTORES; s++) {
+      barrido.write(s * 15);
+      delay(c.esperaServoMs);
+      for (uint8_t r = 0; r < 3; r++) medir(s * 3 + r, r, c.presupuestoUs[r]);
+    }
+    unsigned long total = millis() - inicio;
+    // Se escribe después del barrido para que el Serial no alargue los tiempos.
+    for (uint8_t i = 0; i < SECTORES * 3; i++) {
+      Serial.print(F("D,")); Serial.print(escena); Serial.print(',');
+      Serial.print(c.nombre); Serial.print(','); Serial.print(n); Serial.print(',');
+      Serial.print(i / 3); Serial.print(','); Serial.print(LADOS[i % 3]); Serial.print(',');
+      Serial.print(lecturas[i]); Serial.print(','); Serial.print(estados[i]); Serial.print(',');
+      Serial.println(tiempos[i]);
+    }
+    Serial.print(F("T,")); Serial.print(escena); Serial.print(',');
+    Serial.print(c.nombre); Serial.print(','); Serial.print(n); Serial.print(',');
+    Serial.println(total);
+  }
+}
+
+void loop() {
+  if (!sensorListo || !Serial.available()) return;
+  char escena = Serial.read();
+  if (escena < '1' || escena > '9') return;
+  Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(": corriendo A, B, C y D (unos 5 minutos)..."));
+  for (uint8_t i = 0; i < 4; i++) correrConfig(escena, CONFIGS[i]);
+  Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(" lista. Cambia la escena y escribi otro numero."));
+}
