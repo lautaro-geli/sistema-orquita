@@ -23,6 +23,11 @@ public final class PreprocesadorTelemetria {
     public static final int ROI_4X4 = 0, ROI_8X8 = 1, ROI_16X16 = 2;
     /** Distancia a partir de la cual la cercanía vale 0 (alcance útil del sensor en modo Short). */
     public static final double ALCANCE_MM = 1300;
+    /**
+     * Lecturas por debajo de esto se toman como sin dato (-1), igual que en el simulador: en la prueba real
+     * del 19/11 el sensor devolvió 0–46 mm "válidos" hacia los costados, sin nada a esa distancia.
+     */
+    public static final int MINIMO_MM = 40;
 
     private PreprocesadorTelemetria() { }
 
@@ -33,7 +38,7 @@ public final class PreprocesadorTelemetria {
         int[] corregida = telemetria.clone();
         for (int s = 0; s < SECTORES; s++) {
             int i4 = s * ROIS + ROI_4X4, i8 = s * ROIS + ROI_8X8, i16 = s * ROIS + ROI_16X16;
-            for (int i : new int[] {i4, i8, i16}) if (corregida[i] < 0) corregida[i] = DESCONOCIDO;
+            for (int i : new int[] {i4, i8, i16}) if (corregida[i] < MINIMO_MM) corregida[i] = DESCONOCIDO;
             if (corregida[i8] != DESCONOCIDO) {
                 if (corregida[i4] == DESCONOCIDO) corregida[i4] = corregida[i8];
                 if (corregida[i16] == DESCONOCIDO) corregida[i16] = corregida[i8];

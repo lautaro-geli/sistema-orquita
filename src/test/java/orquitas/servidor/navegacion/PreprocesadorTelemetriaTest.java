@@ -52,10 +52,22 @@ public class PreprocesadorTelemetriaTest {
     }
 
     @Test public void cercaniaVaDeUnoPegadoACeroLejos() {
-        double[] e = PreprocesadorTelemetria.entradas(sector(5, 0, 1300, 4000));
-        assertEquals(1, e[15], 1e-9);
+        double[] e = PreprocesadorTelemetria.entradas(sector(5, 40, 1300, 4000));
+        assertEquals((1300 - 40) / 1300.0, e[15], 1e-9);
         assertEquals(0, e[16], 1e-9);
         assertEquals(0, e[17], 1e-9);
+    }
+
+    @Test public void lecturasDeMenosDe40mmSonDesconocidas() {
+        // El sensor real devolvió 0–46 mm "válidos" sin nada a esa distancia: se toman como sin dato.
+        // 4x4 en 0 y 16x16 en 20: sin dato, toman el 8x8 (regla del -1).
+        int[] c = PreprocesadorTelemetria.corregir(sector(5, 0, 500, 20));
+        assertEquals(500, c[5 * 3]);
+        assertEquals(500, c[5 * 3 + 2]);
+        // 8x8 en 39: sin dato, y los otros quedan como estaban.
+        c = PreprocesadorTelemetria.corregir(sector(5, 300, 39, 600));
+        assertEquals(PreprocesadorTelemetria.DESCONOCIDO, c[5 * 3 + 1]);
+        assertEquals(300, c[5 * 3]);
     }
 
     @Test public void rasgosDeCanicaCercaYDeParedPlana() {
