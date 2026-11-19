@@ -172,23 +172,27 @@ void probarSensor() {
   barrido.write(0);
 }
 
+int elevacionActual = SENSOR_ABAJO_GRADOS;
 unsigned long ultimoAviso = 0;
 
 void loop() {
   if (millis() - ultimoAviso > 5000) {
     ultimoAviso = millis();
-    Serial.println(sensorListo ? F("# Esperando: numero de escena (1..9), o 's' = probar servo, 'm' = probar sensor; y Enter.")
+    Serial.println(sensorListo ? F("# Esperando: escena (1..9); 'a' = sensor arriba (180), 'b' = abajo (0); 's' = servo; 'm' = sensor. Y Enter.")
                                : F("# ERROR: el VL53L1X no responde. Revisar SDA (A4), SCL (A5), VIN y GND."));
   }
   if (!sensorListo || !Serial.available()) return;
   char escena = Serial.read();
   if (escena == '\n' || escena == '\r') return;
   if (escena == 's' || escena == 'S') { probarServo(); return; }
+  if (escena == 'a' || escena == 'A') { elevacionActual = 180; elevacion.write(180); delay(800); Serial.println(F("# Elevacion = 180 (sensor ARRIBA)")); return; }
+  if (escena == 'b' || escena == 'B') { elevacionActual = SENSOR_ABAJO_GRADOS; elevacion.write(SENSOR_ABAJO_GRADOS); delay(800); Serial.println(F("# Elevacion = 0 (sensor ABAJO)")); return; }
   if (escena == 'm' || escena == 'M') { probarSensor(); return; }
   if (escena < '1' || escena > '9') {
     Serial.print(F("# No entiendo '")); Serial.print(escena); Serial.println(F("': escribi un numero del 1 al 9."));
     return;
   }
+  Serial.print(F("# Elevacion ")); Serial.println(elevacionActual);
   Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(": corriendo A, B, C, D y E (unos 7 minutos)..."));
   for (uint8_t i = 0; i < CANTIDAD_CONFIGS; i++) correrConfig(escena, CONFIGS[i]);
   Serial.print(F("# Escena ")); Serial.print(escena); Serial.println(F(" lista. Cambia la escena y escribi otro numero."));
