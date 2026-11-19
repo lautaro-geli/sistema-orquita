@@ -142,6 +142,8 @@ public class EnlaceOrquita extends Thread {
                 break;
             }
             case TELEMETRIA:
+                // Se registra el barrido crudo para analizar después las pruebas reales.
+                System.out.println("[Telemetría] " + java.util.Arrays.toString(telemetria).replace(" ", "").replace(",", ";"));
                 enviarConfirmacion();
                 navegacion.determinarMovimiento(telemetria); // CU-07
                 enviarOrdenNavegacion(navegacion.obtenerOrdenDecidida()); // CU-08
