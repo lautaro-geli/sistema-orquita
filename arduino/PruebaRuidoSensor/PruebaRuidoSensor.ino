@@ -187,6 +187,38 @@ uint8_t centroDeFila(uint8_t fila) {
   return fila < 8 ? (uint8_t) (192 + fila) : (uint8_t) (63 - (fila - 8));
 }
 
+/*
+ * 'o': lo mismo con el ROI 8x8 (filas 4 a 11, para que el ROI quede adentro de la grilla) y con el servo de
+ * barrido en 60°, 90° y 120° (los costados son los que más piso veían).
+ * Línea:  O,elevacion,angulo,fila,centro,mediana_mm,validas,min,max
+ */
+void recorrerROI8() {
+  if (presupuestoActual != 75000) { sensor.setMeasurementTimingBudget(75000); presupuestoActual = 75000; }
+  sensor.setROISize(8, 8);
+  Serial.print(F("# ROI 8x8 fila por fila, elevacion ")); Serial.println(elevacionActual);
+  const uint8_t angulos[3] = {60, 90, 120};
+  for (uint8_t a = 0; a < 3; a++) {
+    barrido.write(angulos[a]);
+    delay(400);
+    for (uint8_t fila = 4; fila <= 11; fila++) {
+      uint8_t centro = centroDeFila(fila);
+      sensor.setROICenter(centro);
+      int v[10]; uint8_t n = 0;
+      for (uint8_t i = 0; i < 10; i++) {
+        uint16_t mm = sensor.readSingle();
+        if (!sensor.timeoutOccurred() && sensor.ranging_data.range_status == 0) v[n++] = (int) mm;
+      }
+      for (uint8_t i = 1; i < n; i++) { int x = v[i]; int j = i - 1; while (j >= 0 && v[j] > x) { v[j + 1] = v[j]; j--; } v[j + 1] = x; }
+      Serial.print(F("O,")); Serial.print(elevacionActual); Serial.print(','); Serial.print(angulos[a]); Serial.print(',');
+      Serial.print(fila); Serial.print(','); Serial.print(centro); Serial.print(','); Serial.print(n ? v[n / 2] : -1); Serial.print(',');
+      Serial.print(n); Serial.print(','); Serial.print(n ? v[0] : -1); Serial.print(','); Serial.println(n ? v[n - 1] : -1);
+    }
+  }
+  sensor.setROICenter(199);
+  barrido.write(0);
+  Serial.println(F("# ROI 8x8: listo"));
+}
+
 void recorrerROI() {
   barrido.write(90);
   delay(400);
@@ -216,7 +248,7 @@ unsigned long ultimoAviso = 0;
 void loop() {
   if (millis() - ultimoAviso > 5000) {
     ultimoAviso = millis();
-    Serial.println(sensorListo ? F("# Esperando: escena (1..9); 'r' = recorrer ROI 4x4; 'a' = sensor arriba, 'b' = abajo; 's' = servo; 'm' = sensor. Y Enter.")
+    Serial.println(sensorListo ? F("# Esperando: escena (1..9); 'r' = recorrer ROI 4x4; 'o' = ROI 8x8; 'a' = sensor arriba, 'b' = abajo; 's' = servo; 'm' = sensor. Y Enter.")
                                : F("# ERROR: el VL53L1X no responde. Revisar SDA (A4), SCL (A5), VIN y GND."));
   }
   if (!sensorListo || !Serial.available()) return;
@@ -227,6 +259,7 @@ void loop() {
   if (escena == 'b' || escena == 'B') { elevacionActual = SENSOR_ABAJO_GRADOS; elevacion.write(SENSOR_ABAJO_GRADOS); delay(800); Serial.println(F("# Elevacion = 0 (sensor ABAJO)")); return; }
   if (escena == 'm' || escena == 'M') { probarSensor(); return; }
   if (escena == 'r' || escena == 'R') { recorrerROI(); return; }
+  if (escena == 'o' || escena == 'O') { recorrerROI8(); return; }
   if (escena < '1' || escena > '9') {
     Serial.print(F("# No entiendo '")); Serial.print(escena); Serial.println(F("': escribi un numero del 1 al 9."));
     return;
