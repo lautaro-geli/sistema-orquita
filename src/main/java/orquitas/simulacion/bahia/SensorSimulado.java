@@ -31,7 +31,15 @@ public final class SensorSimulado {
     /** Parámetros de ruido. */
     public record Ruido(double sigmaBaseMm, double sigmaRelativa, double perdida4x4, double perdida,
                         double probBloqueSinEco) {
-        public static final Ruido NORMAL = new Ruido(4, 0.02, 0.04, 0.01, 0.12);
+        /**
+         * Ruido por defecto: desvío de 4 mm + 2 % de la distancia. Se puede cambiar con
+         * -Dorquita.ruidoBase y -Dorquita.ruidoRelativo. La prueba real del 18/11 (VL53L1X, modo Short,
+         * 20–75 ms por medición) dio 1–2 mm de desvío a 20–45 cm: ruidoBase=1.5 y ruidoRelativo=0.005
+         * se parecen más al sensor real.
+         */
+        public static final Ruido NORMAL = new Ruido(
+                Double.parseDouble(System.getProperty("orquita.ruidoBase", "4")),
+                Double.parseDouble(System.getProperty("orquita.ruidoRelativo", "0.02")), 0.04, 0.01, 0.12);
         public static final Ruido NINGUNO = new Ruido(0, 0, 0, 0, 0);
     }
 
