@@ -173,12 +173,50 @@ void probarSensor() {
 }
 
 int elevacionActual = SENSOR_ABAJO_GRADOS;
+
+/*
+ * 'r': con el servo de barrido mirando adelante, corre el centro del ROI 4x4 por la columna del medio de la
+ * grilla de 16 x 16 detectores, fila por fila (filas 2 a 13), y mide 10 veces en cada una (75 ms).
+ * Numeración de la tabla de ST (UM2555): filas 0..7 de la columna 8 = 192..199; filas 8..15 = 63..56.
+ * Cada fila mueve la mira unos 1,7°; cuál punta es "arriba" depende de cómo está montado el sensor.
+ * Línea por fila:  R,elevacion,fila,centro,mediana_mm,validas,min,max
+ */
+const uint8_t FILAS_R[12] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+
+uint8_t centroDeFila(uint8_t fila) {
+  return fila < 8 ? (uint8_t) (192 + fila) : (uint8_t) (63 - (fila - 8));
+}
+
+void recorrerROI() {
+  barrido.write(90);
+  delay(400);
+  if (presupuestoActual != 75000) { sensor.setMeasurementTimingBudget(75000); presupuestoActual = 75000; }
+  sensor.setROISize(4, 4);
+  Serial.print(F("# ROI 4x4 fila por fila, elevacion ")); Serial.println(elevacionActual);
+  for (uint8_t k = 0; k < 12; k++) {
+    uint8_t fila = FILAS_R[k], centro = centroDeFila(fila);
+    sensor.setROICenter(centro);
+    int v[10]; uint8_t n = 0;
+    for (uint8_t i = 0; i < 10; i++) {
+      uint16_t mm = sensor.readSingle();
+      if (!sensor.timeoutOccurred() && sensor.ranging_data.range_status == 0) v[n++] = (int) mm;
+    }
+    // Mediana de las válidas (orden por inserción).
+    for (uint8_t i = 1; i < n; i++) { int x = v[i]; int j = i - 1; while (j >= 0 && v[j] > x) { v[j + 1] = v[j]; j--; } v[j + 1] = x; }
+    Serial.print(F("R,")); Serial.print(elevacionActual); Serial.print(','); Serial.print(fila); Serial.print(',');
+    Serial.print(centro); Serial.print(','); Serial.print(n ? v[n / 2] : -1); Serial.print(',');
+    Serial.print(n); Serial.print(','); Serial.print(n ? v[0] : -1); Serial.print(','); Serial.println(n ? v[n - 1] : -1);
+  }
+  sensor.setROICenter(199);
+  barrido.write(0);
+  Serial.println(F("# ROI: listo"));
+}
 unsigned long ultimoAviso = 0;
 
 void loop() {
   if (millis() - ultimoAviso > 5000) {
     ultimoAviso = millis();
-    Serial.println(sensorListo ? F("# Esperando: escena (1..9); 'a' = sensor arriba (180), 'b' = abajo (0); 's' = servo; 'm' = sensor. Y Enter.")
+    Serial.println(sensorListo ? F("# Esperando: escena (1..9); 'r' = recorrer ROI 4x4; 'a' = sensor arriba, 'b' = abajo; 's' = servo; 'm' = sensor. Y Enter.")
                                : F("# ERROR: el VL53L1X no responde. Revisar SDA (A4), SCL (A5), VIN y GND."));
   }
   if (!sensorListo || !Serial.available()) return;
@@ -188,6 +226,7 @@ void loop() {
   if (escena == 'a' || escena == 'A') { elevacionActual = 180; elevacion.write(180); delay(800); Serial.println(F("# Elevacion = 180 (sensor ARRIBA)")); return; }
   if (escena == 'b' || escena == 'B') { elevacionActual = SENSOR_ABAJO_GRADOS; elevacion.write(SENSOR_ABAJO_GRADOS); delay(800); Serial.println(F("# Elevacion = 0 (sensor ABAJO)")); return; }
   if (escena == 'm' || escena == 'M') { probarSensor(); return; }
+  if (escena == 'r' || escena == 'R') { recorrerROI(); return; }
   if (escena < '1' || escena > '9') {
     Serial.print(F("# No entiendo '")); Serial.print(escena); Serial.println(F("': escribi un numero del 1 al 9."));
     return;
