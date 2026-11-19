@@ -1,9 +1,9 @@
-# Arma una carpeta portátil del Servidor para llevar a otra PC (solo necesita Java 17 o más nuevo).
+﻿# Arma una carpeta portátil del Servidor para llevar a otra PC (solo necesita Java 17 o más nuevo).
 # Compila la rama maestro-v2 en una copia aparte y junta: clases, librerías (Neuroph, jSerialComm...),
 # las redes E2, la red de reglas (plan B), el sketch de la Orquita y servidor.bat para arrancar.
 # Resultado: Documents\OrquitaPortable y Documents\OrquitaPortable.zip
 $ErrorActionPreference = 'Continue'
-$Commit = 'COMMIT_AQUI'
+$Commit = '1b78d39'
 
 $docs = Join-Path $env:USERPROFILE 'Documents'
 $repo = Join-Path $docs 'sistema-orquita'
