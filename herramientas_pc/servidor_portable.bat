@@ -1,11 +1,13 @@
 @echo off
 setlocal
-REM Servidor Orquita portable: necesita Java 17 o mas nuevo (java en el PATH).
+REM Servidor Orquita portable. Usa el Java 17 que viene en la carpeta jre (si esta); si no, el java del PATH (17 o mas nuevo).
 REM Todo lo que muestra queda en consolas\consola_<fecha>.txt
 cd /d "%~dp0"
-java -version >nul 2>&1
+set JAVA=java
+if exist "%~dp0jre\bin\java.exe" set JAVA=%~dp0jre\bin\java.exe
+"%JAVA%" -version >nul 2>&1
 if errorlevel 1 (
-  echo No encuentro Java. Instalar Java 17 o mas nuevo ^(por ejemplo Temurin de adoptium.net^) y volver a abrir.
+  echo No encuentro Java 17. Instalar Java 17 o mas nuevo ^(por ejemplo Temurin de adoptium.net^) y volver a abrir.
   pause
   exit /b 1
 )
@@ -26,9 +28,9 @@ echo.
 echo == Arrancando el Servidor ^(%PUERTO%, umbral 3^). Prender la Orquita. Cortar con Ctrl+C.
 if "%MODO%"=="2" (
   cd reglas
-  powershell -NoProfile -Command "& java -cp '%CP%' orquitas.servidor.ServidorOrquita %PUERTO% --umbral=3 --reglas 2>&1 | ForEach-Object { \"$_\" } | Tee-Object -FilePath '..\consolas\consola_%FECHA%_reglas.txt'"
+  powershell -NoProfile -Command "& '%JAVA%' -cp '%CP%' orquitas.servidor.ServidorOrquita %PUERTO% --umbral=3 --reglas 2>&1 | ForEach-Object { \"$_\" } | Tee-Object -FilePath '..\consolas\consola_%FECHA%_reglas.txt'"
 ) else (
-  powershell -NoProfile -Command "& java -cp '%CP%' orquitas.servidor.ServidorOrquita %PUERTO% --umbral=3 2>&1 | ForEach-Object { \"$_\" } | Tee-Object -FilePath 'consolas\consola_%FECHA%_redes.txt'"
+  powershell -NoProfile -Command "& '%JAVA%' -cp '%CP%' orquitas.servidor.ServidorOrquita %PUERTO% --umbral=3 2>&1 | ForEach-Object { \"$_\" } | Tee-Object -FilePath 'consolas\consola_%FECHA%_redes.txt'"
 )
 echo.
 echo == Fin. La consola quedo en la carpeta consolas.
