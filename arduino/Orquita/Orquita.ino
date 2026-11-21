@@ -63,17 +63,24 @@ const int PULSO_SERVO_0_US = 544;     // Pulso en µs para 0°. Calibrar con el 
 const int PULSO_SERVO_180_US = 2400;  // Pulso en µs para 180°.
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
 const int SENSOR_ARRIBA_GRADOS = 180; // Sensor levantado (deja pasar la canica). Solo se usa si SUBIR_SENSOR_AL_MOVER.
-const bool SUBIR_SENSOR_AL_MOVER = false; // false: el sensor queda siempre abajo, a la altura de las canicas.
+const bool SUBIR_SENSOR_AL_MOVER = false; // true: sube en todos los movimientos (lento). false: solo al ir a atrapar.
 const unsigned long PASO_AVANZAR_MS = 400; // Paso de AVANZAR/RETROCEDER si la ORDEN no trae ms.
 const unsigned long PASO_GIRO_MS = 300;    // Paso de giro si la ORDEN no trae ms.
 const unsigned long PASO_MAXIMO_MS = 1500; // Tope de seguridad de la duración que pide el Servidor.
-const unsigned long ESPERA_SERVO_MS = 100; // Asentamiento del servo en cada posición (probado en el barrido que funcionó).
-const unsigned long ESPERA_INICIO_BARRIDO_MS = 700; // Volver de 180° a 0° (el servo se suelta después: tiene que llegar).
+const unsigned long ESPERA_SERVO_MS = 70;  // Asentamiento del servo en cada posición (config D de la prueba de ruido: 60 ms).
+const unsigned long ESPERA_INICIO_BARRIDO_MS = 700; // Si el barrido arranca lejos (más de 15°): el servo tiene que llegar antes de soltarlo.
 const unsigned long ESPERA_ELEVACION_MS = 700;      // Subir o bajar el sensor 180° (con 250 ms se soltaba a mitad de camino).
 // Parámetros del barrido que funcionó bien (modo Short, medición más larga = más estable).
-const uint32_t PRESUPUESTO_MEDICION_US = 75000;     // Tiempo de captura del VL53L1X.
-const uint16_t LECTURA_MS = 78;                     // Presupuesto + ~3 ms de overhead.
-const unsigned long SLOT_MS = 370;                  // Tiempo máximo por ángulo (13 x 370 = 4,8 s).
+// Configuración D de la prueba de ruido (barrido de ~2 s, ruido de 1-2 mm). Orden de medición 16 -> 8 -> 4:
+// la primera medición después de mover el servo sale sesgada, y el 16x16 es el que menos lo sufre.
+const uint32_t PRESUPUESTO_MEDICION_US = 75000;     // Solo para el arranque del sensor.
+const uint32_t PRESUPUESTO_4_US = 33000;
+const uint32_t PRESUPUESTO_8_US = 25000;
+const uint32_t PRESUPUESTO_16_US = 20000;
+const uint8_t CENTRO_ROI_CHICO = 197;  // 4x4 y 8x8 un poco hacia abajo: ven mejor las canicas (prueba ruido_canicas).
+const uint8_t CENTRO_ROI_16 = 199;     // 16x16: la matriz entera.
+// Subir el sensor solo para atrapar: en AVANZAR, si el último barrido vio algo cerca al frente (60° a 120°).
+const int CERCA_FRENTE_MM = 350;
 const uint16_t TIMEOUT_SENSOR_MS = 300;
 const uint16_t DIST_MIN_MM = 40;                    // Fuera de [40, 1300] mm la lectura es -1.
 const uint16_t DIST_MAX_MM = 1300;
@@ -301,51 +308,63 @@ int8_t esperarOrden() {
 // Sensor y barrido
 // ======================================================================
 
-/** Una medición con el ROI indicado (lado en SPADs: 4, 8 o 16). -1 si falla o no hay eco válido.
- *  limite = instante (millis) máximo para terminar este ángulo; resto = tiempo que aún necesitan los
- *  ROI que faltan en este ángulo. Reintenta una vez solo si queda tiempo en el presupuesto del ángulo. */
-int medir(uint8_t lado, unsigned long limite, unsigned long resto) {
+uint32_t presupuestoActual = 0;
+
+/** Una medición con el ROI indicado (lado en SPADs: 4, 8 o 16). -1 si falla o no hay eco válido. */
+int medir(uint8_t lado, uint8_t centro, uint32_t presupuestoUs) {
   if (!sensorListo) return SIN_ECO;
+  if (presupuestoUs != presupuestoActual) { sensor.setMeasurementTimingBudget(presupuestoUs); presupuestoActual = presupuestoUs; }
   sensor.setROISize(lado, lado);
-  sensor.setROICenter(199);
-  for (uint8_t intento = 0; intento < 2; intento++) {
-    if (intento == 1 && millis() + LECTURA_MS + resto > limite) break;
-    uint16_t mm = sensor.readSingle();
-    if (Wire.getWireTimeoutFlag()) { Wire.clearWireTimeoutFlag(); DEPLN(F("[Robot] I2C trabado: lectura descartada")); continue; }
-    if (sensor.timeoutOccurred()) continue;
-    if (sensor.ranging_data.range_status != VL53L1X::RangeValid) continue;
-    if (mm < DIST_MIN_MM || mm > DIST_MAX_MM) continue;
-    return (int) mm;
-  }
-  return SIN_ECO; // El Servidor reemplaza -1 por el alcance máximo.
+  sensor.setROICenter(centro);
+  uint16_t mm = sensor.readSingle();
+  if (Wire.getWireTimeoutFlag()) { Wire.clearWireTimeoutFlag(); DEPLN(F("[Robot] I2C trabado: lectura descartada")); return SIN_ECO; }
+  if (sensor.timeoutOccurred()) return SIN_ECO;
+  if (sensor.ranging_data.range_status != VL53L1X::RangeValid) return SIN_ECO;
+  if (mm < DIST_MIN_MM || mm > DIST_MAX_MM) return SIN_ECO;
+  return (int) mm; // El Servidor reemplaza -1 por el alcance máximo.
 }
 
-/** Barrido de 13 posiciones x 3 ROI. Devuelve false si se cortó por Safe Mode. */
+bool barridoDeIda = true; // Alterna 0->180 y 180->0: no pierde tiempo volviendo a 0 en cada ciclo.
+
+/** Barrido de 13 posiciones x 3 ROI. Las lecturas quedan siempre ordenadas por ángulo (0° a 180°).
+ *  Devuelve false si se cortó por Safe Mode. */
 bool barrer() {
-  moverServo(CANAL_BARRIDO, 0);
-  if (!esperarMs(ESPERA_INICIO_BARRIDO_MS)) return false;
   unsigned long inicio = millis();
   DEPLN(F("[Robot] Barriendo..."));
-  for (uint8_t s = 0; s < SECTORES; s++) {
-    unsigned long limite = inicio + (unsigned long)(s + 1) * SLOT_MS;
+  for (uint8_t k = 0; k < SECTORES; k++) {
+    uint8_t s = barridoDeIda ? k : SECTORES - 1 - k;
+    int antes = anguloServo[CANAL_BARRIDO];
     moverServo(CANAL_BARRIDO, s * 15);
-    if (!esperarMs(ESPERA_SERVO_MS)) return false;
+    bool lejos = antes < 0 || abs(antes - s * 15) > 15; // Arranque o barrido cortado: viene de lejos.
+    if (!esperarMs(lejos ? ESPERA_INICIO_BARRIDO_MS : ESPERA_SERVO_MS)) return false;
     soltarServos(); // Quietos mientras mide.
-    lecturas[s * ROIS + 0] = medir(4, limite, 2UL * LECTURA_MS);
-    lecturas[s * ROIS + 1] = medir(8, limite, 1UL * LECTURA_MS);
-    lecturas[s * ROIS + 2] = medir(16, limite, 0);
+    lecturas[s * ROIS + 2] = medir(16, CENTRO_ROI_16, PRESUPUESTO_16_US);
+    lecturas[s * ROIS + 1] = medir(8, CENTRO_ROI_CHICO, PRESUPUESTO_8_US);
+    lecturas[s * ROIS + 0] = medir(4, CENTRO_ROI_CHICO, PRESUPUESTO_4_US);
     atenderServidor(); // Drena el buffer entre posiciones (LATIDO) y controla el Safe Mode.
     revisarCaptura();
     if (enSafeMode) return false;
   }
+  barridoDeIda = !barridoDeIda;
   DEP(F("[Robot] Barrido listo en ms: ")); DEPLN(millis() - inicio);
   return true;
+}
+
+/** true si el último barrido vio algo a menos de CERCA_FRENTE_MM entre 60° y 120° (4x4 u 8x8). */
+bool algoCercaAlFrente() {
+  for (uint8_t s = 4; s <= 8; s++)
+    for (uint8_t r = 0; r < 2; r++) {
+      int v = lecturas[s * ROIS + r];
+      if (v != SIN_ECO && v < CERCA_FRENTE_MM) return true;
+    }
+  return false;
 }
 
 /** Ejecuta la orden durante duracionRecibida ms (o el paso fijo) y vuelve a detenerse. El sensor sube durante el paso (TODO confirmar). */
 void ejecutarOrden(int8_t orden) {
   if (orden == DETENER || orden == SIN_ORDEN) return;
-  if (SUBIR_SENSOR_AL_MOVER && moverServo(CANAL_ELEVACION, SENSOR_ARRIBA_GRADOS)) {
+  bool subir = SUBIR_SENSOR_AL_MOVER || (orden == AVANZAR && algoCercaAlFrente());
+  if (subir && moverServo(CANAL_ELEVACION, SENSOR_ARRIBA_GRADOS)) {
     if (!esperarMs(ESPERA_ELEVACION_MS)) return;
     soltarServos();
   }
