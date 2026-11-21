@@ -32,14 +32,27 @@ try {
     }
     Set-Location $repo
     Paso 'Bajando ramas (git fetch)' { git fetch origin }
-    if (Test-Path $compilado) {
-        git worktree remove --force $compilado 2>&1 | Out-Null
-        if (Test-Path $compilado) { Remove-Item -Recurse -Force $compilado }
-        git worktree prune 2>&1 | Out-Null
+    # Si ya hay una copia compilada en este commit, se reusa (no hace falta borrarla ni recompilar).
+    $clases = Join-Path $compilado 'target\classes\orquitas\servidor\ServidorOrquita.class'
+    $commitCopia = ''
+    if (Test-Path $compilado) { $commitCopia = (git -C $compilado rev-parse --short=7 HEAD 2>$null) }
+    if ((Test-Path $clases) -and ($commitCopia -eq $Commit)) {
+        Write-Host "== Uso la copia ya compilada en $Commit"
+    } else {
+        if (Test-Path $compilado) {
+            git worktree remove --force $compilado 2>&1 | Out-Null
+            if (Test-Path $compilado) { Remove-Item -Recurse -Force $compilado -ErrorAction SilentlyContinue }
+            git worktree prune 2>&1 | Out-Null
+        }
+        if (Test-Path $compilado) {
+            # Algo la tiene abierta (IDE de Arduino, Explorador, una consola): se compila en otra carpeta.
+            $compilado = "$compilado`_$fecha"
+            Write-Host "== La copia anterior está en uso; compilo en $compilado"
+        }
+        Paso "Copia en $Commit" { git worktree add --detach $compilado $Commit }
+        Set-Location $compilado
+        Paso 'Compilando y probando (mvn clean package)' { powershell -NoProfile -ExecutionPolicy Bypass -File .\preparar.ps1 }
     }
-    Paso "Copia en $Commit" { git worktree add --detach $compilado $Commit }
-    Set-Location $compilado
-    Paso 'Compilando y probando (mvn clean package)' { powershell -NoProfile -ExecutionPolicy Bypass -File .\preparar.ps1 }
     $classpath = (Join-Path $compilado 'target\classes') + ';' + (Join-Path $compilado 'target\dependency\*')
 
     # Carpeta de la prueba: modelos/ y estomago.txt quedan acá.
