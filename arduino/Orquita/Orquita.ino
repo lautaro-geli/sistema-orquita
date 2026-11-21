@@ -294,6 +294,7 @@ int medir(uint8_t lado, unsigned long limite, unsigned long resto) {
   for (uint8_t intento = 0; intento < 2; intento++) {
     if (intento == 1 && millis() + LECTURA_MS + resto > limite) break;
     uint16_t mm = sensor.readSingle();
+    if (Wire.getWireTimeoutFlag()) { Wire.clearWireTimeoutFlag(); DEPLN(F("[Robot] I2C trabado: lectura descartada")); continue; }
     if (sensor.timeoutOccurred()) continue;
     if (sensor.ranging_data.range_status != VL53L1X::RangeValid) continue;
     if (mm < DIST_MIN_MM || mm > DIST_MAX_MM) continue;
@@ -307,6 +308,7 @@ bool barrer() {
   moverServo(CANAL_BARRIDO, 0);
   if (!esperarMs(ESPERA_INICIO_BARRIDO_MS)) return false;
   unsigned long inicio = millis();
+  DEPLN(F("[Robot] Barriendo..."));
   for (uint8_t s = 0; s < SECTORES; s++) {
     unsigned long limite = inicio + (unsigned long)(s + 1) * SLOT_MS;
     moverServo(CANAL_BARRIDO, s * 15);
@@ -366,6 +368,7 @@ void setup() {
 
   Wire.begin();
   Wire.setClock(400000);
+  Wire.setWireTimeout(25000, true); // Si el bus I2C se traba (ruido de servos o motores), no se cuelga el Arduino.
   sensor.setTimeout(TIMEOUT_SENSOR_MS);
   for (uint8_t intento = 0; intento < 3 && !sensorListo; intento++) {
     sensorListo = sensor.init();
