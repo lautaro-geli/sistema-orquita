@@ -3,6 +3,12 @@ setlocal
 REM Servidor Orquita portable. Usa el Java 17 que viene en la carpeta jre (si esta); si no, el java del PATH (17 o mas nuevo).
 REM Todo lo que muestra queda en consolas\consola_<fecha>.txt
 cd /d "%~dp0"
+if not exist "%~dp0classes" (
+  echo Este .bat va adentro de la carpeta OrquitaPortable ^(junto a classes, lib, modelos y reglas^).
+  echo En la PC que tiene el repo usar orquita_prueba_real.bat.
+  pause
+  exit /b 1
+)
 set JAVA=java
 if exist "%~dp0jre\bin\java.exe" set JAVA=%~dp0jre\bin\java.exe
 "%JAVA%" -version >nul 2>&1
