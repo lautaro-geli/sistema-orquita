@@ -62,13 +62,14 @@ const uint8_t CANAL_ELEVACION = 1;
 const int PULSO_SERVO_0_US = 544;     // Pulso en µs para 0°. Calibrar con el SG90 real.
 const int PULSO_SERVO_180_US = 2400;  // Pulso en µs para 180°.
 const int SENSOR_ABAJO_GRADOS = 0;    // TODO confirmar: posición del sensor durante el barrido.
-const int SENSOR_ARRIBA_GRADOS = 180; // TODO confirmar: sensor levantado (deja pasar la canica).
+const int SENSOR_ARRIBA_GRADOS = 180; // Sensor levantado (deja pasar la canica). Solo se usa si SUBIR_SENSOR_AL_MOVER.
+const bool SUBIR_SENSOR_AL_MOVER = false; // false: el sensor queda siempre abajo, a la altura de las canicas.
 const unsigned long PASO_AVANZAR_MS = 400; // Paso de AVANZAR/RETROCEDER si la ORDEN no trae ms.
 const unsigned long PASO_GIRO_MS = 300;    // Paso de giro si la ORDEN no trae ms.
 const unsigned long PASO_MAXIMO_MS = 1500; // Tope de seguridad de la duración que pide el Servidor.
 const unsigned long ESPERA_SERVO_MS = 100; // Asentamiento del servo en cada posición (probado en el barrido que funcionó).
-const unsigned long ESPERA_INICIO_BARRIDO_MS = 500; // Volver de 180° a 0°.
-const unsigned long ESPERA_ELEVACION_MS = 250;      // Subir o bajar el sensor.
+const unsigned long ESPERA_INICIO_BARRIDO_MS = 700; // Volver de 180° a 0° (el servo se suelta después: tiene que llegar).
+const unsigned long ESPERA_ELEVACION_MS = 700;      // Subir o bajar el sensor 180° (con 250 ms se soltaba a mitad de camino).
 // Parámetros del barrido que funcionó bien (modo Short, medición más larga = más estable).
 const uint32_t PRESUPUESTO_MEDICION_US = 75000;     // Tiempo de captura del VL53L1X.
 const uint16_t LECTURA_MS = 78;                     // Presupuesto + ~3 ms de overhead.
@@ -147,11 +148,13 @@ void motores(bool izquierdoAdelante, bool derechoAdelante) {
 const uint8_t PIN_CANAL[2] = {PIN_SERVO_BARRIDO, PIN_SERVO_ELEVACION};
 int anguloServo[2] = {-1, -1};
 
-void moverServo(uint8_t canal, int grados) {
-  if (grados == anguloServo[canal]) return; // Ya está ahí: no se vuelve a enganchar (evita un tirón).
+/** Devuelve true si el servo tuvo que moverse (entonces hay que esperar que llegue antes de soltarlo). */
+bool moverServo(uint8_t canal, int grados) {
+  if (grados == anguloServo[canal]) return false; // Ya está ahí: no se vuelve a enganchar (evita un tirón).
   servos[canal].write(grados);              // Primero el ángulo, después attach: no pasa por 90°.
   if (!servos[canal].attached()) servos[canal].attach(PIN_CANAL[canal], PULSO_SERVO_0_US, PULSO_SERVO_180_US);
   anguloServo[canal] = grados;
+  return true;
 }
 
 /** Suelta los dos servos (dejan de recibir pulsos). Llamar cuando ya llegaron a su posición. */
@@ -342,9 +345,10 @@ bool barrer() {
 /** Ejecuta la orden durante duracionRecibida ms (o el paso fijo) y vuelve a detenerse. El sensor sube durante el paso (TODO confirmar). */
 void ejecutarOrden(int8_t orden) {
   if (orden == DETENER || orden == SIN_ORDEN) return;
-  moverServo(CANAL_ELEVACION, SENSOR_ARRIBA_GRADOS);
-  if (!esperarMs(ESPERA_ELEVACION_MS)) return;
-  soltarServos();
+  if (SUBIR_SENSOR_AL_MOVER && moverServo(CANAL_ELEVACION, SENSOR_ARRIBA_GRADOS)) {
+    if (!esperarMs(ESPERA_ELEVACION_MS)) return;
+    soltarServos();
+  }
   unsigned long paso = PASO_AVANZAR_MS;
   switch (orden) {
     case AVANZAR:    motores(true, true); break;
@@ -357,9 +361,10 @@ void ejecutarOrden(int8_t orden) {
   DEPLN(F("[Robot] Motores en marcha"));
   esperarMs(paso); // Si entra en Safe Mode, atenderServidor() ya frenó.
   detenerMotores();
-  moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS); // El servo de elevación vuelve a 0° al terminar el paso.
-  esperarMs(ESPERA_ELEVACION_MS);
-  soltarServos();
+  if (moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS)) { // Vuelve abajo (solo si había subido).
+    esperarMs(ESPERA_ELEVACION_MS);
+    soltarServos();
+  }
 }
 
 // ======================================================================
@@ -416,8 +421,10 @@ void loop() {
     if (enSafeMode) return;
   }
 
-  moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
-  if (!esperarMs(ESPERA_ELEVACION_MS)) return;
+  if (moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS)) { // Solo si no estaba abajo.
+    if (!esperarMs(ESPERA_ELEVACION_MS)) return;
+    soltarServos();
+  }
   if (!barrer()) return;
 
   ordenRecibida = SIN_ORDEN;
