@@ -15,7 +15,7 @@ try {
       switch ($k.Key) {
         'UpArrow' { $c = 'w' } 'DownArrow' { $c = 's' } 'LeftArrow' { $c = 'a' } 'RightArrow' { $c = 'd' }
         'Spacebar' { $c = 'x' } 'Escape' { $p.Write('x'); $p.Close(); return }
-        default { if ($k.KeyChar) { $c = [string]$k.KeyChar } }
+        default { if ($k.KeyChar) { $c = ([string]$k.KeyChar).ToLower() } }
       }
       if ($c) { $p.Write($c) }
     }
