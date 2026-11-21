@@ -141,8 +141,22 @@ void motores(bool izquierdoAdelante, bool derechoAdelante) {
 }
 
 /** Lleva un SG90 posicional (BARRIDO o ELEVACION) al ángulo indicado (0..180). */
+// Los servos se sueltan (detach) cuando quedan quietos: SoftwareSerial frena las interrupciones ~1 ms por byte
+// (al mandar y al recibir por el HC-06) y deforma los pulsos del servo, que entonces da tirones. Suelto, el SG90
+// se sostiene solo por el rozamiento de los engranajes y no recibe pulsos que se puedan deformar.
+const uint8_t PIN_CANAL[2] = {PIN_SERVO_BARRIDO, PIN_SERVO_ELEVACION};
+int anguloServo[2] = {-1, -1};
+
 void moverServo(uint8_t canal, int grados) {
-  servos[canal].write(grados);
+  if (grados == anguloServo[canal]) return; // Ya está ahí: no se vuelve a enganchar (evita un tirón).
+  servos[canal].write(grados);              // Primero el ángulo, después attach: no pasa por 90°.
+  if (!servos[canal].attached()) servos[canal].attach(PIN_CANAL[canal], PULSO_SERVO_0_US, PULSO_SERVO_180_US);
+  anguloServo[canal] = grados;
+}
+
+/** Suelta los dos servos (dejan de recibir pulsos). Llamar cuando ya llegaron a su posición. */
+void soltarServos() {
+  for (uint8_t c = 0; c < 2; c++) if (servos[c].attached()) servos[c].detach();
 }
 
 /** Frena todo (los motores). Se usa al entrar en Safe Mode. */
@@ -313,6 +327,7 @@ bool barrer() {
     unsigned long limite = inicio + (unsigned long)(s + 1) * SLOT_MS;
     moverServo(CANAL_BARRIDO, s * 15);
     if (!esperarMs(ESPERA_SERVO_MS)) return false;
+    soltarServos(); // Quietos mientras mide.
     lecturas[s * ROIS + 0] = medir(4, limite, 2UL * LECTURA_MS);
     lecturas[s * ROIS + 1] = medir(8, limite, 1UL * LECTURA_MS);
     lecturas[s * ROIS + 2] = medir(16, limite, 0);
@@ -329,6 +344,7 @@ void ejecutarOrden(int8_t orden) {
   if (orden == DETENER || orden == SIN_ORDEN) return;
   moverServo(CANAL_ELEVACION, SENSOR_ARRIBA_GRADOS);
   if (!esperarMs(ESPERA_ELEVACION_MS)) return;
+  soltarServos();
   unsigned long paso = PASO_AVANZAR_MS;
   switch (orden) {
     case AVANZAR:    motores(true, true); break;
@@ -343,6 +359,7 @@ void ejecutarOrden(int8_t orden) {
   detenerMotores();
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS); // El servo de elevación vuelve a 0° al terminar el paso.
   esperarMs(ESPERA_ELEVACION_MS);
+  soltarServos();
 }
 
 // ======================================================================
@@ -360,11 +377,10 @@ void setup() {
 
   bt.begin(BAUDIOS_HC06);
 
-  servos[CANAL_BARRIDO].attach(PIN_SERVO_BARRIDO, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
-  servos[CANAL_ELEVACION].attach(PIN_SERVO_ELEVACION, PULSO_SERVO_0_US, PULSO_SERVO_180_US);
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
   moverServo(CANAL_BARRIDO, 0);
   delay(1000); // Como en el barrido probado: los servos terminan de moverse antes de iniciar el sensor.
+  soltarServos();
 
   Wire.begin();
   Wire.setClock(400000);

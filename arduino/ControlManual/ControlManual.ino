@@ -8,8 +8,11 @@
  *   + / -  = paso de 100 ms mas o menos (100..1500; arranca en 300)
  *   j / l  = servo de barrido 15 grados a la izquierda / derecha     b = barrido a 90 (frente)
  *   i / k  = servo de elevacion +15 / -15 grados                     n = elevacion a 0
- *   r      = medir con el VL53L1X en el angulo actual (ROI 4x4, 8x8 y 16x16)
+ *   r      = medir con el VL53L1X en el angulo actual (ROI 4x4, 8x8 y 16x16), con los servos quietos
+ *   1..4   = prender SOLO el pin IN1, IN2, IN3 o IN4 durante "paso" ms (para ver que rueda y sentido mueve cada uno)
+ *   5 / 6  = mover SOLO el servo del pin D4 / D12: 0, 180 y vuelve a 90 (para ver cual es cual)
  *   h      = ayuda
+ * Los servos se sueltan (detach) al llegar: SoftwareSerial (HC-06) deforma sus pulsos y les da tirones.
  * Avisa cuando el FC-51 detecta algo.
  * Mismos pines que Orquita.ino. Por seguridad, si deja de recibir comandos, los motores frenan solos.
  */
@@ -34,6 +37,7 @@ unsigned long paso = 300;
 unsigned long finMovimiento = 0;
 bool moviendo = false;
 bool capturaAnterior = false;
+int pinSolo = -1; // Pin IN prendido solo (comandos 1..4), o -1.
 
 void decir(const __FlashStringHelper* t) { Serial.print(t); bt.print(t); }
 void decirLn(const __FlashStringHelper* t) { Serial.println(t); bt.print(t); bt.write('\n'); }
@@ -52,6 +56,33 @@ void motores(bool izqAdelante, bool derAdelante) {
   digitalWrite(PIN_IN2, izqAdelante ? HIGH : LOW);
   digitalWrite(PIN_IN3, derAdelante ? LOW : HIGH);
   digitalWrite(PIN_IN4, derAdelante ? HIGH : LOW);
+}
+
+/** Lleva el servo al angulo, espera que llegue y lo suelta. */
+void servoA(Servo& sv, uint8_t pin, int grados) {
+  sv.write(grados);
+  if (!sv.attached()) sv.attach(pin, PULSO_0_US, PULSO_180_US);
+  delay(450);
+  sv.detach();
+}
+
+void probarPinIn(uint8_t n) {
+  const uint8_t pines[4] = {PIN_IN1, PIN_IN2, PIN_IN3, PIN_IN4};
+  detener();
+  pinSolo = pines[n];
+  digitalWrite(pinSolo, HIGH);
+  moviendo = true;
+  finMovimiento = millis() + paso;
+  decir(F("Solo IN")); num(n + 1); decir(F(" (pin D")); num(pinSolo); decirLn(F(") en HIGH"));
+}
+
+void probarServo(uint8_t pin) {
+  Servo& sv = (pin == PIN_SERVO_BARRIDO) ? barrido : elevacion; // Cada Servo nuevo gasta un canal: se reusan.
+  decir(F("Servo del pin D")); num(pin); decirLn(F(": 0, 180, 90"));
+  servoA(sv, pin, 0); delay(300);
+  servoA(sv, pin, 180); delay(300);
+  servoA(sv, pin, 90);
+  if (pin == PIN_SERVO_BARRIDO) angBarrido = 90; else angElevacion = 90;
 }
 
 void mover(char c) {
@@ -78,7 +109,8 @@ int medir(uint8_t lado) {
 
 void ayuda() {
   decirLn(F("== Control manual Orquita =="));
-  decirLn(F("w/s/a/d mover, x frenar, +/- paso, j/l barrido, b frente, i/k elevacion, n elev 0, r medir, h ayuda"));
+  decirLn(F("w/s/a/d mover, x frenar, +/- paso, j/l barrido, b frente, i/k elevacion, n elev 0, r medir"));
+  decirLn(F("1-4 un solo pin IN, 5 servo D4, 6 servo D12, h ayuda"));
   decir(F("Paso ms: ")); numLn(paso);
 }
 
@@ -89,16 +121,22 @@ void atender(char c) {
     case 'x': case ' ': detener(); decirLn(F("Freno")); break;
     case '+': if (paso < 1500) paso += 100; decir(F("Paso ms: ")); numLn(paso); break;
     case '-': if (paso > 100) paso -= 100; decir(F("Paso ms: ")); numLn(paso); break;
-    case 'j': angBarrido = min(180, angBarrido + 15); barrido.write(angBarrido); decir(F("Barrido: ")); numLn(angBarrido); break;
-    case 'l': angBarrido = max(0, angBarrido - 15); barrido.write(angBarrido); decir(F("Barrido: ")); numLn(angBarrido); break;
-    case 'b': angBarrido = 90; barrido.write(angBarrido); decirLn(F("Barrido: 90 (frente)")); break;
-    case 'i': angElevacion = min(180, angElevacion + 15); elevacion.write(angElevacion); decir(F("Elevacion: ")); numLn(angElevacion); break;
-    case 'k': angElevacion = max(0, angElevacion - 15); elevacion.write(angElevacion); decir(F("Elevacion: ")); numLn(angElevacion); break;
-    case 'n': angElevacion = 0; elevacion.write(0); decirLn(F("Elevacion: 0")); break;
+    case 'j': angBarrido = min(180, angBarrido + 15); servoA(barrido, PIN_SERVO_BARRIDO, angBarrido); decir(F("Barrido (D4): ")); numLn(angBarrido); break;
+    case 'l': angBarrido = max(0, angBarrido - 15); servoA(barrido, PIN_SERVO_BARRIDO, angBarrido); decir(F("Barrido (D4): ")); numLn(angBarrido); break;
+    case 'b': angBarrido = 90; servoA(barrido, PIN_SERVO_BARRIDO, 90); decirLn(F("Barrido (D4): 90 (frente)")); break;
+    case 'i': angElevacion = min(180, angElevacion + 15); servoA(elevacion, PIN_SERVO_ELEVACION, angElevacion); decir(F("Elevacion (D12): ")); numLn(angElevacion); break;
+    case 'k': angElevacion = max(0, angElevacion - 15); servoA(elevacion, PIN_SERVO_ELEVACION, angElevacion); decir(F("Elevacion (D12): ")); numLn(angElevacion); break;
+    case 'n': angElevacion = 0; servoA(elevacion, PIN_SERVO_ELEVACION, 0); decirLn(F("Elevacion (D12): 0")); break;
+    case '1': case '2': case '3': case '4': probarPinIn(c - '1'); break;
+    case '5': probarServo(PIN_SERVO_BARRIDO); break;
+    case '6': probarServo(PIN_SERVO_ELEVACION); break;
     case 'r': {
       detener();
+      delay(150); // Que se calme la vibracion de los motores.
+      int m4 = medir(4), m8 = medir(8), m16 = medir(16); // Primero mide (en silencio), despues escribe.
       decir(F("Medida mm (4x4 / 8x8 / 16x16) a ")); num(angBarrido); decir(F(" grados: "));
-      num(medir(4)); decir(F(" / ")); num(medir(8)); decir(F(" / ")); numLn(medir(16));
+      num(m4); decir(F(" / ")); num(m8); decir(F(" / ")); numLn(m16);
+      if (m4 == -2 || m8 == -2 || m16 == -2) decirLn(F("(-2 = I2C trabado: cableado SDA/SCL, GND o ruido)"));
       break;
     }
     case 'h': case '?': ayuda(); break;
@@ -113,11 +151,8 @@ void setup() {
   pinMode(PIN_IN3, OUTPUT); pinMode(PIN_IN4, OUTPUT);
   pinMode(PIN_CAPTURA, INPUT_PULLUP);
   detener();
-  barrido.attach(PIN_SERVO_BARRIDO, PULSO_0_US, PULSO_180_US);
-  elevacion.attach(PIN_SERVO_ELEVACION, PULSO_0_US, PULSO_180_US);
-  barrido.write(angBarrido);
-  elevacion.write(angElevacion);
-  delay(800);
+  servoA(barrido, PIN_SERVO_BARRIDO, angBarrido);
+  servoA(elevacion, PIN_SERVO_ELEVACION, angElevacion);
   Wire.begin();
   Wire.setClock(400000);
   Wire.setWireTimeout(25000, true);
