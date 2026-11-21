@@ -309,6 +309,44 @@ int8_t esperarOrden() {
 // ======================================================================
 
 uint32_t presupuestoActual = 0;
+uint8_t trabasSeguidas = 0;
+
+/** Destraba el bus I2C: si el Arduino se reinició en medio de una lectura (por ejemplo al abrir el Monitor
+ *  Serie), el VL53L1X sigue con energía y puede quedar sosteniendo SDA en bajo. Nueve pulsos de SCL le
+ *  dejan terminar el byte y soltar el bus (recuperación estándar de I2C). */
+void destrabarI2C() {
+  Wire.end();
+  pinMode(SDA, INPUT_PULLUP);
+  pinMode(SCL, OUTPUT);
+  for (uint8_t i = 0; i < 9; i++) {
+    digitalWrite(SCL, LOW); delayMicroseconds(10);
+    digitalWrite(SCL, HIGH); delayMicroseconds(10);
+  }
+  // Condición de STOP: SDA sube con SCL en alto.
+  pinMode(SDA, OUTPUT); digitalWrite(SDA, LOW); delayMicroseconds(10);
+  digitalWrite(SCL, HIGH); delayMicroseconds(10);
+  pinMode(SDA, INPUT_PULLUP); delayMicroseconds(10);
+}
+
+/** Destraba el bus, reinicia y configura el VL53L1X. Deja sensorListo en true o false. */
+void iniciarSensor() {
+  destrabarI2C();
+  Wire.begin();
+  Wire.setClock(400000);
+  Wire.setWireTimeout(25000, true); // Si el bus I2C se traba (ruido de servos o motores), no se cuelga el Arduino.
+  sensor.setTimeout(TIMEOUT_SENSOR_MS);
+  sensorListo = false;
+  for (uint8_t intento = 0; intento < 3 && !sensorListo; intento++) {
+    sensorListo = sensor.init();
+    if (!sensorListo) delay(200);
+  }
+  if (sensorListo) {
+    sensorListo = sensor.setDistanceMode(VL53L1X::Short)
+               && sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
+  }
+  presupuestoActual = 0;
+  trabasSeguidas = 0;
+}
 
 /** Una medición con el ROI indicado (lado en SPADs: 4, 8 o 16). -1 si falla o no hay eco válido. */
 int medir(uint8_t lado, uint8_t centro, uint32_t presupuestoUs) {
@@ -317,7 +355,16 @@ int medir(uint8_t lado, uint8_t centro, uint32_t presupuestoUs) {
   sensor.setROISize(lado, lado);
   sensor.setROICenter(centro);
   uint16_t mm = sensor.readSingle();
-  if (Wire.getWireTimeoutFlag()) { Wire.clearWireTimeoutFlag(); DEPLN(F("[Robot] I2C trabado: lectura descartada")); return SIN_ECO; }
+  if (Wire.getWireTimeoutFlag()) {
+    Wire.clearWireTimeoutFlag();
+    DEPLN(F("[Robot] I2C trabado: lectura descartada"));
+    if (++trabasSeguidas >= 3) { // Trabado de verdad: destrabar y reiniciar el sensor.
+      iniciarSensor();
+      DEPLN(sensorListo ? F("[Robot] Sensor reiniciado") : F("[Robot] Sensor reiniciado SIN EXITO"));
+    }
+    return SIN_ECO;
+  }
+  trabasSeguidas = 0;
   if (sensor.timeoutOccurred()) return SIN_ECO;
   if (sensor.ranging_data.range_status != VL53L1X::RangeValid) return SIN_ECO;
   if (mm < DIST_MIN_MM || mm > DIST_MAX_MM) return SIN_ECO;
@@ -406,18 +453,7 @@ void setup() {
   delay(1000); // Como en el barrido probado: los servos terminan de moverse antes de iniciar el sensor.
   soltarServos();
 
-  Wire.begin();
-  Wire.setClock(400000);
-  Wire.setWireTimeout(25000, true); // Si el bus I2C se traba (ruido de servos o motores), no se cuelga el Arduino.
-  sensor.setTimeout(TIMEOUT_SENSOR_MS);
-  for (uint8_t intento = 0; intento < 3 && !sensorListo; intento++) {
-    sensorListo = sensor.init();
-    if (!sensorListo) delay(200);
-  }
-  if (sensorListo) {
-    sensorListo = sensor.setDistanceMode(VL53L1X::Short)
-               && sensor.setMeasurementTimingBudget(PRESUPUESTO_MEDICION_US);
-  }
+  iniciarSensor();
   if (!sensorListo) {
     DEPLN(F("[Robot] VL53L1X no detectado o sin configurar: todas las lecturas serán -1"));
   }
