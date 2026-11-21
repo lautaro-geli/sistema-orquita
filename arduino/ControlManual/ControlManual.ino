@@ -115,7 +115,7 @@ void ayuda() {
 }
 
 void atender(char c) {
-  if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';
+  // Solo minusculas: las mayusculas se ignoran, asi los LATIDO/ORDEN de un Servidor abierto no mueven el robot.
   switch (c) {
     case 'w': case 's': case 'a': case 'd': mover(c); break;
     case 'x': case ' ': detener(); decirLn(F("Freno")); break;
