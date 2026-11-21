@@ -44,8 +44,9 @@ try {
     Copy-Item (Join-Path $e2 'percepcion.nnet'), (Join-Path $e2 'movimiento.nnet') (Join-Path $destino 'modelos')
     Copy-Item (Join-Path $compilado 'modelos\entorno.nnet') (Join-Path $destino 'reglas\modelos')
     Copy-Item (Join-Path $compilado 'arduino\Orquita\Orquita.ino') (Join-Path $destino 'OrquitaServidor\OrquitaServidor.ino')
-    # servidor.bat: el que Claude dejó en Documentos (con finales de línea de Windows).
-    $bat = Join-Path $docs 'servidor_portable.bat'
+    # servidor.bat: el que Claude dejó en Documentos\orquita-paquete (con finales de línea de Windows).
+    $bat = Join-Path $docs 'orquita-paquete\servidor_portable.bat'
+    if (-not (Test-Path $bat)) { $bat = Join-Path $docs 'servidor_portable.bat' }
     if (-not (Test-Path $bat)) { $bat = Join-Path $compilado 'herramientas_pc\servidor_portable.bat' }
     Copy-Item $bat (Join-Path $destino 'servidor.bat')
     $zip = "$destino.zip"
