@@ -1,20 +1,22 @@
-# Bitácora: primeras pruebas reales Servidor + Orquita (20 y 21/11/2026)
+# Bitácora: primeras pruebas reales Servidor + Orquita (20 al 22/11/2026)
 
 Rama `maestro-v2`. Servidor Java (redes E2 o reglas) por Bluetooth con el sketch `arduino/Orquita/Orquita.ino`.
 Resultado al cierre del 21/11: enlace, motores, servos y sensor funcionando; falta la corrida completa en la bahía.
 
-## Conexiones y alimentación (las que funcionan)
+## Conexiones y alimentación (las que funcionan, 22/11)
 
 | Elemento | Conexión |
 |---|---|
-| Servo de barrido (gira el sensor) | señal D4; + y − al pack de 4,8 V |
-| Servo de elevación (levanta el servo del sensor) | señal D12; + y − al pack de 4,8 V |
-| L298N | IN1 D7, IN2 D8 (motor izquierdo, OUT1/OUT2); IN3 D9, IN4 D11 (motor derecho, OUT3/OUT4); jumpers ENA y ENB puestos; borne 5V sin conectar |
-| Motores | 8 AA en serie (≈12 V) al +12V del L298N |
-| HC-06 | TXD → D10; RXD ← A2 con divisor; VCC 5V del Arduino; 9600 baudios |
-| VL53L1X | **VIN al 5V del Arduino** (nunca al pin VIN), GND, SDA A4, SCL A5 |
-| FC-51 | A0 (activo en bajo), VCC 5V del Arduino |
-| Masas | todas unidas (Arduino, pack de servos, pilas de motores) |
+| **Arduino** | **4 AA (6 V) + pack 1 de 4,8 V en serie = 10,8 V** al jack o a VIN/GND. Con 6 V solos el regulador no llega a 5 V (ver problema 16) |
+| **L298N (motores)** | **pack 2 + pack 3 de 4,8 V en serie = 9,6 V** al +12V; jumpers ENA y ENB puestos; borne 5V sin conectar |
+| **Servos** | **4 AA (6 V)**: + y − a los rojos y marrones de los dos servos |
+| Servo de barrido (gira el sensor) | señal D4 |
+| Servo de elevación (levanta el servo del sensor) | señal D12 |
+| L298N, señales | IN1 D7, IN2 D8 (motor izquierdo, OUT1/OUT2); IN3 D9, IN4 D11 (motor derecho, OUT3/OUT4) |
+| HC-06 | TXD → D10; RXD ← A2 con divisor; VCC al 5V del Arduino; 9600 baudios |
+| VL53L1X | **VIN al 5V del Arduino** (nunca al pin VIN, que ahora tiene 10,8 V), GND, SDA A4, SCL A5 |
+| FC-51 | A0 (activo en bajo), VCC al 5V del Arduino |
+| Masas | todas unidas (Arduino, pilas de servos, pilas de motores) |
 
 ## Problemas y soluciones (en orden)
 
@@ -35,6 +37,11 @@ Resultado al cierre del 21/11: enlace, motores, servos y sensor funcionando; fal
 | 13 | Una sola rueda se movía; después ninguna | Poca tensión en el L298N (≈2 V de caída) y pilas agotándose | Motores a 8 AA (≈12 V); revisar LED del L298N y GND común |
 | 14 | ControlManual se movía solo con el simulador abierto | Tomaba las letras de `LATIDO` como comandos | Ignora mayúsculas |
 | 15 | `I2C trabado` según el ángulo, empeorando hasta fallar siempre; el escáner lo veía | **VIN del VL53L1X conectado al pin VIN del Arduino (≈9,6 V)**: con el láser prendido se caía | VIN del sensor al **5V** del Arduino. Además I2C a 100 kHz. Diagnóstico con `EscanerI2C` y los barridos 7/8/9/v/u de ControlManual |
+| 16 | El sensor fallaba también con ControlManual y quieto, de forma intermitente; `no detectado` al arrancar; `Orquita lista` repetido (reinicios); fallaba más a medida que pasaba el tiempo | **Arduino alimentado con 6 V por el jack**: el regulador necesita ~7 V, el pin 5V quedaba en ~4–4,5 V y bajaba más con el consumo del láser y del HC-06 (y con las pilas descargándose). Con USB conectado además puede alternar entre fuentes | **Arduino a 10,8 V** (4 AA + pack de 4,8 V en serie). Con eso midió bien. Corrección del punto 15: con 6 V en el jack, el pin VIN daba ~5,3 V, no 9,6 V; el sensor no se quemó |
+| 17 | Las ruedas no se movían aunque el Arduino mandaba las órdenes | Pilas de los motores agotadas | Cargarlas; motores con 2 packs de 4,8 V (9,6 V) |
+| 18 | El servo de barrido no se movía con Orquita.ino | Alimentación baja (mismo problema que el 16 y pilas de servos) | Servos con 4 AA (6 V) aparte |
+
+**Lección:** casi todas las fallas "raras" (I2C, reinicios, servos y motores que no responden) fueron de **alimentación**. Antes de buscar en el código, medir las tensiones con el robot andando.
 
 Descartado en el camino (con datos): cable cortándose por posición (girándolo a mano el escáner lo veía siempre), tiempo de asentamiento y `detach` (7, 8 y 9 fallaban igual), cantidad de lecturas (el barrido al revés falló por ángulo, no por orden).
 
@@ -42,13 +49,14 @@ Descartado en el camino (con datos): cable cortándose por posición (girándolo
 
 - Ruido del sensor quieto: 1–2 mm (a 90°: 62–70 / 74–75 / 82–86 mm en 4x4/8x8/16x16).
 - Barrido config D: 1,90 s (13 ángulos × 3 ROI). Con espera de 400 ms: 5,5 s.
-- Calibración del Servidor: 200 mm/s y 212°/s → 50 ms = 1 cm o ≈10,6°. Con 12 V el robot va más rápido: hay que recalibrar.
+- Calibración del Servidor: 200 mm/s y 212°/s → 50 ms = 1 cm o ≈10,6°. Ahora los motores van con 9,6 V: hay que recalibrar.
 - Telemetría real con redes E2 (21/11 20:33, sensor mal elevado): percepción con lobitos fantasma, muchos `RETROCEDER 50 ms` y "Atasco detectado". No sirve para evaluar las redes.
 
 ## Herramientas nuevas
 
 - `arduino/ControlManual`: manejo a mano (w/s/a/d, servos, `r`/`u` medir, `1`–`4` pines IN, `5`/`6` servos, `7`/`8`/`9`/`v` barridos de prueba).
 - `arduino/EscanerI2C`: estado de SDA/SCL y dispositivos en el bus cada 2 s.
+- `PruebaDeteccion` (`orquita_prueba_deteccion.bat`): robot quieto, tabla por sector con lo que mide y lo que ve la red de percepción, y CSV con notas de la escena.
 - `herramientas_pc/`: `orquita_control_manual`, `orquita_probar_bt` (LATIDO sin Servidor), `orquita_puertos_bt` (COM saliente), `orquita_ordenar`.
 - `Descargas\simulador_servidor.py` (del usuario, Python + pyserial): Servidor falso con órdenes a mano; necesita `Orquita.ino`.
 
@@ -56,7 +64,9 @@ Descartado en el camino (con datos): cable cortándose por posición (girándolo
 
 - Corrida completa en la bahía con `Orquita.ino` actual (config D, 100 kHz, sensor abajo).
 - Medir con ControlManual (`i`/`k`) el **ángulo mínimo de elevación** para que entre la canica y ponerlo en `SENSOR_ARRIBA_GRADOS`.
-- **Recalibrar avance y giro** con motores a 12 V (ControlManual: cuánto avanza y gira con 300 ms) y actualizar el Servidor.
+- **Recalibrar avance y giro** con motores a 9,6 V (ControlManual: cuánto avanza y gira con 300 ms) y actualizar el Servidor.
 - `RETROCEDER 50 ms` puede no mover el robot real (inercia): revisar un mínimo de pulso.
-- Las redes se entrenaron con ROI en 199 en todos los tamaños; el sketch ahora usa 197 para 4x4/8x8: validar con barridos reales.
+- Las redes se entrenaron con ROI en 199 en todos los tamaños; el sketch con `BARRIDO_RAPIDO = true` usa 197 para 4x4/8x8: validar con barridos reales.
+- `BARRIDO_RAPIDO` quedó en `false` en la PC durante el diagnóstico: con la alimentación arreglada, volver a probar `true` (config D, ~2 s).
+- La red de percepción ve LOBITO donde el 16x16 mide mucho menos que el 4x4 (probable piso): prueba de detección real pendiente.
 - Conseguir un VL53L1X de repuesto.
