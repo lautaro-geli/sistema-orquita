@@ -186,6 +186,10 @@ void setup() {
   detener();
   servoA(barrido, PIN_SERVO_BARRIDO, angBarrido);
   servoA(elevacion, PIN_SERVO_ELEVACION, angElevacion);
+  // Destraba el bus I2C (si el Arduino se reinicio en medio de una lectura, el sensor puede quedar trabado).
+  pinMode(SDA, INPUT_PULLUP); pinMode(SCL, OUTPUT);
+  for (uint8_t i = 0; i < 9; i++) { digitalWrite(SCL, LOW); delayMicroseconds(10); digitalWrite(SCL, HIGH); delayMicroseconds(10); }
+  pinMode(SDA, OUTPUT); digitalWrite(SDA, LOW); delayMicroseconds(10); pinMode(SDA, INPUT_PULLUP); delayMicroseconds(10);
   Wire.begin();
   Wire.setClock(400000);
   Wire.setWireTimeout(25000, true);
