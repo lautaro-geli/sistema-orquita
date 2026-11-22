@@ -334,7 +334,7 @@ void destrabarI2C() {
 void iniciarSensor() {
   destrabarI2C();
   Wire.begin();
-  Wire.setClock(400000);
+  Wire.setClock(100000); // 100 kHz: a 400 kHz el bus fallaba (cables largos o pull-ups débiles); el escáner a 100 kHz lo ve bien.
   Wire.setWireTimeout(25000, true); // Si el bus I2C se traba (ruido de servos o motores), no se cuelga el Arduino.
   sensor.setTimeout(TIMEOUT_SENSOR_MS);
   sensorListo = false;

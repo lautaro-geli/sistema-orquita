@@ -191,7 +191,7 @@ void setup() {
   for (uint8_t i = 0; i < 9; i++) { digitalWrite(SCL, LOW); delayMicroseconds(10); digitalWrite(SCL, HIGH); delayMicroseconds(10); }
   pinMode(SDA, OUTPUT); digitalWrite(SDA, LOW); delayMicroseconds(10); pinMode(SDA, INPUT_PULLUP); delayMicroseconds(10);
   Wire.begin();
-  Wire.setClock(400000);
+  Wire.setClock(100000); // 100 kHz: a 400 kHz el bus fallaba (cables largos o pull-ups débiles); el escáner a 100 kHz lo ve bien.
   Wire.setWireTimeout(25000, true);
   sensor.setTimeout(300);
   for (uint8_t i = 0; i < 3 && !sensorListo; i++) { sensorListo = sensor.init(); if (!sensorListo) delay(200); }
