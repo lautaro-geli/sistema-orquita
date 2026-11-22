@@ -378,6 +378,10 @@ bool barridoDeIda = true; // Alterna 0->180 y 180->0: no pierde tiempo volviendo
 /** Barrido de 13 posiciones x 3 ROI. Las lecturas quedan siempre ordenadas por ángulo (0° a 180°).
  *  Devuelve false si se cortó por Safe Mode. */
 bool barrer() {
+  if (!sensorListo) { // No arrancó (o se cayó): se reintenta en cada barrido en vez de quedar ciego.
+    iniciarSensor();
+    DEPLN(sensorListo ? F("[Robot] Sensor detectado") : F("[Robot] Sensor sigue sin responder"));
+  }
   unsigned long inicio = millis();
   DEPLN(F("[Robot] Barriendo..."));
   for (uint8_t k = 0; k < SECTORES; k++) {
