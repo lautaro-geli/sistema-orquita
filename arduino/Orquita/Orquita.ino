@@ -74,10 +74,12 @@ const unsigned long ESPERA_ELEVACION_MS = 700;      // Subir o bajar el sensor 1
 // Configuración D de la prueba de ruido (barrido de ~2 s, ruido de 1-2 mm). Orden de medición 16 -> 8 -> 4:
 // la primera medición después de mover el servo sale sesgada, y el 16x16 es el que menos lo sufre.
 const uint32_t PRESUPUESTO_MEDICION_US = 75000;     // Solo para el arranque del sensor.
-const uint32_t PRESUPUESTO_4_US = 33000;
-const uint32_t PRESUPUESTO_8_US = 25000;
-const uint32_t PRESUPUESTO_16_US = 20000;
-const uint8_t CENTRO_ROI_CHICO = 197;  // 4x4 y 8x8 un poco hacia abajo: ven mejor las canicas (prueba ruido_canicas).
+// PRUEBA A/B: true = config D (rápida). false = como el sketch que medía bien ayer (75 ms, centro 199).
+const bool BARRIDO_RAPIDO = true;
+const uint32_t PRESUPUESTO_4_US = BARRIDO_RAPIDO ? 33000 : 75000;
+const uint32_t PRESUPUESTO_8_US = BARRIDO_RAPIDO ? 25000 : 75000;
+const uint32_t PRESUPUESTO_16_US = BARRIDO_RAPIDO ? 20000 : 75000;
+const uint8_t CENTRO_ROI_CHICO = BARRIDO_RAPIDO ? 197 : 199;  // 4x4 y 8x8 un poco hacia abajo: ven mejor las canicas.
 const uint8_t CENTRO_ROI_16 = 199;     // 16x16: la matriz entera.
 // Subir el sensor solo para atrapar: en AVANZAR, si el último barrido vio algo cerca al frente (60° a 120°).
 const int CERCA_FRENTE_MM = 350;
