@@ -87,6 +87,7 @@ void probarServo(uint8_t pin) {
   if (pin == PIN_SERVO_BARRIDO) angBarrido = 90; else angElevacion = 90;
 }
 
+int medir(uint8_t lado);
 int tabla[13][3];
 
 /** Barrido como Orquita.ino: mide en silencio y muestra la tabla al final. */
