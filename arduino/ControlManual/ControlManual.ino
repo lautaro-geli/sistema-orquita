@@ -91,13 +91,14 @@ int medir(uint8_t lado);
 int tabla[13][3];
 
 /** Barrido como Orquita.ino: mide en silencio y muestra la tabla al final. */
-void barridoPrueba(unsigned long espera, bool soltar) {
+void barridoPrueba(unsigned long espera, bool soltar, bool alReves = false) {
   detener();
   unsigned long inicio = millis();
-  for (uint8_t s = 0; s < 13; s++) {
+  for (uint8_t k = 0; k < 13; k++) {
+    uint8_t s = alReves ? 12 - k : k;
     barrido.write(s * 15);
     if (!barrido.attached()) barrido.attach(PIN_SERVO_BARRIDO, PULSO_0_US, PULSO_180_US);
-    delay(s == 0 ? 700 : espera);
+    delay(k == 0 ? 700 : espera);
     if (soltar) barrido.detach();
     tabla[s][2] = medir(16);
     tabla[s][1] = medir(8);
@@ -105,7 +106,8 @@ void barridoPrueba(unsigned long espera, bool soltar) {
   }
   unsigned long ms = millis() - inicio;
   barrido.detach();
-  angBarrido = 180;
+  angBarrido = alReves ? 0 : 180;
+  if (alReves) decir(F("AL REVES (180 a 0). "));
   decir(F("Barrido espera ")); num(espera); decirLn(soltar ? F(" ms, servo suelto al medir") : F(" ms, servo enganchado"));
   uint8_t trabas = 0;
   for (uint8_t s = 0; s < 13; s++) {
@@ -140,7 +142,7 @@ int medir(uint8_t lado) {
 void ayuda() {
   decirLn(F("== Control manual Orquita =="));
   decirLn(F("w/s/a/d mover, x frenar, +/- paso, j/l barrido, b frente, i/k elevacion, n elev 0, r medir"));
-  decirLn(F("1-4 un solo pin IN, 5 servo D4, 6 servo D12, 7/8/9 barrido de prueba, h ayuda"));
+  decirLn(F("1-4 un solo pin IN, 5 servo D4, 6 servo D12, 7/8/9 barrido de prueba, v al reves, u 15 medidas quieto, h ayuda"));
   decir(F("Paso ms: ")); numLn(paso);
 }
 
@@ -163,6 +165,15 @@ void atender(char c) {
     case '7': barridoPrueba(100, true); break;
     case '8': barridoPrueba(400, true); break;
     case '9': barridoPrueba(100, false); break;
+    case 'v': barridoPrueba(100, true, true); break;
+    case 'u': { // 15 mediciones seguidas en el angulo actual, quieto.
+      detener();
+      uint8_t trabas = 0;
+      decir(F("15 mediciones 4x4 quieto a ")); num(angBarrido); decirLn(F(" grados:"));
+      for (uint8_t i = 0; i < 15; i++) { int v = medir(4); if (v == -2) trabas++; num(v); decir(F(" ")); }
+      decirLn(F("")); decir(F("Trabas: ")); numLn(trabas);
+      break;
+    }
     case 'r': {
       detener();
       delay(150); // Que se calme la vibracion de los motores.
