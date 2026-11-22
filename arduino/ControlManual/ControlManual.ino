@@ -11,6 +11,8 @@
  *   r      = medir con el VL53L1X en el angulo actual (ROI 4x4, 8x8 y 16x16), con los servos quietos
  *   1..4   = prender SOLO el pin IN1, IN2, IN3 o IN4 durante "paso" ms (para ver que rueda y sentido mueve cada uno)
  *   5 / 6  = mover SOLO el servo del pin D4 / D12: 0, 180 y vuelve a 90 (para ver cual es cual)
+ *   7 / 8 / 9 = barrido completo como Orquita.ino (13 angulos x 16x16, 8x8, 4x4) y muestra la tabla:
+ *            7 = espera 100 ms y suelta el servo; 8 = espera 400 ms y lo suelta; 9 = espera 100 ms sin soltarlo
  *   h      = ayuda
  * Los servos se sueltan (detach) al llegar: SoftwareSerial (HC-06) deforma sus pulsos y les da tirones.
  * Avisa cuando el FC-51 detecta algo.
@@ -85,6 +87,33 @@ void probarServo(uint8_t pin) {
   if (pin == PIN_SERVO_BARRIDO) angBarrido = 90; else angElevacion = 90;
 }
 
+int tabla[13][3];
+
+/** Barrido como Orquita.ino: mide en silencio y muestra la tabla al final. */
+void barridoPrueba(unsigned long espera, bool soltar) {
+  detener();
+  unsigned long inicio = millis();
+  for (uint8_t s = 0; s < 13; s++) {
+    barrido.write(s * 15);
+    if (!barrido.attached()) barrido.attach(PIN_SERVO_BARRIDO, PULSO_0_US, PULSO_180_US);
+    delay(s == 0 ? 700 : espera);
+    if (soltar) barrido.detach();
+    tabla[s][2] = medir(16);
+    tabla[s][1] = medir(8);
+    tabla[s][0] = medir(4);
+  }
+  unsigned long ms = millis() - inicio;
+  barrido.detach();
+  angBarrido = 180;
+  decir(F("Barrido espera ")); num(espera); decirLn(soltar ? F(" ms, servo suelto al medir") : F(" ms, servo enganchado"));
+  uint8_t trabas = 0;
+  for (uint8_t s = 0; s < 13; s++) {
+    num(s * 15); decir(F(" grados: ")); num(tabla[s][0]); decir(F(" / ")); num(tabla[s][1]); decir(F(" / ")); numLn(tabla[s][2]);
+    for (uint8_t r = 0; r < 3; r++) if (tabla[s][r] == -2) trabas++;
+  }
+  decir(F("Trabas I2C (-2): ")); num(trabas); decir(F(" de 39. Tiempo ms: ")); numLn(ms);
+}
+
 void mover(char c) {
   switch (c) {
     case 'w': motores(true, true); break;
@@ -110,7 +139,7 @@ int medir(uint8_t lado) {
 void ayuda() {
   decirLn(F("== Control manual Orquita =="));
   decirLn(F("w/s/a/d mover, x frenar, +/- paso, j/l barrido, b frente, i/k elevacion, n elev 0, r medir"));
-  decirLn(F("1-4 un solo pin IN, 5 servo D4, 6 servo D12, h ayuda"));
+  decirLn(F("1-4 un solo pin IN, 5 servo D4, 6 servo D12, 7/8/9 barrido de prueba, h ayuda"));
   decir(F("Paso ms: ")); numLn(paso);
 }
 
@@ -130,6 +159,9 @@ void atender(char c) {
     case '1': case '2': case '3': case '4': probarPinIn(c - '1'); break;
     case '5': probarServo(PIN_SERVO_BARRIDO); break;
     case '6': probarServo(PIN_SERVO_ELEVACION); break;
+    case '7': barridoPrueba(100, true); break;
+    case '8': barridoPrueba(400, true); break;
+    case '9': barridoPrueba(100, false); break;
     case 'r': {
       detener();
       delay(150); // Que se calme la vibracion de los motores.
