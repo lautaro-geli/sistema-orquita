@@ -106,6 +106,13 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 | Servidor en otra PC sin el repo | `orquita_armar_paquete.bat` arma `OrquitaPortable` (incluye Java 17 si se le agrega la carpeta `jre`) |
 | Entrenar o experimentar | `orquita_experimentos_N`, `orquita_neuroevolucion*` (historial; ver §8) |
 
+**Armar una PC nueva para los `.bat`** (los scripts tienen rutas fijas de la PC original):
+1. Instalar Java 17 o más nuevo y Git. Maven es opcional: si no está, los scripts lo buscan en `Documents\herramientas\apache-maven-3.9.11` (bajar el zip de Maven 3.9.11 y descomprimirlo ahí).
+2. Clonar el repo en **`Documents\sistema-orquita`**, en la rama `maestro-v2`.
+3. Copiar los modelos E2 del zip a **`Documents\orquita-corridas\experimentos2_20261116_1544\modelos_E2_repeticion_2_s3\`**. Es la ruta que buscan `orquita_prueba_real` y `orquita_prueba_deteccion`.
+4. Copiar los `.bat`/`.ps1` de `herramientas_pc/` a `Documents`.
+5. **Ojo:** `orquita_prueba_real.ps1` compila un commit fijo (`$Commit = '36e16d2'`, línea 8). Si cambiás el Servidor (por ejemplo, la corrección del piso), poné ahí el commit nuevo. Si no, la prueba corre el código viejo. `orquita_prueba_deteccion` ya compila siempre lo último de `origin/maestro-v2`.
+
 **Requisitos de la PC:** Java 17 o más nuevo, Git y Maven (los scripts usan `Documents\herramientas\apache-maven-3.9.11` si no hay `mvn`). Desde el repo: `./preparar.ps1` compila y corre las pruebas; `./ejecutar.ps1 servidor COMx --umbral=3` corre el Servidor.
 
 **Arduino:** librería **VL53L1X de Pololu** (≥ 1.3.0). Servo, SoftwareSerial y Wire vienen con el IDE. Si la subida falla con `not in sync`, cerrá el Monitor Serie, desconectá el cable de D10 y probá de nuevo. Si hace falta, apretá RESET cuando aparece "Uploading".
