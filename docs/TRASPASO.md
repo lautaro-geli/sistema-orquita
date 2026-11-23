@@ -135,7 +135,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
   - La red aprendió en la simulación que un lobito es "4x4 cerca, 16x16 más lejos" (objeto chico).
   - En la realidad, el **borde de un obstáculo** que entra solo en el cono angosto del 4x4 deja ese mismo patrón.
   - En cambio, la canica real (1,6 cm de alto, con el sensor a 0,8 cm) se ve débil: a 20 cm el 4x4 ya mezcla la canica con el fondo.
-- Probé sobre esos CSV, sin reentrenar, una corrección: si el 8x8 o el 16x16 miden bastante menos que el 4x4, es piso y se usa el 4x4. Con eso, los lobitos falsos en la salida bajaron de 4–6 a 1–2 por barrido. **No resuelve los obstáculos confundidos con lobitos** y no está implementada en el Servidor todavía (ver pendientes).
+- Probé sobre esos CSV, sin reentrenar, una corrección: si el 8x8 o el 16x16 miden bastante menos que el 4x4, es piso y se usa el 4x4. Con eso, los lobitos falsos en la salida bajaron de 4–6 a 1–2 por barrido. **No resuelve los obstáculos confundidos con lobitos.** **Implementada en el Servidor el 23/11** (pendiente 2): con los CSV, los lobitos falsos mirando la salida bajan de 4,0 a 2,1 por barrido. Detalle en `docs/evidencias/prueba_real/Correccion_Piso_20261123.md`.
 
 **Lo que ya se probó y no sirvió** (para no repetirlo; detalle en `docs/proyecto_claude/Analisis_Redes_Techo_27_vs_Maestro_87.md`):
 
@@ -170,7 +170,10 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
    - La nota tiene que decir tipo, ángulo y distancia: `lobito -15 20`, `obstaculo +30 15`, `salida -30 +15`. Ángulo positivo a la izquierda, 0 al frente.
    - Incluir **obstáculos de frente y de costado (con el borde a la vista)**, canicas muy cerca (5–10 cm) y escenas con un obstáculo y un lobito juntos.
    - Con eso se mide, sector por sector, qué confunde la red.
-2. **Corrección del piso en el Servidor** (`PreprocesadorTelemetria`): si el 8x8 o el 16x16 miden menos que el 4x4 menos un margen (~15–30 mm), o el 4x4 no tiene eco y el ROI grande está a menos de ~20 cm, usar el valor del 4x4. Arregla la salida y el piso, **no los obstáculos**. Probar en la simulación y con los CSV reales. 1 h.
+2. ~~**Corrección del piso en el Servidor**~~ **Hecho (23/11).** En `PreprocesadorTelemetria.corregir()`, solo para el 8x8 y el 16x16 a menos de 200 mm: si el 4x4 tiene dato y el ROI grande mide más de 20 mm menos, toma el valor del 4x4; si el 4x4 no tiene eco, el ROI grande queda sin eco. Se apaga con `-Dorquita.correccionPiso=false`. Arregla la salida y el piso, **no los obstáculos**.
+   - CSV reales del 22/11 (red E2): lobitos falsos mirando la salida 4,0 → 2,1 por barrido.
+   - Simulación (900 bahías): con el ruido actual cuesta ~10 puntos, porque el 4x4 simulado pierde el eco al azar mucho más que el real y la corrección borra paredes cercanas; con una pérdida del 4x4 parecida a la real queda neutra (dentro del ruido). Un ajuste fino de la percepción con la corrección no mejoró y se descartó.
+   - Detalle: `docs/evidencias/prueba_real/Correccion_Piso_20261123.md`. Falta copiarla a `entrega-java/` (pendiente 10).
 3. **Filtro de forma para LOBITO** después de la percepción. Un sector queda como LOBITO solo si:
    - **(a)** el 4x4 tiene eco cerca (menos de ~40 cm);
    - **(b)** se parece a un objeto chico, con el 16x16 claramente más lejos que el 4x4: si los tres ROI miden casi lo mismo, es una cara de obstáculo o una pared;
