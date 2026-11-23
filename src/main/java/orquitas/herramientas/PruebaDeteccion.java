@@ -28,6 +28,8 @@ public class PruebaDeteccion {
     private static final int SECTORES = 13, VALORES = 39;
     private static final long PERIODO_LATIDO_MS = 1000;
     private static volatile String nota = "";
+    static final int INTENTOS_ABRIR = 6;
+    static final long ESPERA_ENTRE_INTENTOS_MS = 3000;
 
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
@@ -39,10 +41,20 @@ public class PruebaDeteccion {
         SerialPort puerto = SerialPort.getCommPort(args[0]);
         puerto.setBaudRate(9600);
         puerto.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 200, 0);
-        if (!puerto.openPort()) {
-            System.err.println("No se pudo abrir " + args[0] + " (otra ventana lo tiene abierto?).");
+        // Con el HC-06, Windows a veces tarda en armar el enlace Bluetooth y el primer intento falla.
+        boolean abierto = false;
+        for (int intento = 1; intento <= INTENTOS_ABRIR && !abierto; intento++) {
+            System.out.println("Abriendo " + args[0] + " (intento " + intento + " de " + INTENTOS_ABRIR + ")...");
+            abierto = puerto.openPort();
+            if (!abierto && intento < INTENTOS_ABRIR) Thread.sleep(ESPERA_ENTRE_INTENTOS_MS);
+        }
+        if (!abierto) {
+            System.err.println("No se pudo abrir " + args[0] + ". Revisar: robot prendido y LED del HC-06 parpadeando;"
+                    + " ninguna otra ventana (PuTTY, otro .bat) con el puerto abierto. Si el LED queda fijo sin conectar,"
+                    + " cortar la energia del robot unos segundos y volver a probar.");
             System.exit(1);
         }
+        System.out.println("Conectado.");
         Thread teclado = new Thread(() -> {
             try (BufferedReader r = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8))) {
                 String l;
