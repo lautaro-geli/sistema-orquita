@@ -1,5 +1,7 @@
 # Orquitas — Hito 3 "Liberen a Willy"
 
+> **Si seguís el proyecto, empezá por [docs/TRASPASO.md](docs/TRASPASO.md)** (estado al 23/11/2026, qué no tocar y pendientes en orden). Rama de trabajo: `maestro-v2`.
+
 Sistema distribuido Cliente–Servidor por **Bluetooth (RFCOMM/SPP)**:
 
 - **Servidor** (Java 17, Maven, en la PC Windows):
