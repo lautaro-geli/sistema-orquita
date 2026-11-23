@@ -29,9 +29,27 @@ public final class PreprocesadorTelemetria {
      */
     public static final int MINIMO_MM = 40;
 
+    /**
+     * Corrección del piso. El sensor real va a ~0,8 cm del piso y el 16x16 (a veces el 8x8) ve el piso a
+     * 5–8 cm (pruebas del 19 y 22/11). Ese patrón (ROI grande cerca, 4x4 lejos o sin eco) en la simulación
+     * solo lo daban las canicas, y la red marcaba LOBITO en la salida. Se apaga con
+     * -Dorquita.correccionPiso=false (para comparar en la simulación).
+     */
+    public static final boolean CORRECCION_PISO = Boolean.parseBoolean(System.getProperty("orquita.correccionPiso", "true"));
+    /** Si el 8x8 o el 16x16 miden más de esto por debajo del 4x4, se toma como piso y se usa el 4x4. */
+    public static final int PISO_MARGEN_MM = 20;
+    /**
+     * Solo un 8x8 o 16x16 más cerca que esto puede ser piso. Más lejos, que el ROI grande mida menos que
+     * el 4x4 es una pared oblicua (también en el simulador) y se deja como está.
+     */
+    public static final int PISO_ALCANCE_MM = 200;
+
     private PreprocesadorTelemetria() { }
 
-    /** Aplica la regla del -1. Devuelve 39 distancias en mm; DESCONOCIDO (-1) donde no hay dato. */
+    /**
+     * Aplica, por sector: lecturas de menos de MINIMO_MM como sin dato, la corrección del piso
+     * (corregirPiso) y la regla del -1. Devuelve 39 distancias en mm; DESCONOCIDO (-1) donde no hay dato.
+     */
     public static int[] corregir(int[] telemetria) {
         if (telemetria == null || telemetria.length != VALORES)
             throw new IllegalArgumentException("Se esperan " + VALORES + " valores");
@@ -39,12 +57,31 @@ public final class PreprocesadorTelemetria {
         for (int s = 0; s < SECTORES; s++) {
             int i4 = s * ROIS + ROI_4X4, i8 = s * ROIS + ROI_8X8, i16 = s * ROIS + ROI_16X16;
             for (int i : new int[] {i4, i8, i16}) if (corregida[i] < MINIMO_MM) corregida[i] = DESCONOCIDO;
+            if (CORRECCION_PISO) corregirPiso(corregida, i4, i8, i16);
             if (corregida[i8] != DESCONOCIDO) {
                 if (corregida[i4] == DESCONOCIDO) corregida[i4] = corregida[i8];
                 if (corregida[i16] == DESCONOCIDO) corregida[i16] = corregida[i8];
             }
         }
         return corregida;
+    }
+
+    /**
+     * Corrección del piso en un sector (antes de la regla del -1). El 4x4 es el ROI más angosto y el que
+     * menos ve el piso, así que manda:
+     * <ul>
+     *   <li>Solo se miran el 8x8 y el 16x16 con dato y a menos de PISO_ALCANCE_MM.</li>
+     *   <li>4x4 con dato: si el ROI grande mide menos que el 4x4 - PISO_MARGEN_MM, toma el valor del 4x4.</li>
+     *   <li>4x4 sin eco: el ROI grande queda sin eco (como el 4x4).</li>
+     * </ul>
+     * Las canicas no cambian: se ven igual o más cerca en el 4x4 que en los ROI grandes.
+     */
+    static void corregirPiso(int[] c, int i4, int i8, int i16) {
+        for (int i : new int[] {i8, i16}) {
+            if (c[i] == DESCONOCIDO || c[i] >= PISO_ALCANCE_MM) continue;
+            if (c[i4] == DESCONOCIDO) c[i] = DESCONOCIDO;
+            else if (c[i] < c[i4] - PISO_MARGEN_MM) c[i] = c[i4];
+        }
     }
 
     /** True si la distancia corregida es desconocida. */

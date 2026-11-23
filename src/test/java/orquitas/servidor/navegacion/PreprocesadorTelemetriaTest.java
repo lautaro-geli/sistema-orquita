@@ -94,6 +94,40 @@ public class PreprocesadorTelemetriaTest {
         assertEquals(1, PreprocesadorTelemetria.entradasVentana(e, 12)[PreprocesadorTelemetria.ENTRADAS_VENTANA - 1], 0);
     }
 
+    // Corrección del piso. Valores de la prueba de detección real del 22/11 (robot quieto mirando la salida).
+
+    @Test public void pisoConEl4x4SinEcoQuedaSinEco() {
+        assertTrue(PreprocesadorTelemetria.CORRECCION_PISO);
+        // Frente a la salida: el 4x4 y el 8x8 sin eco, el 16x16 ve el piso a 5 cm.
+        assertArrayEquals(new int[] {D, D, D}, leer(PreprocesadorTelemetria.corregir(sector(6, -1, -1, 49)), 6));
+        // También el 8x8 ve el piso.
+        assertArrayEquals(new int[] {D, D, D}, leer(PreprocesadorTelemetria.corregir(sector(5, -1, 111, 115)), 5));
+    }
+
+    @Test public void pisoConEl4x4ConDatoTomaEl4x4() {
+        assertArrayEquals(new int[] {232, 232, 232}, leer(PreprocesadorTelemetria.corregir(sector(5, 232, 190, 170)), 5));
+        // 4x4 a 11 cm y 16x16 a 8,6 cm: el 16x16 toma el 4x4; el 8x8 mide más que el 4x4 y queda igual.
+        assertArrayEquals(new int[] {110, 136, 110}, leer(PreprocesadorTelemetria.corregir(sector(6, 110, 136, 86)), 6));
+    }
+
+    @Test public void pisoNoTocaParedesOblicuasLejos() {
+        // ROI grande más cerca que el 4x4 pero a más de PISO_ALCANCE_MM: pared oblicua, no piso.
+        assertArrayEquals(new int[] {665, 672, 590}, leer(PreprocesadorTelemetria.corregir(sector(7, 665, 672, 590)), 7));
+        assertArrayEquals(new int[] {289, 219, 259}, leer(PreprocesadorTelemetria.corregir(sector(3, 289, 219, 259)), 3));
+        // 4x4 sin eco y ROI grande a 25 cm: sigue la regla del -1.
+        assertArrayEquals(new int[] {250, 250, 250}, leer(PreprocesadorTelemetria.corregir(sector(4, -1, 250, -1)), 4));
+    }
+
+    @Test public void pisoNoTocaCanicasNiParedes() {
+        // Sector que la red marca LOBITO en el barrido 47 del 22/11 (nota "lolobito"; sin anotar si era
+        // canica u obstáculo): diferencias dentro del margen, la corrección no lo toca.
+        assertArrayEquals(new int[] {98, 95, 93}, leer(PreprocesadorTelemetria.corregir(sector(2, 98, 95, 93)), 2));
+        // Canica cerca como la arma el simulador: 4x4 < 8x8 < 16x16.
+        assertArrayEquals(new int[] {60, 70, 90}, leer(PreprocesadorTelemetria.corregir(sector(6, 60, 70, 90)), 6));
+        // Pared a 8 cm: diferencias dentro del margen.
+        assertArrayEquals(new int[] {86, 81, 77}, leer(PreprocesadorTelemetria.corregir(sector(0, 86, 81, 77)), 0));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void rechazaLargoIncorrecto() {
         PreprocesadorTelemetria.corregir(new int[12]);
