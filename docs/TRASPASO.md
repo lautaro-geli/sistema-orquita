@@ -41,7 +41,7 @@ Repo: `lautaro-geli/sistema-orquita`. **Rama de trabajo: `maestro-v2`.** Lleva u
 |---|---|
 | `src/main/java/orquitas/servidor/` | Servidor: `ServidorOrquita` (main), `comunicacion/EnlaceOrquita` (Bluetooth y protocolo), `persistencia/` (Estomago, Escritor, Auditor), `navegacion/` (redes, reglas, reflejos) |
 | `src/main/java/orquitas/simulacion/` | Simulador de la bahía (`bahia/`): Bahia, RobotSimulado, SensorSimulado, SimuladorBahia, Maestro, MaestroV2, Piloto, VisorBahia. **Archivos de simulación: no van en los diagramas.** |
-| `src/main/java/orquitas/herramientas/` | Entrenamiento (`EntrenamientoSimulado`, `Neuroevolucion`, `EntrenamientoReal`), `RecolectorBarridos` y `PruebaDeteccion` |
+| `src/main/java/orquitas/herramientas/` | Entrenamiento (`EntrenamientoSimulado`, `Neuroevolucion`, `EntrenamientoReal`), `RecolectorBarridos`, `PruebaDeteccion` y `AnalisisDeteccion` (con `NotaEscena`, que lee las notas) |
 | `arduino/Orquita/` | **El sketch de la competencia** |
 | `arduino/ControlManual/` | Manejar el robot a mano y diagnosticar (motores, servos, sensor) |
 | `arduino/EscanerI2C/` | Ver si el sensor responde en el bus I2C |
@@ -99,7 +99,8 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 | Para | Qué usar |
 |---|---|
 | **Prueba en la bahía con el Servidor** | `orquita_prueba_real.bat` → 1 (redes E2) o 2 (reglas) → COM saliente. Consola en `orquita-corridas\prueba_real_<fecha>\consola.txt` |
-| Ver qué detecta la red con datos reales | `orquita_prueba_deteccion.bat` (robot quieto, tabla por sector, CSV con notas) |
+| Ver qué detecta la red con datos reales | `orquita_prueba_deteccion.bat` (robot quieto, tabla por sector, CSV con notas). Al escribir la nota, contesta "Entiendo: …" o avisa si le falta algo |
+| Analizar esos datos por sector | `orquita_analisis_deteccion.bat`: elegís las carpetas `deteccion_*` y deja `analisis.md` (qué confunde la red, por distancia, y la prueba del filtro de forma), `analisis_sectores.csv` y `analisis_filtro.csv` |
 | Ver cuál COM es el saliente del HC-06 | `orquita_puertos_bt.bat` |
 | Probar solo el Bluetooth | `orquita_probar_bt.bat` |
 | Manejar el robot con el teclado | `orquita_control_manual.bat` (con `ControlManual.ino` cargado) |
@@ -169,7 +170,8 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
    - Unas 15 de lobito, 15 de obstáculo y 15 de salida: 5 posiciones distintas × 3 barridos cada una.
    - La nota tiene que decir tipo, ángulo y distancia: `lobito -15 20`, `obstaculo +30 15`, `salida -30 +15`. Ángulo positivo a la izquierda, 0 al frente.
    - Incluir **obstáculos de frente y de costado (con el borde a la vista)**, canicas muy cerca (5–10 cm) y escenas con un obstáculo y un lobito juntos.
-   - Con eso se mide, sector por sector, qué confunde la red.
+   - Con eso se mide, sector por sector, qué confunde la red. Varias cosas en una nota: `obstaculo 0 15 y lobito -30 10`. Revisar que la consola conteste "Entiendo: …" con el sector correcto.
+   - Después: `orquita_analisis_deteccion.bat` (ver §6).
 2. ~~**Corrección del piso en el Servidor**~~ **Hecho (23/11).** En `PreprocesadorTelemetria.corregir()`, solo para el 8x8 y el 16x16 a menos de 200 mm: si el 4x4 tiene dato y el ROI grande mide más de 20 mm menos, toma el valor del 4x4; si el 4x4 no tiene eco, el ROI grande queda sin eco. Se apaga con `-Dorquita.correccionPiso=false`. Arregla la salida y el piso, **no los obstáculos**.
    - CSV reales del 22/11 (red E2): lobitos falsos mirando la salida 4,0 → 2,1 por barrido.
    - Simulación (900 bahías): con el ruido actual cuesta ~10 puntos, porque el 4x4 simulado pierde el eco al azar mucho más que el real y la corrección borra paredes cercanas; con una pérdida del 4x4 parecida a la real queda neutra (dentro del ruido). Un ajuste fino de la percepción con la corrección no mejoró y se descartó.
@@ -178,7 +180,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
    - **(a)** el 4x4 tiene eco cerca (menos de ~40 cm);
    - **(b)** se parece a un objeto chico, con el 16x16 claramente más lejos que el 4x4: si los tres ROI miden casi lo mismo, es una cara de obstáculo o una pared;
    - **(c)** está aislado: si un sector vecino mide casi la misma distancia, es parte de un objeto más ancho (obstáculo).
-   - Los umbrales se ajustan con los datos de la 1. Sin esos datos, es adivinar.
+   - Los umbrales se ajustan con los datos de la 1. Sin esos datos, es adivinar. `analisis.md` ya prueba combinaciones de (a) 250/300/400 mm, (b) y (c) de 0 a 80 mm, y muestra cuántos lobitos quedan y cuántos falsos saca cada una.
 4. **Ajuste fino de la percepción con esos datos** (con los obstáculos etiquetados como OBSTACULO). Seguir entrenando `percepcion.nnet` de E2 con Neuroph, **mezclando** barridos reales (ya corregidos por la 2) con simulados, y separando algunos reales para medir antes y después. Si se entrena solo con lo real, la red se olvida de lo que sabía.
 5. **Recalibrar avance y giro.** Ahora los motores van con 9,6 V y `CalibracionRobot` dice 200 mm/s y 212 °/s, medidos con otra fuente. Con `ControlManual`: medir cuánto avanza y gira con 300 ms y actualizar `CalibracionRobot`.
 6. **Ángulo de elevación para atrapar.** Con `ControlManual` (`i`/`k`), buscar el menor ángulo con el que la canica entra al embudo sin tocar el sensor y ponerlo en `SENSOR_ARRIBA_GRADOS` de `Orquita.ino`. Hoy está en 180° (lento). Ojo: el sensor sube solo si el último barrido vio algo a menos de 35 cm al frente.

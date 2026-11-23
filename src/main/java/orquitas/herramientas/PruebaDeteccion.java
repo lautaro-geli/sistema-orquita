@@ -49,13 +49,19 @@ public class PruebaDeteccion {
                 while ((l = r.readLine()) != null) {
                     nota = l.trim().replace(',', ' ');
                     System.out.println(">> Nota para los proximos barridos: \"" + nota + "\"");
+                    NotaEscena leida = NotaEscena.leer(nota);
+                    System.out.println(">> Entiendo: " + leida.resumen());
+                    for (String problema : leida.problemas())
+                        System.out.println(">> OJO, revisa la nota: " + problema + ". Escribila de nuevo y Enter.");
                 }
             } catch (IOException ignorada) { }
         });
         teclado.setDaemon(true);
         teclado.start();
         System.out.println("Conectado a " + args[0] + ". El robot queda quieto y barre una y otra vez.");
-        System.out.println("Escribí que pusiste en la escena (por ejemplo: canica 20 cm al frente) y Enter. Ctrl+C para salir.");
+        System.out.println("Escribi que pusiste en la escena y Enter: tipo, angulo (+ a la izquierda, 0 al frente) y distancia en cm.");
+        System.out.println("  lobito -15 20  |  obstaculo +30 15  |  salida -30 +15  |  obstaculo 0 15 y lobito -30 10");
+        System.out.println("Esperar 3 barridos con cada nota. Ctrl+C para salir.");
         System.out.println("Se guarda todo en " + csv.toAbsolutePath());
         try {
             atender(puerto.getInputStream(), puerto.getOutputStream(), red, csv);
