@@ -130,8 +130,12 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 **Problema abierto: percepción con datos reales** (prueba de detección del 22/11, CSV en el zip):
 
 - El piso que ve el 16x16 queda como "ROI grande cerca, 4x4 lejos o sin eco". En la simulación eso solo pasaba con canicas, así que la red marca **LOBITO** en la salida (4–6 sectores por barrido, al 97–100 %) y a veces cerca de paredes u obstáculos.
-- Las canicas reales a 7–14 cm sí las detecta (LOBITO 90–98 %).
-- Probé sobre esos CSV, sin reentrenar, una corrección: si el 8x8 o el 16x16 miden bastante menos que el 4x4, es piso y se usa el 4x4. Con eso, los lobitos falsos en la salida bajaron de 4–6 a 1–2 por barrido y la canica sigue detectada. **No está implementada en el Servidor todavía** (ver pendientes).
+- **Obstáculos confundidos con lobitos (lo más grave).** En la escena "lolobito" (obstáculos y lobitos), según lo que vio el equipo, la red marca los **obstáculos como LOBITO con mucha seguridad** y a los **lobitos reales con poca**. El CSV no tiene anotado qué sector era cada cosa, así que no está medido por sector. Si la red persigue obstáculos, el robot choca (−5 por choque) y no captura.
+- **Por qué pasa** (explicación probable, a confirmar con datos etiquetados):
+  - La red aprendió en la simulación que un lobito es "4x4 cerca, 16x16 más lejos" (objeto chico).
+  - En la realidad, el **borde de un obstáculo** que entra solo en el cono angosto del 4x4 deja ese mismo patrón.
+  - En cambio, la canica real (1,6 cm de alto, con el sensor a 0,8 cm) se ve débil: a 20 cm el 4x4 ya mezcla la canica con el fondo.
+- Probé sobre esos CSV, sin reentrenar, una corrección: si el 8x8 o el 16x16 miden bastante menos que el 4x4, es piso y se usa el 4x4. Con eso, los lobitos falsos en la salida bajaron de 4–6 a 1–2 por barrido. **No resuelve los obstáculos confundidos con lobitos** y no está implementada en el Servidor todavía (ver pendientes).
 
 **Lo que ya se probó y no sirvió** (para no repetirlo; detalle en `docs/proyecto_claude/Analisis_Redes_Techo_27_vs_Maestro_87.md`):
 
@@ -161,20 +165,28 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 
 ### Antes de la competencia (prioridad alta)
 
-1. **Corrección del piso en el Servidor** (`PreprocesadorTelemetria`): si el 8x8 o el 16x16 miden menos que el 4x4 menos un margen (~15–30 mm), o el 4x4 no tiene eco y el ROI grande está a menos de ~20 cm, usar el valor del 4x4. Probar en la simulación que no empeora, y con los CSV reales del zip. Estimado: 1 h.
-2. **Regla "LOBITO solo si lo ve el 4x4"** después de la percepción: un sector es LOBITO solo si el 4x4 tiene eco a menos de ~40 cm. Si no, se toma como LIBRE o SALIDA. Junto con la 1 deberían eliminar casi todos los lobitos falsos. 30 min.
-3. **Tomar telemetrías reales etiquetadas** con `orquita_prueba_deteccion.bat`: unas 15 de lobito, 15 de salida y 15 de obstáculo, en 5 posiciones distintas × 3 barridos cada una.
+1. **Tomar telemetrías reales etiquetadas (primero, porque todo lo demás se mide con esto)** con `orquita_prueba_deteccion.bat`:
+   - Unas 15 de lobito, 15 de obstáculo y 15 de salida: 5 posiciones distintas × 3 barridos cada una.
    - La nota tiene que decir tipo, ángulo y distancia: `lobito -15 20`, `obstaculo +30 15`, `salida -30 +15`. Ángulo positivo a la izquierda, 0 al frente.
-   - Sumar canicas muy cerca (5–10 cm).
-4. **Ajuste fino de la percepción con esos datos.** Seguir entrenando `percepcion.nnet` de E2 con Neuroph, **mezclando** barridos reales (ya corregidos por la 1) con simulados, y separando algunos reales para medir antes y después. Si se entrena solo con lo real, la red se olvida de lo que sabía.
+   - Incluir **obstáculos de frente y de costado (con el borde a la vista)**, canicas muy cerca (5–10 cm) y escenas con un obstáculo y un lobito juntos.
+   - Con eso se mide, sector por sector, qué confunde la red.
+2. **Corrección del piso en el Servidor** (`PreprocesadorTelemetria`): si el 8x8 o el 16x16 miden menos que el 4x4 menos un margen (~15–30 mm), o el 4x4 no tiene eco y el ROI grande está a menos de ~20 cm, usar el valor del 4x4. Arregla la salida y el piso, **no los obstáculos**. Probar en la simulación y con los CSV reales. 1 h.
+3. **Filtro de forma para LOBITO** después de la percepción. Un sector queda como LOBITO solo si:
+   - **(a)** el 4x4 tiene eco cerca (menos de ~40 cm);
+   - **(b)** se parece a un objeto chico, con el 16x16 claramente más lejos que el 4x4: si los tres ROI miden casi lo mismo, es una cara de obstáculo o una pared;
+   - **(c)** está aislado: si un sector vecino mide casi la misma distancia, es parte de un objeto más ancho (obstáculo).
+   - Los umbrales se ajustan con los datos de la 1. Sin esos datos, es adivinar.
+4. **Ajuste fino de la percepción con esos datos** (con los obstáculos etiquetados como OBSTACULO). Seguir entrenando `percepcion.nnet` de E2 con Neuroph, **mezclando** barridos reales (ya corregidos por la 2) con simulados, y separando algunos reales para medir antes y después. Si se entrena solo con lo real, la red se olvida de lo que sabía.
 5. **Recalibrar avance y giro.** Ahora los motores van con 9,6 V y `CalibracionRobot` dice 200 mm/s y 212 °/s, medidos con otra fuente. Con `ControlManual`: medir cuánto avanza y gira con 300 ms y actualizar `CalibracionRobot`.
 6. **Ángulo de elevación para atrapar.** Con `ControlManual` (`i`/`k`), buscar el menor ángulo con el que la canica entra al embudo sin tocar el sensor y ponerlo en `SENSOR_ARRIBA_GRADOS` de `Orquita.ino`. Hoy está en 180° (lento). Ojo: el sensor sube solo si el último barrido vio algo a menos de 35 cm al frente.
 7. **`BARRIDO_RAPIDO` en `Orquita.ino`.** En el repo está en `true` (configuración D, ~2 s). En la PC quedó en `false` (~4,8 s) por el diagnóstico de alimentación. Con la alimentación arreglada, volver a probar `true`. Si aparece `I2C trabado`, dejar un solo tiempo de medición para los 3 ROI (~30 ms).
 8. **Pulsos muy cortos:** el reflejo manda `RETROCEDER 50 ms` (1 cm), que en el robot real puede no mover nada. Subir el mínimo de `OrdenMovimiento` o del reflejo (por ejemplo a 150 ms) y probar.
 9. **Prueba completa en la bahía** con E2, umbral 3, filmada. Verificar: Safe Mode (apagar el Bluetooth de la PC), `CAPTURA|id` con el FC-51, candado de salida, Modo Escape y que el robot no quede quieto más de 1 minuto.
-10. **Dejar lista la entrega:** unir `maestro-v2` a la rama de entrega o a `main`; copiar las redes finales a `modelos/` de la PC de la competencia; congelar todo el 25/11; probar el plan B `--reglas` (también le sirven la 1 y la 2).
+10. **Dejar lista la entrega:** unir `maestro-v2` a la rama de entrega o a `main`; copiar las redes finales a `modelos/` de la PC de la competencia; congelar todo el 25/11; probar el plan B `--reglas` (también le sirven la 2 y la 3).
 
 ### Si sobra tiempo
+
+- **Confirmar lobitos levantando el sensor** (la forma física más segura de separar canica de obstáculo). Con el sensor arriba (6,5 cm), la canica no se ve y los obstáculos y paredes (10 cm de alto) sí. Si la red marca LOBITO en un sector, se mide ese sector con el sensor arriba: si el objeto sigue, es obstáculo. Cuesta ~1,5 s por verificación y obliga a cambiar el sketch y, según cómo se haga, el protocolo (§8: Servidor, sketch, pruebas y documentación juntos). Se puede probar primero a mano con `ControlManual` (`i`/`k` para subir y `r` para medir).
 
 11. **Piso en la simulación + reentrenar** (solución de fondo). Agregar el piso a `SensorSimulado` (lo que ve cada ROI según la altura del sensor), reentrenar percepción y movimiento (~2–3 h de PC) y repetir el ajuste fino (4) sobre la red nueva con los mismos datos reales.
 12. Umbral del `DetectorAtasco` con el ruido real (1–2 mm: puede no reconocer dos barridos iguales).
