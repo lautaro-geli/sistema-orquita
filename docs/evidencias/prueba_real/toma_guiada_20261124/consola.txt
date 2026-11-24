@@ -1,0 +1,2599 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1202/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Conectado.
+Toma guiada: 25 escenas, 3 barridos por escena. El robot queda quieto. Ctrl+C para cortar.
+Se guarda en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv
+
+==================================================================
+ Escena 1 de 25   (nota: lobito 0 5)
+ Pone una CANICA DERECHO ADELANTE, a 5 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 1: el robot anda; todavia no se guarda)
+   (llego el barrido 2: el robot anda; todavia no se guarda)
+   (llego el barrido 3: el robot anda; todavia no se guarda)
+   (llego el barrido 4: el robot anda; todavia no se guarda)
+   (llego el barrido 5: el robot anda; todavia no se guarda)
+   (llego el barrido 6: el robot anda; todavia no se guarda)
+   (llego el barrido 7: el robot anda; todavia no se guarda)
+   (llego el barrido 8: el robot anda; todavia no se guarda)
+   (llego el barrido 9: el robot anda; todavia no se guarda)
+   (llego el barrido 10: el robot anda; todavia no se guarda)
+   (llego el barrido 11: el robot anda; todavia no se guarda)
+   (llego el barrido 12: el robot anda; todavia no se guarda)
+   (llego el barrido 13: el robot anda; todavia no se guarda)
+   (llego el barrido 14: el robot anda; todavia no se guarda)
+   (llego el barrido 15: el robot anda; todavia no se guarda)
+   (llego el barrido 16: el robot anda; todavia no se guarda)
+   (llego el barrido 17: el robot anda; todavia no se guarda)
+   (llego el barrido 18: el robot anda; todavia no se guarda)
+   (llego el barrido 19: el robot anda; todavia no se guarda)
+   (llego el barrido 20: el robot anda; todavia no se guarda)
+   (llego el barrido 21: el robot anda; todavia no se guarda)
+   (llego el barrido 22: el robot anda; todavia no se guarda)
+   (llego el barrido 23: el robot anda; todavia no se guarda)
+   (llego el barrido 24: el robot anda; todavia no se guarda)
+   (llego el barrido 25: el robot anda; todavia no se guarda)
+   (llego el barrido 26: el robot anda; todavia no se guarda)
+   (llego el barrido 27: el robot anda; todavia no se guarda)
+   (llego el barrido 28: el robot anda; todavia no se guarda)
+   (llego el barrido 29: el robot anda; todavia no se guarda)
+   (llego el barrido 30: el robot anda; todavia no se guarda)
+   (llego el barrido 31: el robot anda; todavia no se guarda)
+   (llego el barrido 32: el robot anda; todavia no se guarda)
+   (llego el barrido 33: el robot anda; todavia no se guarda)
+   (llego el barrido 34: el robot anda; todavia no se guarda)
+   (llego el barrido 35: el robot anda; todavia no se guarda)
+   (llego el barrido 36: el robot anda; todavia no se guarda)
+   (llego el barrido 37: el robot anda; todavia no se guarda)
+   (llego el barrido 38: el robot anda; todavia no se guarda)
+   (llego el barrido 39: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 3 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15, der 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: der 30, der 45   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 1 (3 barridos):
+   - frente (anotado LOBITO): la red dijo SALIDA 1 de 3, PARED 2 de 3
+   - LOBITO donde no hay canica: der 30 (1 de 3), der 45 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 44: el robot anda; todavia no se guarda)
+   (llego el barrido 45: el robot anda; todavia no se guarda)
+   (llego el barrido 46: el robot anda; todavia no se guarda)
+   (llego el barrido 47: el robot anda; todavia no se guarda)
+   (llego el barrido 48: el robot anda; todavia no se guarda)
+   (llego el barrido 49: el robot anda; todavia no se guarda)
+   (llego el barrido 50: el robot anda; todavia no se guarda)
+   (llego el barrido 51: el robot anda; todavia no se guarda)
+   (llego el barrido 52: el robot anda; todavia no se guarda)
+   (llego el barrido 53: el robot anda; todavia no se guarda)
+>> Escena 1 guardada.
+
+==================================================================
+ Escena 2 de 25   (nota: lobito 0 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 54: el robot anda; todavia no se guarda)
+   (llego el barrido 55: el robot anda; todavia no se guarda)
+   (llego el barrido 56: el robot anda; todavia no se guarda)
+   (llego el barrido 57: el robot anda; todavia no se guarda)
+   (llego el barrido 58: el robot anda; todavia no se guarda)
+   (llego el barrido 59: el robot anda; todavia no se guarda)
+   (llego el barrido 60: el robot anda; todavia no se guarda)
+   (llego el barrido 61: el robot anda; todavia no se guarda)
+   (llego el barrido 62: el robot anda; todavia no se guarda)
+   (llego el barrido 63: el robot anda; todavia no se guarda)
+   (llego el barrido 64: el robot anda; todavia no se guarda)
+   (llego el barrido 65: el robot anda; todavia no se guarda)
+   (llego el barrido 66: el robot anda; todavia no se guarda)
+   (llego el barrido 67: el robot anda; todavia no se guarda)
+   (llego el barrido 68: el robot anda; todavia no se guarda)
+   (llego el barrido 69: el robot anda; todavia no se guarda)
+   (llego el barrido 70: el robot anda; todavia no se guarda)
+   (llego el barrido 71: el robot anda; todavia no se guarda)
+   (llego el barrido 72: el robot anda; todavia no se guarda)
+   (llego el barrido 73: el robot anda; todavia no se guarda)
+   (llego el barrido 74: el robot anda; todavia no se guarda)
+   (llego el barrido 75: el robot anda; todavia no se guarda)
+   (llego el barrido 76: el robot anda; todavia no se guarda)
+   (llego el barrido 77: el robot anda; todavia no se guarda)
+   (llego el barrido 78: el robot anda; todavia no se guarda)
+   (llego el barrido 79: el robot anda; todavia no se guarda)
+   (llego el barrido 80: el robot anda; todavia no se guarda)
+   (llego el barrido 81: el robot anda; todavia no se guarda)
+   (llego el barrido 82: el robot anda; todavia no se guarda)
+   (llego el barrido 83: el robot anda; todavia no se guarda)
+   (llego el barrido 84: el robot anda; todavia no se guarda)
+   (llego el barrido 85: el robot anda; todavia no se guarda)
+   (llego el barrido 86: el robot anda; todavia no se guarda)
+   (llego el barrido 87: el robot anda; todavia no se guarda)
+   (llego el barrido 88: el robot anda; todavia no se guarda)
+   (llego el barrido 89: el robot anda; todavia no se guarda)
+   (llego el barrido 90: el robot anda; todavia no se guarda)
+   (llego el barrido 91: el robot anda; todavia no se guarda)
+   (llego el barrido 92: el robot anda; todavia no se guarda)
+   (llego el barrido 93: el robot anda; todavia no se guarda)
+   (llego el barrido 94: el robot anda; todavia no se guarda)
+   (llego el barrido 95: el robot anda; todavia no se guarda)
+   (llego el barrido 96: el robot anda; todavia no se guarda)
+   (llego el barrido 97: el robot anda; todavia no se guarda)
+   (llego el barrido 98: el robot anda; todavia no se guarda)
+   (llego el barrido 99: el robot anda; todavia no se guarda)
+   (llego el barrido 100: el robot anda; todavia no se guarda)
+   (llego el barrido 101: el robot anda; todavia no se guarda)
+   (llego el barrido 102: el robot anda; todavia no se guarda)
+   (llego el barrido 103: el robot anda; todavia no se guarda)
+   (llego el barrido 104: el robot anda; todavia no se guarda)
+   (llego el barrido 105: el robot anda; todavia no se guarda)
+   (llego el barrido 106: el robot anda; todavia no se guarda)
+   (llego el barrido 107: el robot anda; todavia no se guarda)
+   (llego el barrido 108: el robot anda; todavia no se guarda)
+   (llego el barrido 109: el robot anda; todavia no se guarda)
+   (llego el barrido 110: el robot anda; todavia no se guarda)
+   (llego el barrido 111: el robot anda; todavia no se guarda)
+   (llego el barrido 112: el robot anda; todavia no se guarda)
+   (llego el barrido 113: el robot anda; todavia no se guarda)
+   (llego el barrido 114: el robot anda; todavia no se guarda)
+   (llego el barrido 115: el robot anda; todavia no se guarda)
+   (llego el barrido 116: el robot anda; todavia no se guarda)
+   (llego el barrido 117: el robot anda; todavia no se guarda)
+   (llego el barrido 118: el robot anda; todavia no se guarda)
+   (llego el barrido 119: el robot anda; todavia no se guarda)
+   (llego el barrido 120: el robot anda; todavia no se guarda)
+   (llego el barrido 121: el robot anda; todavia no se guarda)
+   (llego el barrido 122: el robot anda; todavia no se guarda)
+   (llego el barrido 123: el robot anda; todavia no se guarda)
+   (llego el barrido 124: el robot anda; todavia no se guarda)
+   (llego el barrido 125: el robot anda; todavia no se guarda)
+   (llego el barrido 126: el robot anda; todavia no se guarda)
+   (llego el barrido 127: el robot anda; todavia no se guarda)
+   (llego el barrido 128: el robot anda; todavia no se guarda)
+   (llego el barrido 129: el robot anda; todavia no se guarda)
+   (llego el barrido 130: el robot anda; todavia no se guarda)
+   (llego el barrido 131: el robot anda; todavia no se guarda)
+   (llego el barrido 132: el robot anda; todavia no se guarda)
+   (llego el barrido 133: el robot anda; todavia no se guarda)
+   (llego el barrido 134: el robot anda; todavia no se guarda)
+   (llego el barrido 135: el robot anda; todavia no se guarda)
+   (llego el barrido 136: el robot anda; todavia no se guarda)
+   (llego el barrido 137: el robot anda; todavia no se guarda)
+   (llego el barrido 138: el robot anda; todavia no se guarda)
+   (llego el barrido 139: el robot anda; todavia no se guarda)
+   (llego el barrido 140: el robot anda; todavia no se guarda)
+   (llego el barrido 141: el robot anda; todavia no se guarda)
+   (llego el barrido 142: el robot anda; todavia no se guarda)
+   (llego el barrido 143: el robot anda; todavia no se guarda)
+   (llego el barrido 144: el robot anda; todavia no se guarda)
+   (llego el barrido 145: el robot anda; todavia no se guarda)
+   (llego el barrido 146: el robot anda; todavia no se guarda)
+   (llego el barrido 147: el robot anda; todavia no se guarda)
+   (llego el barrido 148: el robot anda; todavia no se guarda)
+   (llego el barrido 149: el robot anda; todavia no se guarda)
+   (llego el barrido 150: el robot anda; todavia no se guarda)
+   (llego el barrido 151: el robot anda; todavia no se guarda)
+   (llego el barrido 152: el robot anda; todavia no se guarda)
+   (llego el barrido 153: el robot anda; todavia no se guarda)
+   (llego el barrido 154: el robot anda; todavia no se guarda)
+   (llego el barrido 155: el robot anda; todavia no se guarda)
+   (llego el barrido 156: el robot anda; todavia no se guarda)
+   (llego el barrido 157: el robot anda; todavia no se guarda)
+   (llego el barrido 158: el robot anda; todavia no se guarda)
+   (llego el barrido 159: el robot anda; todavia no se guarda)
+   (llego el barrido 160: el robot anda; todavia no se guarda)
+   (llego el barrido 161: el robot anda; todavia no se guarda)
+   (llego el barrido 162: el robot anda; todavia no se guarda)
+   (llego el barrido 163: el robot anda; todavia no se guarda)
+   (llego el barrido 164: el robot anda; todavia no se guarda)
+   (llego el barrido 165: el robot anda; todavia no se guarda)
+   (llego el barrido 166: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 60, frente, der 45, der 60, der 75, der 90   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45, izq 15, frente   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, frente   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 2 (3 barridos):
+   - frente (anotado LOBITO): la red dijo LOBITO 3 de 3
+   - LOBITO donde no hay canica: izq 60 (3 de 3), izq 45 (1 de 3), der 45 (1 de 3), der 60 (1 de 3), der 75 (1 de 3), der 90 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 171: el robot anda; todavia no se guarda)
+   (llego el barrido 172: el robot anda; todavia no se guarda)
+   (llego el barrido 173: el robot anda; todavia no se guarda)
+>> Repetimos la escena 2 (lo de recien se borro).
+
+==================================================================
+ Escena 2 de 25   (nota: lobito 0 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 174: el robot anda; todavia no se guarda)
+   (llego el barrido 175: el robot anda; todavia no se guarda)
+   (llego el barrido 176: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 2 (3 barridos):
+   - frente (anotado LOBITO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: ninguno
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 181: el robot anda; todavia no se guarda)
+   (llego el barrido 182: el robot anda; todavia no se guarda)
+>> Repetimos la escena 2 (lo de recien se borro).
+
+==================================================================
+ Escena 2 de 25   (nota: lobito 0 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 183: el robot anda; todavia no se guarda)
+   (llego el barrido 184: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 60, izq 45, frente   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45, frente, der 15   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 45, frente   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 2 (3 barridos):
+   - frente (anotado LOBITO): la red dijo LOBITO 3 de 3
+   - LOBITO donde no hay canica: izq 60 (3 de 3), izq 45 (3 de 3)
+   - LOBITO al lado de la canica: der 15 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 189: el robot anda; todavia no se guarda)
+   (llego el barrido 190: el robot anda; todavia no se guarda)
+   (llego el barrido 191: el robot anda; todavia no se guarda)
+   (llego el barrido 192: el robot anda; todavia no se guarda)
+   (llego el barrido 193: el robot anda; todavia no se guarda)
+   (llego el barrido 194: el robot anda; todavia no se guarda)
+   (llego el barrido 195: el robot anda; todavia no se guarda)
+   (llego el barrido 196: el robot anda; todavia no se guarda)
+   (llego el barrido 197: el robot anda; todavia no se guarda)
+>> Escena 2 guardada.
+
+==================================================================
+ Escena 3 de 25   (nota: lobito 0 20)
+ Pone una CANICA DERECHO ADELANTE, a 20 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 198: el robot anda; todavia no se guarda)
+   (llego el barrido 199: el robot anda; todavia no se guarda)
+   (llego el barrido 200: el robot anda; todavia no se guarda)
+   (llego el barrido 201: el robot anda; todavia no se guarda)
+   (llego el barrido 202: el robot anda; todavia no se guarda)
+   (llego el barrido 203: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 45, der 15   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 30, izq 15, frente   |   sectores sin dato: 9 de 13
+>> Resumen de la escena 3 (3 barridos):
+   - frente (anotado LOBITO): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 60 (1 de 3), izq 45 (2 de 3), izq 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 3.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 208: el robot anda; todavia no se guarda)
+   (llego el barrido 209: el robot anda; todavia no se guarda)
+   (llego el barrido 210: el robot anda; todavia no se guarda)
+   (llego el barrido 211: el robot anda; todavia no se guarda)
+   (llego el barrido 212: el robot anda; todavia no se guarda)
+   (llego el barrido 213: el robot anda; todavia no se guarda)
+   (llego el barrido 214: el robot anda; todavia no se guarda)
+   (llego el barrido 215: el robot anda; todavia no se guarda)
+   (llego el barrido 216: el robot anda; todavia no se guarda)
+   (llego el barrido 217: el robot anda; todavia no se guarda)
+>> Escena 3 guardada.
+
+==================================================================
+ Escena 4 de 25   (nota: lobito 0 30)
+ Pone una CANICA DERECHO ADELANTE, a 30 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 218: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 75, izq 30   |   sectores sin dato: 10 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 45, der 15, der 30, der 90   |   sectores sin dato: 2 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 15, frente   |   sectores sin dato: 9 de 13
+>> Resumen de la escena 4 (3 barridos):
+   - frente (anotado LOBITO): la red dijo LIBRE 1 de 3, PARED 1 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (1 de 3), izq 60 (1 de 3), izq 45 (1 de 3), izq 30 (1 de 3), der 30 (1 de 3), der 90 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 7.0 de 13 en promedio
+   OJO: muchos sectores sin dato. Revisa el sensor (cables, pilas) y repeti la escena con R.
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 223: el robot anda; todavia no se guarda)
+   (llego el barrido 224: el robot anda; todavia no se guarda)
+   (llego el barrido 225: el robot anda; todavia no se guarda)
+   (llego el barrido 226: el robot anda; todavia no se guarda)
+   (llego el barrido 227: el robot anda; todavia no se guarda)
+   (llego el barrido 228: el robot anda; todavia no se guarda)
+   (llego el barrido 229: el robot anda; todavia no se guarda)
+>> Escena 4 guardada.
+
+==================================================================
+ Escena 5 de 25   (nota: lobito +30 15)
+ Pone una CANICA a la IZQUIERDA (30 grados), a 15 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 230: el robot anda; todavia no se guarda)
+   (llego el barrido 231: el robot anda; todavia no se guarda)
+   (llego el barrido 232: el robot anda; todavia no se guarda)
+   (llego el barrido 233: el robot anda; todavia no se guarda)
+   (llego el barrido 234: el robot anda; todavia no se guarda)
+   (llego el barrido 235: el robot anda; todavia no se guarda)
+   (llego el barrido 236: el robot anda; todavia no se guarda)
+   (llego el barrido 237: el robot anda; todavia no se guarda)
+   (llego el barrido 238: el robot anda; todavia no se guarda)
+   (llego el barrido 239: el robot anda; todavia no se guarda)
+   (llego el barrido 240: el robot anda; todavia no se guarda)
+   (llego el barrido 241: el robot anda; todavia no se guarda)
+   (llego el barrido 242: el robot anda; todavia no se guarda)
+   (llego el barrido 243: el robot anda; todavia no se guarda)
+   (llego el barrido 244: el robot anda; todavia no se guarda)
+   (llego el barrido 245: el robot anda; todavia no se guarda)
+   (llego el barrido 246: el robot anda; todavia no se guarda)
+   (llego el barrido 247: el robot anda; todavia no se guarda)
+   (llego el barrido 248: el robot anda; todavia no se guarda)
+   (llego el barrido 249: el robot anda; todavia no se guarda)
+   (llego el barrido 250: el robot anda; todavia no se guarda)
+   (llego el barrido 251: el robot anda; todavia no se guarda)
+   (llego el barrido 252: el robot anda; todavia no se guarda)
+   (llego el barrido 253: el robot anda; todavia no se guarda)
+   (llego el barrido 254: el robot anda; todavia no se guarda)
+   (llego el barrido 255: el robot anda; todavia no se guarda)
+   (llego el barrido 256: el robot anda; todavia no se guarda)
+   (llego el barrido 257: el robot anda; todavia no se guarda)
+   (llego el barrido 258: el robot anda; todavia no se guarda)
+   (llego el barrido 259: el robot anda; todavia no se guarda)
+   (llego el barrido 260: el robot anda; todavia no se guarda)
+   (llego el barrido 261: el robot anda; todavia no se guarda)
+   (llego el barrido 262: el robot anda; todavia no se guarda)
+   (llego el barrido 263: el robot anda; todavia no se guarda)
+   (llego el barrido 264: el robot anda; todavia no se guarda)
+   (llego el barrido 265: el robot anda; todavia no se guarda)
+   (llego el barrido 266: el robot anda; todavia no se guarda)
+   (llego el barrido 267: el robot anda; todavia no se guarda)
+   (llego el barrido 268: el robot anda; todavia no se guarda)
+   (llego el barrido 269: el robot anda; todavia no se guarda)
+   (llego el barrido 270: el robot anda; todavia no se guarda)
+   (llego el barrido 271: el robot anda; todavia no se guarda)
+   (llego el barrido 272: el robot anda; todavia no se guarda)
+   (llego el barrido 273: el robot anda; todavia no se guarda)
+   (llego el barrido 274: el robot anda; todavia no se guarda)
+   (llego el barrido 275: el robot anda; todavia no se guarda)
+   (llego el barrido 276: el robot anda; todavia no se guarda)
+   (llego el barrido 277: el robot anda; todavia no se guarda)
+   (llego el barrido 278: el robot anda; todavia no se guarda)
+   (llego el barrido 279: el robot anda; todavia no se guarda)
+   (llego el barrido 280: el robot anda; todavia no se guarda)
+   (llego el barrido 281: el robot anda; todavia no se guarda)
+   (llego el barrido 282: el robot anda; todavia no se guarda)
+   (llego el barrido 283: el robot anda; todavia no se guarda)
+   (llego el barrido 284: el robot anda; todavia no se guarda)
+   (llego el barrido 285: el robot anda; todavia no se guarda)
+   (llego el barrido 286: el robot anda; todavia no se guarda)
+   (llego el barrido 287: el robot anda; todavia no se guarda)
+   (llego el barrido 288: el robot anda; todavia no se guarda)
+   (llego el barrido 289: el robot anda; todavia no se guarda)
+   (llego el barrido 290: el robot anda; todavia no se guarda)
+   (llego el barrido 291: el robot anda; todavia no se guarda)
+   (llego el barrido 292: el robot anda; todavia no se guarda)
+   (llego el barrido 293: el robot anda; todavia no se guarda)
+   (llego el barrido 294: el robot anda; todavia no se guarda)
+   (llego el barrido 295: el robot anda; todavia no se guarda)
+   (llego el barrido 296: el robot anda; todavia no se guarda)
+   (llego el barrido 297: el robot anda; todavia no se guarda)
+   (llego el barrido 298: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 75, izq 60   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: der 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45, izq 30, izq 15, frente, der 15, der 30   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 5 (3 barridos):
+   - izq 30 (anotado LOBITO): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (1 de 3), izq 60 (1 de 3), frente (1 de 3), der 15 (1 de 3), der 30 (1 de 3), der 45 (1 de 3)
+   - LOBITO al lado de la canica: izq 45 (1 de 3), izq 15 (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 303: el robot anda; todavia no se guarda)
+   (llego el barrido 304: el robot anda; todavia no se guarda)
+   (llego el barrido 305: el robot anda; todavia no se guarda)
+   (llego el barrido 306: el robot anda; todavia no se guarda)
+   (llego el barrido 307: el robot anda; todavia no se guarda)
+   (llego el barrido 308: el robot anda; todavia no se guarda)
+   (llego el barrido 309: el robot anda; todavia no se guarda)
+>> Enter = guardar y seguir, R = repetir, S = saltear.
+>> Repetimos la escena 5 (lo de recien se borro).
+
+==================================================================
+ Escena 5 de 25   (nota: lobito +30 15)
+ Pone una CANICA a la IZQUIERDA (30 grados), a 15 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90, izq 75, izq 60, izq 45, der 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 45, izq 30, der 45   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 5 (3 barridos):
+   - izq 30 (anotado LOBITO): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (1 de 3), izq 60 (2 de 3), der 15 (1 de 3), der 45 (1 de 3)
+   - LOBITO al lado de la canica: izq 45 (2 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 314: el robot anda; todavia no se guarda)
+>> Repetimos la escena 5 (lo de recien se borro).
+
+==================================================================
+ Escena 5 de 25   (nota: lobito +30 15)
+ Pone una CANICA a la IZQUIERDA (30 grados), a 15 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 315: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 5 (3 barridos):
+   - izq 30 (anotado LOBITO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: ninguno
+   - Sectores sin dato: 0.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 320: el robot anda; todavia no se guarda)
+   (llego el barrido 321: el robot anda; todavia no se guarda)
+   (llego el barrido 322: el robot anda; todavia no se guarda)
+   (llego el barrido 323: el robot anda; todavia no se guarda)
+   (llego el barrido 324: el robot anda; todavia no se guarda)
+>> Repetimos la escena 5 (lo de recien se borro).
+
+==================================================================
+ Escena 5 de 25   (nota: lobito +30 15)
+ Pone una CANICA a la IZQUIERDA (30 grados), a 15 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 325: el robot anda; todavia no se guarda)
+   (llego el barrido 326: el robot anda; todavia no se guarda)
+   (llego el barrido 327: el robot anda; todavia no se guarda)
+   (llego el barrido 328: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 6 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45, der 45, der 60   |   sectores sin dato: 5 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45   |   sectores sin dato: 2 de 13
+>> Resumen de la escena 5 (3 barridos):
+   - izq 30 (anotado LOBITO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 60 (1 de 3), der 45 (1 de 3), der 60 (1 de 3)
+   - LOBITO al lado de la canica: izq 45 (2 de 3)
+   - Sectores sin dato: 4.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 333: el robot anda; todavia no se guarda)
+   (llego el barrido 334: el robot anda; todavia no se guarda)
+   (llego el barrido 335: el robot anda; todavia no se guarda)
+   (llego el barrido 336: el robot anda; todavia no se guarda)
+   (llego el barrido 337: el robot anda; todavia no se guarda)
+   (llego el barrido 338: el robot anda; todavia no se guarda)
+   (llego el barrido 339: el robot anda; todavia no se guarda)
+   (llego el barrido 340: el robot anda; todavia no se guarda)
+   (llego el barrido 341: el robot anda; todavia no se guarda)
+   (llego el barrido 342: el robot anda; todavia no se guarda)
+   (llego el barrido 343: el robot anda; todavia no se guarda)
+   (llego el barrido 344: el robot anda; todavia no se guarda)
+   (llego el barrido 345: el robot anda; todavia no se guarda)
+>> Escena 5 guardada.
+
+==================================================================
+ Escena 6 de 25   (nota: lobito -45 20)
+ Pone una CANICA a la DERECHA (45 grados), a 20 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 346: el robot anda; todavia no se guarda)
+   (llego el barrido 347: el robot anda; todavia no se guarda)
+   (llego el barrido 348: el robot anda; todavia no se guarda)
+   (llego el barrido 349: el robot anda; todavia no se guarda)
+   (llego el barrido 350: el robot anda; todavia no se guarda)
+   (llego el barrido 351: el robot anda; todavia no se guarda)
+   (llego el barrido 352: el robot anda; todavia no se guarda)
+   (llego el barrido 353: el robot anda; todavia no se guarda)
+   (llego el barrido 354: el robot anda; todavia no se guarda)
+   (llego el barrido 355: el robot anda; todavia no se guarda)
+   (llego el barrido 356: el robot anda; todavia no se guarda)
+   (llego el barrido 357: el robot anda; todavia no se guarda)
+   (llego el barrido 358: el robot anda; todavia no se guarda)
+   (llego el barrido 359: el robot anda; todavia no se guarda)
+   (llego el barrido 360: el robot anda; todavia no se guarda)
+   (llego el barrido 361: el robot anda; todavia no se guarda)
+   (llego el barrido 362: el robot anda; todavia no se guarda)
+   (llego el barrido 363: el robot anda; todavia no se guarda)
+   (llego el barrido 364: el robot anda; todavia no se guarda)
+   (llego el barrido 365: el robot anda; todavia no se guarda)
+   (llego el barrido 366: el robot anda; todavia no se guarda)
+   (llego el barrido 367: el robot anda; todavia no se guarda)
+   (llego el barrido 368: el robot anda; todavia no se guarda)
+   (llego el barrido 369: el robot anda; todavia no se guarda)
+   (llego el barrido 370: el robot anda; todavia no se guarda)
+   (llego el barrido 371: el robot anda; todavia no se guarda)
+   (llego el barrido 372: el robot anda; todavia no se guarda)
+   (llego el barrido 373: el robot anda; todavia no se guarda)
+   (llego el barrido 374: el robot anda; todavia no se guarda)
+   (llego el barrido 375: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 75, izq 45, izq 30, der 15, der 30   |   sectores sin dato: 7 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 75, izq 60, izq 45   |   sectores sin dato: 11 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45, der 15   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 6 (3 barridos):
+   - der 45 (anotado LOBITO): la red dijo LIBRE 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (2 de 3), izq 60 (1 de 3), izq 45 (3 de 3), izq 30 (1 de 3), der 15 (2 de 3)
+   - LOBITO al lado de la canica: der 30 (1 de 3)
+   - Sectores sin dato: 6.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 380: el robot anda; todavia no se guarda)
+   (llego el barrido 381: el robot anda; todavia no se guarda)
+   (llego el barrido 382: el robot anda; todavia no se guarda)
+   (llego el barrido 383: el robot anda; todavia no se guarda)
+   (llego el barrido 384: el robot anda; todavia no se guarda)
+>> Repetimos la escena 6 (lo de recien se borro).
+
+==================================================================
+ Escena 6 de 25   (nota: lobito -45 20)
+ Pone una CANICA a la DERECHA (45 grados), a 20 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 385: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 60, izq 45   |   sectores sin dato: 2 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: der 30, der 45   |   sectores sin dato: 6 de 13
+>> Resumen de la escena 6 (3 barridos):
+   - der 45 (anotado LOBITO): la red dijo SALIDA 1 de 3, PARED 1 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 60 (2 de 3), izq 45 (2 de 3)
+   - LOBITO al lado de la canica: der 30 (1 de 3)
+   - Sectores sin dato: 2.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 390: el robot anda; todavia no se guarda)
+   (llego el barrido 391: el robot anda; todavia no se guarda)
+>> Escena 6 guardada.
+
+==================================================================
+ Escena 7 de 25   (nota: obstaculo 0 10)
+ Pone un OBSTACULO DERECHO ADELANTE, a 10 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 392: el robot anda; todavia no se guarda)
+   (llego el barrido 393: el robot anda; todavia no se guarda)
+   (llego el barrido 394: el robot anda; todavia no se guarda)
+   (llego el barrido 395: el robot anda; todavia no se guarda)
+   (llego el barrido 396: el robot anda; todavia no se guarda)
+   (llego el barrido 397: el robot anda; todavia no se guarda)
+   (llego el barrido 398: el robot anda; todavia no se guarda)
+   (llego el barrido 399: el robot anda; todavia no se guarda)
+   (llego el barrido 400: el robot anda; todavia no se guarda)
+   (llego el barrido 401: el robot anda; todavia no se guarda)
+   (llego el barrido 402: el robot anda; todavia no se guarda)
+   (llego el barrido 403: el robot anda; todavia no se guarda)
+   (llego el barrido 404: el robot anda; todavia no se guarda)
+   (llego el barrido 405: el robot anda; todavia no se guarda)
+   (llego el barrido 406: el robot anda; todavia no se guarda)
+   (llego el barrido 407: el robot anda; todavia no se guarda)
+   (llego el barrido 408: el robot anda; todavia no se guarda)
+   (llego el barrido 409: el robot anda; todavia no se guarda)
+   (llego el barrido 410: el robot anda; todavia no se guarda)
+   (llego el barrido 411: el robot anda; todavia no se guarda)
+   (llego el barrido 412: el robot anda; todavia no se guarda)
+   (llego el barrido 413: el robot anda; todavia no se guarda)
+   (llego el barrido 414: el robot anda; todavia no se guarda)
+   (llego el barrido 415: el robot anda; todavia no se guarda)
+   (llego el barrido 416: el robot anda; todavia no se guarda)
+   (llego el barrido 417: el robot anda; todavia no se guarda)
+   (llego el barrido 418: el robot anda; todavia no se guarda)
+   (llego el barrido 419: el robot anda; todavia no se guarda)
+   (llego el barrido 420: el robot anda; todavia no se guarda)
+   (llego el barrido 421: el robot anda; todavia no se guarda)
+   (llego el barrido 422: el robot anda; todavia no se guarda)
+   (llego el barrido 423: el robot anda; todavia no se guarda)
+   (llego el barrido 424: el robot anda; todavia no se guarda)
+   (llego el barrido 425: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 60, frente   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45, frente, der 15   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 45, frente   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 7 (3 barridos):
+   - frente (anotado OBSTACULO): la red dijo LOBITO 3 de 3
+   - LOBITO donde no hay canica: izq 60 (3 de 3), izq 45 (2 de 3), frente (3 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 1.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 430: el robot anda; todavia no se guarda)
+   (llego el barrido 431: el robot anda; todavia no se guarda)
+   (llego el barrido 432: el robot anda; todavia no se guarda)
+   (llego el barrido 433: el robot anda; todavia no se guarda)
+   (llego el barrido 434: el robot anda; todavia no se guarda)
+   (llego el barrido 435: el robot anda; todavia no se guarda)
+   (llego el barrido 436: el robot anda; todavia no se guarda)
+>> Escena 7 guardada.
+
+==================================================================
+ Escena 8 de 25   (nota: obstaculo 0 20)
+ Pone un OBSTACULO DERECHO ADELANTE, a 20 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 437: el robot anda; todavia no se guarda)
+   (llego el barrido 438: el robot anda; todavia no se guarda)
+   (llego el barrido 439: el robot anda; todavia no se guarda)
+   (llego el barrido 440: el robot anda; todavia no se guarda)
+   (llego el barrido 441: el robot anda; todavia no se guarda)
+   (llego el barrido 442: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 60, frente, der 15, der 30   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 30, izq 15   |   sectores sin dato: 10 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 8 (3 barridos):
+   - frente (anotado OBSTACULO): la red dijo LOBITO 1 de 3, LIBRE 1 de 3, PARED 1 de 3
+   - LOBITO donde no hay canica: izq 60 (2 de 3), izq 45 (1 de 3), izq 30 (1 de 3), izq 15 (1 de 3), frente (1 de 3), der 15 (1 de 3), der 30 (1 de 3)
+   - Sectores sin dato: 4.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 447: el robot anda; todavia no se guarda)
+   (llego el barrido 448: el robot anda; todavia no se guarda)
+   (llego el barrido 449: el robot anda; todavia no se guarda)
+   (llego el barrido 450: el robot anda; todavia no se guarda)
+>> Escena 8 guardada.
+
+==================================================================
+ Escena 9 de 25   (nota: obstaculo 0 35)
+ Pone un OBSTACULO DERECHO ADELANTE, a 35 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 451: el robot anda; todavia no se guarda)
+   (llego el barrido 452: el robot anda; todavia no se guarda)
+   (llego el barrido 453: el robot anda; todavia no se guarda)
+   (llego el barrido 454: el robot anda; todavia no se guarda)
+   (llego el barrido 455: el robot anda; todavia no se guarda)
+   (llego el barrido 456: el robot anda; todavia no se guarda)
+   (llego el barrido 457: el robot anda; todavia no se guarda)
+   (llego el barrido 458: el robot anda; todavia no se guarda)
+   (llego el barrido 459: el robot anda; todavia no se guarda)
+   (llego el barrido 460: el robot anda; todavia no se guarda)
+   (llego el barrido 461: el robot anda; todavia no se guarda)
+   (llego el barrido 462: el robot anda; todavia no se guarda)
+   (llego el barrido 463: el robot anda; todavia no se guarda)
+   (llego el barrido 464: el robot anda; todavia no se guarda)
+   (llego el barrido 465: el robot anda; todavia no se guarda)
+   (llego el barrido 466: el robot anda; todavia no se guarda)
+   (llego el barrido 467: el robot anda; todavia no se guarda)
+   (llego el barrido 468: el robot anda; todavia no se guarda)
+   (llego el barrido 469: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 45, frente   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 45, frente   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90, izq 75, izq 60, izq 30, izq 15, der 30   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 9 (3 barridos):
+   - frente (anotado OBSTACULO): la red dijo LOBITO 2 de 3, PARED 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (1 de 3), izq 60 (1 de 3), izq 45 (2 de 3), izq 30 (1 de 3), izq 15 (1 de 3), frente (2 de 3), der 30 (1 de 3)
+   - Sectores sin dato: 0.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 474: el robot anda; todavia no se guarda)
+   (llego el barrido 475: el robot anda; todavia no se guarda)
+   (llego el barrido 476: el robot anda; todavia no se guarda)
+   (llego el barrido 477: el robot anda; todavia no se guarda)
+>> Escena 9 guardada.
+
+==================================================================
+ Escena 10 de 25   (nota: obstaculo +30 15)
+ Pone un OBSTACULO a la IZQUIERDA (30 grados), a 15 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 478: el robot anda; todavia no se guarda)
+   (llego el barrido 479: el robot anda; todavia no se guarda)
+   (llego el barrido 480: el robot anda; todavia no se guarda)
+   (llego el barrido 481: el robot anda; todavia no se guarda)
+   (llego el barrido 482: el robot anda; todavia no se guarda)
+   (llego el barrido 483: el robot anda; todavia no se guarda)
+   (llego el barrido 484: el robot anda; todavia no se guarda)
+   (llego el barrido 485: el robot anda; todavia no se guarda)
+   (llego el barrido 486: el robot anda; todavia no se guarda)
+>> Apreta Enter cuando la escena este lista (o S y Enter para saltearla).
+   (llego el barrido 487: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 45, der 15, der 30   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45, izq 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90, izq 75, izq 45, frente, der 15, der 60   |   sectores sin dato: 4 de 13
+>> Resumen de la escena 10 (3 barridos):
+   - izq 30 (anotado OBSTACULO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (1 de 3), izq 60 (1 de 3), izq 45 (3 de 3), izq 15 (1 de 3), frente (1 de 3), der 15 (2 de 3), der 30 (1 de 3), der 60 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 492: el robot anda; todavia no se guarda)
+>> Repetimos la escena 10 (lo de recien se borro).
+
+==================================================================
+ Escena 10 de 25   (nota: obstaculo +30 15)
+ Pone un OBSTACULO a la IZQUIERDA (30 grados), a 15 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 493: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, der 15, der 30, der 45   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 10 (3 barridos):
+   - izq 30 (anotado OBSTACULO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 60 (2 de 3), izq 45 (2 de 3), der 15 (1 de 3), der 30 (1 de 3), der 45 (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 498: el robot anda; todavia no se guarda)
+   (llego el barrido 499: el robot anda; todavia no se guarda)
+   (llego el barrido 500: el robot anda; todavia no se guarda)
+   (llego el barrido 501: el robot anda; todavia no se guarda)
+   (llego el barrido 502: el robot anda; todavia no se guarda)
+   (llego el barrido 503: el robot anda; todavia no se guarda)
+>> Escena 10 guardada.
+
+==================================================================
+ Escena 11 de 25   (nota: obstaculo -45 20)
+ Pone un OBSTACULO a la DERECHA (45 grados), a 20 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 504: el robot anda; todavia no se guarda)
+   (llego el barrido 505: el robot anda; todavia no se guarda)
+   (llego el barrido 506: el robot anda; todavia no se guarda)
+   (llego el barrido 507: el robot anda; todavia no se guarda)
+   (llego el barrido 508: el robot anda; todavia no se guarda)
+   (llego el barrido 509: el robot anda; todavia no se guarda)
+   (llego el barrido 510: el robot anda; todavia no se guarda)
+   (llego el barrido 511: el robot anda; todavia no se guarda)
+   (llego el barrido 512: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: frente   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45, izq 30   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 11 (3 barridos):
+   - der 45 (anotado OBSTACULO): la red dijo SALIDA 3 de 3
+   - LOBITO donde no hay canica: izq 45 (2 de 3), izq 30 (1 de 3), frente (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 517: el robot anda; todavia no se guarda)
+   (llego el barrido 518: el robot anda; todavia no se guarda)
+   (llego el barrido 519: el robot anda; todavia no se guarda)
+   (llego el barrido 520: el robot anda; todavia no se guarda)
+   (llego el barrido 521: el robot anda; todavia no se guarda)
+   (llego el barrido 522: el robot anda; todavia no se guarda)
+>> Repetimos la escena 11 (lo de recien se borro).
+
+==================================================================
+ Escena 11 de 25   (nota: obstaculo -45 20)
+ Pone un OBSTACULO a la DERECHA (45 grados), a 20 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 45, izq 30   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 2 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45, izq 30   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 11 (3 barridos):
+   - der 45 (anotado OBSTACULO): la red dijo PARED 1 de 3, SALIDA 2 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 60 (1 de 3), izq 45 (3 de 3), izq 30 (2 de 3)
+   - Sectores sin dato: 1.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 527: el robot anda; todavia no se guarda)
+   (llego el barrido 528: el robot anda; todavia no se guarda)
+   (llego el barrido 529: el robot anda; todavia no se guarda)
+   (llego el barrido 530: el robot anda; todavia no se guarda)
+>> Escena 11 guardada.
+
+==================================================================
+ Escena 12 de 25   (nota: obstaculo +60 25)
+ Pone un OBSTACULO a la IZQUIERDA (60 grados), a 25 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 531: el robot anda; todavia no se guarda)
+   (llego el barrido 532: el robot anda; todavia no se guarda)
+   (llego el barrido 533: el robot anda; todavia no se guarda)
+   (llego el barrido 534: el robot anda; todavia no se guarda)
+   (llego el barrido 535: el robot anda; todavia no se guarda)
+   (llego el barrido 536: el robot anda; todavia no se guarda)
+   (llego el barrido 537: el robot anda; todavia no se guarda)
+   (llego el barrido 538: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 75, izq 60   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90, izq 75, der 30   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 12 (3 barridos):
+   - izq 60 (anotado OBSTACULO): la red dijo LOBITO 2 de 3, PARED 1 de 3
+   - LOBITO donde no hay canica: izq 90 (2 de 3), izq 75 (2 de 3), izq 60 (2 de 3), izq 45 (1 de 3), der 30 (1 de 3)
+   - Sectores sin dato: 0.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 543: el robot anda; todavia no se guarda)
+   (llego el barrido 544: el robot anda; todavia no se guarda)
+   (llego el barrido 545: el robot anda; todavia no se guarda)
+   (llego el barrido 546: el robot anda; todavia no se guarda)
+   (llego el barrido 547: el robot anda; todavia no se guarda)
+>> Repetimos la escena 12 (lo de recien se borro).
+
+==================================================================
+ Escena 12 de 25   (nota: obstaculo +60 25)
+ Pone un OBSTACULO a la IZQUIERDA (60 grados), a 25 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: der 30   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90, izq 45, izq 30   |   sectores sin dato: 5 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90   |   sectores sin dato: 13 de 13
+>> Resumen de la escena 12 (3 barridos):
+   - izq 60 (anotado OBSTACULO): la red dijo PARED 1 de 3, SALIDA 1 de 3, LIBRE 1 de 3
+   - LOBITO donde no hay canica: izq 90 (2 de 3), izq 45 (1 de 3), izq 30 (1 de 3), der 30 (1 de 3)
+   - Sectores sin dato: 6.3 de 13 en promedio
+   OJO: muchos sectores sin dato. Revisa el sensor (cables, pilas) y repeti la escena con R.
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+>> Repetimos la escena 12 (lo de recien se borro).
+
+==================================================================
+ Escena 12 de 25   (nota: obstaculo +60 25)
+ Pone un OBSTACULO a la IZQUIERDA (60 grados), a 25 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 552: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 60, izq 45, izq 15, der 30, der 45, der 60, der 75   |   sectores sin dato: 5 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90   |   sectores sin dato: 13 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90, izq 75, izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 12 (3 barridos):
+   - izq 60 (anotado OBSTACULO): la red dijo LOBITO 2 de 3, LIBRE 1 de 3
+   - LOBITO donde no hay canica: izq 90 (3 de 3), izq 75 (1 de 3), izq 60 (2 de 3), izq 45 (2 de 3), izq 15 (1 de 3), der 30 (1 de 3), der 45 (1 de 3), der 60 (1 de 3), der 75 (1 de 3)
+   - Sectores sin dato: 6.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 557: el robot anda; todavia no se guarda)
+   (llego el barrido 558: el robot anda; todavia no se guarda)
+   (llego el barrido 559: el robot anda; todavia no se guarda)
+   (llego el barrido 560: el robot anda; todavia no se guarda)
+>> Repetimos la escena 12 (lo de recien se borro).
+
+==================================================================
+ Escena 12 de 25   (nota: obstaculo +60 25)
+ Pone un OBSTACULO a la IZQUIERDA (60 grados), a 25 cm del sensor. Nada mas cerca del robot. (La distancia va desde el frente del sensor hasta el borde mas cercano.)
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, izq 75, izq 45, frente, der 15   |   sectores sin dato: 4 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90, izq 60, izq 45   |   sectores sin dato: 2 de 13
+>> Resumen de la escena 12 (3 barridos):
+   - izq 60 (anotado OBSTACULO): la red dijo PARED 1 de 3, LOBITO 2 de 3
+   - LOBITO donde no hay canica: izq 90 (2 de 3), izq 75 (1 de 3), izq 60 (2 de 3), izq 45 (2 de 3), frente (1 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 2.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 565: el robot anda; todavia no se guarda)
+   (llego el barrido 566: el robot anda; todavia no se guarda)
+   (llego el barrido 567: el robot anda; todavia no se guarda)
+   (llego el barrido 568: el robot anda; todavia no se guarda)
+>> Escena 12 guardada.
+
+==================================================================
+ Escena 13 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 30 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 569: el robot anda; todavia no se guarda)
+   (llego el barrido 570: el robot anda; todavia no se guarda)
+   (llego el barrido 571: el robot anda; todavia no se guarda)
+   (llego el barrido 572: el robot anda; todavia no se guarda)
+   (llego el barrido 573: el robot anda; todavia no se guarda)
+   (llego el barrido 574: el robot anda; todavia no se guarda)
+   (llego el barrido 575: el robot anda; todavia no se guarda)
+   (llego el barrido 576: el robot anda; todavia no se guarda)
+   (llego el barrido 577: el robot anda; todavia no se guarda)
+   (llego el barrido 578: el robot anda; todavia no se guarda)
+   (llego el barrido 579: el robot anda; todavia no se guarda)
+   (llego el barrido 580: el robot anda; todavia no se guarda)
+   (llego el barrido 581: el robot anda; todavia no se guarda)
+   (llego el barrido 582: el robot anda; todavia no se guarda)
+   (llego el barrido 583: el robot anda; todavia no se guarda)
+   (llego el barrido 584: el robot anda; todavia no se guarda)
+   (llego el barrido 585: el robot anda; todavia no se guarda)
+   (llego el barrido 586: el robot anda; todavia no se guarda)
+   (llego el barrido 587: el robot anda; todavia no se guarda)
+   (llego el barrido 588: el robot anda; todavia no se guarda)
+   (llego el barrido 589: el robot anda; todavia no se guarda)
+   (llego el barrido 590: el robot anda; todavia no se guarda)
+   (llego el barrido 591: el robot anda; todavia no se guarda)
+   (llego el barrido 592: el robot anda; todavia no se guarda)
+   (llego el barrido 593: el robot anda; todavia no se guarda)
+   (llego el barrido 594: el robot anda; todavia no se guarda)
+   (llego el barrido 595: el robot anda; todavia no se guarda)
+   (llego el barrido 596: el robot anda; todavia no se guarda)
+   (llego el barrido 597: el robot anda; todavia no se guarda)
+   (llego el barrido 598: el robot anda; todavia no se guarda)
+   (llego el barrido 599: el robot anda; todavia no se guarda)
+   (llego el barrido 600: el robot anda; todavia no se guarda)
+   (llego el barrido 601: el robot anda; todavia no se guarda)
+   (llego el barrido 602: el robot anda; todavia no se guarda)
+   (llego el barrido 603: el robot anda; todavia no se guarda)
+   (llego el barrido 604: el robot anda; todavia no se guarda)
+   (llego el barrido 605: el robot anda; todavia no se guarda)
+   (llego el barrido 606: el robot anda; todavia no se guarda)
+   (llego el barrido 607: el robot anda; todavia no se guarda)
+   (llego el barrido 608: el robot anda; todavia no se guarda)
+   (llego el barrido 609: el robot anda; todavia no se guarda)
+   (llego el barrido 610: el robot anda; todavia no se guarda)
+   (llego el barrido 611: el robot anda; todavia no se guarda)
+   (llego el barrido 612: el robot anda; todavia no se guarda)
+   (llego el barrido 613: el robot anda; todavia no se guarda)
+   (llego el barrido 614: el robot anda; todavia no se guarda)
+   (llego el barrido 615: el robot anda; todavia no se guarda)
+   (llego el barrido 616: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: der 90   |   sectores sin dato: 3 de 13
+>> Guardado 2/3   la red ve LOBITO en: der 15   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 13 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - frente (anotado SALIDA): la red dijo PARED 3 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: der 15 (1 de 3), der 90 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 621: el robot anda; todavia no se guarda)
+   (llego el barrido 622: el robot anda; todavia no se guarda)
+   (llego el barrido 623: el robot anda; todavia no se guarda)
+   (llego el barrido 624: el robot anda; todavia no se guarda)
+   (llego el barrido 625: el robot anda; todavia no se guarda)
+>> Escena 13 guardada.
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 626: el robot anda; todavia no se guarda)
+   (llego el barrido 627: el robot anda; todavia no se guarda)
+   (llego el barrido 628: el robot anda; todavia no se guarda)
+   (llego el barrido 629: el robot anda; todavia no se guarda)
+   (llego el barrido 630: el robot anda; todavia no se guarda)
+   (llego el barrido 631: el robot anda; todavia no se guarda)
+   (llego el barrido 632: el robot anda; todavia no se guarda)
+   (llego el barrido 633: el robot anda; todavia no se guarda)
+   (llego el barrido 634: el robot anda; todavia no se guarda)
+   (llego el barrido 635: el robot anda; todavia no se guarda)
+   (llego el barrido 636: el robot anda; todavia no se guarda)
+   (llego el barrido 637: el robot anda; todavia no se guarda)
+   (llego el barrido 638: el robot anda; todavia no se guarda)
+   (llego el barrido 639: el robot anda; todavia no se guarda)
+   (llego el barrido 640: el robot anda; todavia no se guarda)
+   (llego el barrido 641: el robot anda; todavia no se guarda)
+   (llego el barrido 642: el robot anda; todavia no se guarda)
+   (llego el barrido 643: el robot anda; todavia no se guarda)
+   (llego el barrido 644: el robot anda; todavia no se guarda)
+   (llego el barrido 645: el robot anda; todavia no se guarda)
+   (llego el barrido 646: el robot anda; todavia no se guarda)
+   (llego el barrido 647: el robot anda; todavia no se guarda)
+   (llego el barrido 648: el robot anda; todavia no se guarda)
+   (llego el barrido 649: el robot anda; todavia no se guarda)
+   (llego el barrido 650: el robot anda; todavia no se guarda)
+   (llego el barrido 651: el robot anda; todavia no se guarda)
+   (llego el barrido 652: el robot anda; todavia no se guarda)
+   (llego el barrido 653: el robot anda; todavia no se guarda)
+   (llego el barrido 654: el robot anda; todavia no se guarda)
+   (llego el barrido 655: el robot anda; todavia no se guarda)
+   (llego el barrido 656: el robot anda; todavia no se guarda)
+   (llego el barrido 657: el robot anda; todavia no se guarda)
+   (llego el barrido 658: el robot anda; todavia no se guarda)
+   (llego el barrido 659: el robot anda; todavia no se guarda)
+   (llego el barrido 660: el robot anda; todavia no se guarda)
+   (llego el barrido 661: el robot anda; todavia no se guarda)
+   (llego el barrido 662: el robot anda; todavia no se guarda)
+   (llego el barrido 663: el robot anda; todavia no se guarda)
+   (llego el barrido 664: el robot anda; todavia no se guarda)
+   (llego el barrido 665: el robot anda; todavia no se guarda)
+   (llego el barrido 666: el robot anda; todavia no se guarda)
+   (llego el barrido 667: el robot anda; todavia no se guarda)
+   (llego el barrido 668: el robot anda; todavia no se guarda)
+   (llego el barrido 669: el robot anda; todavia no se guarda)
+   (llego el barrido 670: el robot anda; todavia no se guarda)
+   (llego el barrido 671: el robot anda; todavia no se guarda)
+   (llego el barrido 672: el robot anda; todavia no se guarda)
+   (llego el barrido 673: el robot anda; todavia no se guarda)
+   (llego el barrido 674: el robot anda; todavia no se guarda)
+   (llego el barrido 675: el robot anda; todavia no se guarda)
+   (llego el barrido 676: el robot anda; todavia no se guarda)
+   (llego el barrido 677: el robot anda; todavia no se guarda)
+   (llego el barrido 678: el robot anda; todavia no se guarda)
+   (llego el barrido 679: el robot anda; todavia no se guarda)
+   (llego el barrido 680: el robot anda; todavia no se guarda)
+   (llego el barrido 681: el robot anda; todavia no se guarda)
+   (llego el barrido 682: el robot anda; todavia no se guarda)
+   (llego el barrido 683: el robot anda; todavia no se guarda)
+   (llego el barrido 684: el robot anda; todavia no se guarda)
+   (llego el barrido 685: el robot anda; todavia no se guarda)
+   (llego el barrido 686: el robot anda; todavia no se guarda)
+   (llego el barrido 687: el robot anda; todavia no se guarda)
+   (llego el barrido 688: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - frente (anotado SALIDA): la red dijo PARED 3 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: ninguno
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 693: el robot anda; todavia no se guarda)
+   (llego el barrido 694: el robot anda; todavia no se guarda)
+>> Repetimos la escena 14 (lo de recien se borro).
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 695: el robot anda; todavia no se guarda)
+   (llego el barrido 696: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90   |   sectores sin dato: 5 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - frente (anotado SALIDA): la red dijo PARED 3 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3)
+   - Sectores sin dato: 1.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+>> Repetimos la escena 14 (lo de recien se borro).
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 701: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45, izq 30, izq 15, frente   |   sectores sin dato: 9 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - frente (anotado SALIDA): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 2 de 3, LIBRE 1 de 3
+   - LOBITO donde no hay canica: izq 45 (1 de 3), izq 30 (1 de 3), izq 15 (1 de 3), frente (1 de 3)
+   - Sectores sin dato: 3.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+>> Repetimos la escena 14 (lo de recien se borro).
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 15, frente   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 30   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo LOBITO 1 de 3, PARED 2 de 3
+   - frente (anotado SALIDA): la red dijo LOBITO 1 de 3, PARED 2 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 30 (1 de 3), izq 15 (1 de 3), frente (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 710: el robot anda; todavia no se guarda)
+>> Repetimos la escena 14 (lo de recien se borro).
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90, der 60, der 75, der 90   |   sectores sin dato: 7 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90, izq 45, izq 30, izq 15, frente   |   sectores sin dato: 5 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo SALIDA 1 de 3, LOBITO 1 de 3, PARED 1 de 3
+   - frente (anotado SALIDA): la red dijo SALIDA 1 de 3, LOBITO 1 de 3, PARED 1 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 90 (2 de 3), izq 45 (1 de 3), izq 30 (1 de 3), izq 15 (1 de 3), frente (1 de 3), der 60 (1 de 3), der 75 (1 de 3), der 90 (1 de 3)
+   - Sectores sin dato: 4.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 715: el robot anda; todavia no se guarda)
+   (llego el barrido 716: el robot anda; todavia no se guarda)
+   (llego el barrido 717: el robot anda; todavia no se guarda)
+   (llego el barrido 718: el robot anda; todavia no se guarda)
+   (llego el barrido 719: el robot anda; todavia no se guarda)
+   (llego el barrido 720: el robot anda; todavia no se guarda)
+   (llego el barrido 721: el robot anda; todavia no se guarda)
+   (llego el barrido 722: el robot anda; todavia no se guarda)
+   (llego el barrido 723: el robot anda; todavia no se guarda)
+   (llego el barrido 724: el robot anda; todavia no se guarda)
+   (llego el barrido 725: el robot anda; todavia no se guarda)
+   (llego el barrido 726: el robot anda; todavia no se guarda)
+   (llego el barrido 727: el robot anda; todavia no se guarda)
+   (llego el barrido 728: el robot anda; todavia no se guarda)
+   (llego el barrido 729: el robot anda; todavia no se guarda)
+   (llego el barrido 730: el robot anda; todavia no se guarda)
+   (llego el barrido 731: el robot anda; todavia no se guarda)
+   (llego el barrido 732: el robot anda; todavia no se guarda)
+   (llego el barrido 733: el robot anda; todavia no se guarda)
+   (llego el barrido 734: el robot anda; todavia no se guarda)
+   (llego el barrido 735: el robot anda; todavia no se guarda)
+   (llego el barrido 736: el robot anda; todavia no se guarda)
+>> Repetimos la escena 14 (lo de recien se borro).
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: der 45, der 60, der 75, der 90   |   sectores sin dato: 2 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 30   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: frente, der 15   |   sectores sin dato: 4 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - frente (anotado SALIDA): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 30 (1 de 3), frente (1 de 3), der 15 (1 de 3), der 45 (1 de 3), der 60 (1 de 3), der 75 (1 de 3), der 90 (1 de 3)
+   - Sectores sin dato: 2.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 741: el robot anda; todavia no se guarda)
+   (llego el barrido 742: el robot anda; todavia no se guarda)
+   (llego el barrido 743: el robot anda; todavia no se guarda)
+   (llego el barrido 744: el robot anda; todavia no se guarda)
+   (llego el barrido 745: el robot anda; todavia no se guarda)
+>> Repetimos la escena 14 (lo de recien se borro).
+
+==================================================================
+ Escena 14 de 25   (nota: salida -15 +15)
+ Pone el robot mirando DERECHO A LA SALIDA (el estrecho), a unos 60 cm de la boca. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 30   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 14 (3 barridos):
+   - izq 15 (anotado SALIDA): la red dijo OBSTACULO 1 de 3, PARED 2 de 3
+   - frente (anotado SALIDA): la red dijo PARED 3 de 3
+   - der 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 45 (1 de 3), izq 30 (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 750: el robot anda; todavia no se guarda)
+   (llego el barrido 751: el robot anda; todavia no se guarda)
+   (llego el barrido 752: el robot anda; todavia no se guarda)
+>> Escena 14 guardada.
+
+==================================================================
+ Escena 15 de 25   (nota: salida +30 +60)
+ Gira el robot para que la SALIDA le quede a la IZQUIERDA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 753: el robot anda; todavia no se guarda)
+   (llego el barrido 754: el robot anda; todavia no se guarda)
+   (llego el barrido 755: el robot anda; todavia no se guarda)
+   (llego el barrido 756: el robot anda; todavia no se guarda)
+   (llego el barrido 757: el robot anda; todavia no se guarda)
+   (llego el barrido 758: el robot anda; todavia no se guarda)
+   (llego el barrido 759: el robot anda; todavia no se guarda)
+   (llego el barrido 760: el robot anda; todavia no se guarda)
+   (llego el barrido 761: el robot anda; todavia no se guarda)
+   (llego el barrido 762: el robot anda; todavia no se guarda)
+   (llego el barrido 763: el robot anda; todavia no se guarda)
+   (llego el barrido 764: el robot anda; todavia no se guarda)
+   (llego el barrido 765: el robot anda; todavia no se guarda)
+   (llego el barrido 766: el robot anda; todavia no se guarda)
+   (llego el barrido 767: el robot anda; todavia no se guarda)
+   (llego el barrido 768: el robot anda; todavia no se guarda)
+   (llego el barrido 769: el robot anda; todavia no se guarda)
+   (llego el barrido 770: el robot anda; todavia no se guarda)
+   (llego el barrido 771: el robot anda; todavia no se guarda)
+   (llego el barrido 772: el robot anda; todavia no se guarda)
+   (llego el barrido 773: el robot anda; todavia no se guarda)
+   (llego el barrido 774: el robot anda; todavia no se guarda)
+   (llego el barrido 775: el robot anda; todavia no se guarda)
+   (llego el barrido 776: el robot anda; todavia no se guarda)
+   (llego el barrido 777: el robot anda; todavia no se guarda)
+   (llego el barrido 778: el robot anda; todavia no se guarda)
+   (llego el barrido 779: el robot anda; todavia no se guarda)
+   (llego el barrido 780: el robot anda; todavia no se guarda)
+   (llego el barrido 781: el robot anda; todavia no se guarda)
+   (llego el barrido 782: el robot anda; todavia no se guarda)
+   (llego el barrido 783: el robot anda; todavia no se guarda)
+   (llego el barrido 784: el robot anda; todavia no se guarda)
+   (llego el barrido 785: el robot anda; todavia no se guarda)
+   (llego el barrido 786: el robot anda; todavia no se guarda)
+   (llego el barrido 787: el robot anda; todavia no se guarda)
+   (llego el barrido 788: el robot anda; todavia no se guarda)
+   (llego el barrido 789: el robot anda; todavia no se guarda)
+   (llego el barrido 790: el robot anda; todavia no se guarda)
+   (llego el barrido 791: el robot anda; todavia no se guarda)
+   (llego el barrido 792: el robot anda; todavia no se guarda)
+   (llego el barrido 793: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90   |   sectores sin dato: 8 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90, izq 75   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: der 30   |   sectores sin dato: 4 de 13
+>> Resumen de la escena 15 (3 barridos):
+   - izq 60 (anotado SALIDA): la red dijo LIBRE 1 de 3, SALIDA 1 de 3, PARED 1 de 3
+   - izq 45 (anotado SALIDA): la red dijo LIBRE 1 de 3, SALIDA 1 de 3, PARED 1 de 3
+   - izq 30 (anotado SALIDA): la red dijo LIBRE 1 de 3, SALIDA 1 de 3, PARED 1 de 3
+   - LOBITO donde no hay canica: izq 90 (2 de 3), izq 75 (1 de 3), der 30 (1 de 3)
+   - Sectores sin dato: 4.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 798: el robot anda; todavia no se guarda)
+   (llego el barrido 799: el robot anda; todavia no se guarda)
+>> Repetimos la escena 15 (lo de recien se borro).
+
+==================================================================
+ Escena 15 de 25   (nota: salida +30 +60)
+ Gira el robot para que la SALIDA le quede a la IZQUIERDA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: frente   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 15 (3 barridos):
+   - izq 60 (anotado SALIDA): la red dijo PARED 3 de 3
+   - izq 45 (anotado SALIDA): la red dijo PARED 3 de 3
+   - izq 30 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: frente (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 804: el robot anda; todavia no se guarda)
+   (llego el barrido 805: el robot anda; todavia no se guarda)
+   (llego el barrido 806: el robot anda; todavia no se guarda)
+   (llego el barrido 807: el robot anda; todavia no se guarda)
+>> Repetimos la escena 15 (lo de recien se borro).
+
+==================================================================
+ Escena 15 de 25   (nota: salida +30 +60)
+ Gira el robot para que la SALIDA le quede a la IZQUIERDA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 808: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 15 (3 barridos):
+   - izq 60 (anotado SALIDA): la red dijo PARED 3 de 3
+   - izq 45 (anotado SALIDA): la red dijo PARED 3 de 3
+   - izq 30 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: ninguno
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 813: el robot anda; todavia no se guarda)
+   (llego el barrido 814: el robot anda; todavia no se guarda)
+   (llego el barrido 815: el robot anda; todavia no se guarda)
+   (llego el barrido 816: el robot anda; todavia no se guarda)
+>> Repetimos la escena 15 (lo de recien se borro).
+
+==================================================================
+ Escena 15 de 25   (nota: salida +30 +60)
+ Gira el robot para que la SALIDA le quede a la IZQUIERDA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 817: el robot anda; todavia no se guarda)
+   (llego el barrido 818: el robot anda; todavia no se guarda)
+   (llego el barrido 819: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 75   |   sectores sin dato: 2 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 15 (3 barridos):
+   - izq 60 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - izq 45 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - izq 30 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 75 (1 de 3)
+   - Sectores sin dato: 0.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 824: el robot anda; todavia no se guarda)
+   (llego el barrido 825: el robot anda; todavia no se guarda)
+>> Escena 15 guardada.
+
+==================================================================
+ Escena 16 de 25   (nota: salida -60 -30)
+ Gira el robot para que la SALIDA le quede a la DERECHA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 826: el robot anda; todavia no se guarda)
+   (llego el barrido 827: el robot anda; todavia no se guarda)
+   (llego el barrido 828: el robot anda; todavia no se guarda)
+   (llego el barrido 829: el robot anda; todavia no se guarda)
+   (llego el barrido 830: el robot anda; todavia no se guarda)
+   (llego el barrido 831: el robot anda; todavia no se guarda)
+   (llego el barrido 832: el robot anda; todavia no se guarda)
+   (llego el barrido 833: el robot anda; todavia no se guarda)
+   (llego el barrido 834: el robot anda; todavia no se guarda)
+   (llego el barrido 835: el robot anda; todavia no se guarda)
+   (llego el barrido 836: el robot anda; todavia no se guarda)
+   (llego el barrido 837: el robot anda; todavia no se guarda)
+   (llego el barrido 838: el robot anda; todavia no se guarda)
+   (llego el barrido 839: el robot anda; todavia no se guarda)
+   (llego el barrido 840: el robot anda; todavia no se guarda)
+   (llego el barrido 841: el robot anda; todavia no se guarda)
+   (llego el barrido 842: el robot anda; todavia no se guarda)
+   (llego el barrido 843: el robot anda; todavia no se guarda)
+   (llego el barrido 844: el robot anda; todavia no se guarda)
+   (llego el barrido 845: el robot anda; todavia no se guarda)
+   (llego el barrido 846: el robot anda; todavia no se guarda)
+   (llego el barrido 847: el robot anda; todavia no se guarda)
+   (llego el barrido 848: el robot anda; todavia no se guarda)
+   (llego el barrido 849: el robot anda; todavia no se guarda)
+   (llego el barrido 850: el robot anda; todavia no se guarda)
+   (llego el barrido 851: el robot anda; todavia no se guarda)
+   (llego el barrido 852: el robot anda; todavia no se guarda)
+   (llego el barrido 853: el robot anda; todavia no se guarda)
+   (llego el barrido 854: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 15, der 15, der 30, der 45   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 30   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 45, izq 15   |   sectores sin dato: 3 de 13
+>> Resumen de la escena 16 (3 barridos):
+   - der 30 (anotado SALIDA): la red dijo LOBITO 1 de 3, PARED 1 de 3, SALIDA 1 de 3
+   - der 45 (anotado SALIDA): la red dijo LOBITO 1 de 3, PARED 2 de 3
+   - der 60 (anotado SALIDA): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 45 (1 de 3), izq 30 (1 de 3), izq 15 (2 de 3), der 15 (1 de 3), der 30 (1 de 3), der 45 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 859: el robot anda; todavia no se guarda)
+   (llego el barrido 860: el robot anda; todavia no se guarda)
+   (llego el barrido 861: el robot anda; todavia no se guarda)
+>> Repetimos la escena 16 (lo de recien se borro).
+
+==================================================================
+ Escena 16 de 25   (nota: salida -60 -30)
+ Gira el robot para que la SALIDA le quede a la DERECHA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: der 15, der 30, der 60   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 60, izq 45   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 16 (3 barridos):
+   - der 30 (anotado SALIDA): la red dijo LOBITO 1 de 3, PARED 2 de 3
+   - der 45 (anotado SALIDA): la red dijo PARED 3 de 3
+   - der 60 (anotado SALIDA): la red dijo LOBITO 1 de 3, PARED 2 de 3
+   - LOBITO donde no hay canica: izq 60 (2 de 3), izq 45 (2 de 3), der 15 (1 de 3), der 30 (1 de 3), der 60 (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 866: el robot anda; todavia no se guarda)
+   (llego el barrido 867: el robot anda; todavia no se guarda)
+   (llego el barrido 868: el robot anda; todavia no se guarda)
+>> Repetimos la escena 16 (lo de recien se borro).
+
+==================================================================
+ Escena 16 de 25   (nota: salida -60 -30)
+ Gira el robot para que la SALIDA le quede a la DERECHA (entre 30 y 60 grados). Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 2 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 90, izq 75, izq 60, frente, der 15, der 45   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 30, frente, der 30   |   sectores sin dato: 2 de 13
+>> Resumen de la escena 16 (3 barridos):
+   - der 30 (anotado SALIDA): la red dijo SALIDA 1 de 3, PARED 1 de 3, LOBITO 1 de 3
+   - der 45 (anotado SALIDA): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - der 60 (anotado SALIDA): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 90 (1 de 3), izq 75 (1 de 3), izq 60 (1 de 3), izq 30 (1 de 3), frente (2 de 3), der 15 (1 de 3), der 30 (1 de 3), der 45 (1 de 3)
+   - Sectores sin dato: 1.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 873: el robot anda; todavia no se guarda)
+   (llego el barrido 874: el robot anda; todavia no se guarda)
+>> Escena 16 guardada.
+
+==================================================================
+ Escena 17 de 25   (nota: salida -30 +30)
+ Pone el robot justo EN LA BOCA de la salida, mirando hacia afuera. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 875: el robot anda; todavia no se guarda)
+   (llego el barrido 876: el robot anda; todavia no se guarda)
+Exception in thread "main" com.fazecast.jSerialComm.SerialPortTimeoutException: The write operation timed out before all data was written.
+	at com.fazecast.jSerialComm.SerialPort$SerialPortOutputStream.write(SerialPort.java:2285)
+	at com.fazecast.jSerialComm.SerialPort$SerialPortOutputStream.write(SerialPort.java:2260)
+	at orquitas.herramientas.PruebaDeteccion.enviar(PruebaDeteccion.java:185)
+	at orquitas.herramientas.TomaGuiada.atender(TomaGuiada.java:359)
+	at orquitas.herramientas.TomaGuiada.main(TomaGuiada.java:345)
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1814/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Conectado.
+Toma guiada: 25 escenas, 3 barridos por escena. El robot queda quieto. Ctrl+C para cortar.
+Se guarda en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv (sigo desde la escena 17)
+
+==================================================================
+ Escena 17 de 25   (nota: salida -30 +30)
+ Pone el robot justo EN LA BOCA de la salida, mirando hacia afuera. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 1: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1829/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Abriendo COM4 (intento 3 de 6)...
+Abriendo COM4 (intento 4 de 6)...
+Abriendo COM4 (intento 5 de 6)...
+Abriendo COM4 (intento 6 de 6)...
+No se pudo abrir COM4. Revisar: robot prendido y LED del HC-06 parpadeando; ninguna otra ventana (PuTTY, otro .bat) con el puerto abierto. Si el LED queda fijo sin conectar, cortar la energia del robot unos segundos y volver a probar.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1833/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Abriendo COM4 (intento 3 de 6)...
+Abriendo COM4 (intento 4 de 6)...
+Abriendo COM4 (intento 5 de 6)...
+Abriendo COM4 (intento 6 de 6)...
+No se pudo abrir COM4. Revisar: robot prendido y LED del HC-06 parpadeando; ninguna otra ventana (PuTTY, otro .bat) con el puerto abierto. Si el LED queda fijo sin conectar, cortar la energia del robot unos segundos y volver a probar.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1836/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Conectado.
+Toma guiada: 25 escenas, 3 barridos por escena. El robot queda quieto. Ctrl+C para cortar.
+Se guarda en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv (sigo desde la escena 17)
+
+==================================================================
+ Escena 17 de 25   (nota: salida -30 +30)
+ Pone el robot justo EN LA BOCA de la salida, mirando hacia afuera. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1837/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Conectado.
+Toma guiada: 25 escenas, 3 barridos por escena. El robot queda quieto. Ctrl+C para cortar.
+Se guarda en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv (sigo desde la escena 17)
+
+==================================================================
+ Escena 17 de 25   (nota: salida -30 +30)
+ Pone el robot justo EN LA BOCA de la salida, mirando hacia afuera. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 1: el robot anda; todavia no se guarda)
+   (llego el barrido 2: el robot anda; todavia no se guarda)
+   (llego el barrido 3: el robot anda; todavia no se guarda)
+   (llego el barrido 4: el robot anda; todavia no se guarda)
+   (llego el barrido 5: el robot anda; todavia no se guarda)
+   (llego el barrido 6: el robot anda; todavia no se guarda)
+   (llego el barrido 7: el robot anda; todavia no se guarda)
+   (llego el barrido 8: el robot anda; todavia no se guarda)
+   (llego el barrido 9: el robot anda; todavia no se guarda)
+   (llego el barrido 10: el robot anda; todavia no se guarda)
+   (llego el barrido 11: el robot anda; todavia no se guarda)
+   (llego el barrido 12: el robot anda; todavia no se guarda)
+   (llego el barrido 13: el robot anda; todavia no se guarda)
+   (llego el barrido 14: el robot anda; todavia no se guarda)
+   (llego el barrido 15: el robot anda; todavia no se guarda)
+   (llego el barrido 16: el robot anda; todavia no se guarda)
+   (llego el barrido 17: el robot anda; todavia no se guarda)
+   (llego el barrido 18: el robot anda; todavia no se guarda)
+   (llego el barrido 19: el robot anda; todavia no se guarda)
+   (llego el barrido 20: el robot anda; todavia no se guarda)
+Exception in thread "main" com.fazecast.jSerialComm.SerialPortTimeoutException: The write operation timed out before all data was written.
+	at com.fazecast.jSerialComm.SerialPort$SerialPortOutputStream.write(SerialPort.java:2285)
+	at com.fazecast.jSerialComm.SerialPort$SerialPortOutputStream.write(SerialPort.java:2260)
+	at orquitas.herramientas.PruebaDeteccion.enviar(PruebaDeteccion.java:185)
+	at orquitas.herramientas.TomaGuiada.atender(TomaGuiada.java:359)
+	at orquitas.herramientas.TomaGuiada.main(TomaGuiada.java:345)
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1839/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Abriendo COM4 (intento 3 de 6)...
+Conectado.
+Toma guiada: 25 escenas, 3 barridos por escena. El robot queda quieto. Ctrl+C para cortar.
+Se guarda en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv (sigo desde la escena 17)
+
+==================================================================
+ Escena 17 de 25   (nota: salida -30 +30)
+ Pone el robot justo EN LA BOCA de la salida, mirando hacia afuera. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 1: el robot anda; todavia no se guarda)
+   (llego el barrido 2: el robot anda; todavia no se guarda)
+   (llego el barrido 3: el robot anda; todavia no se guarda)
+   (llego el barrido 4: el robot anda; todavia no se guarda)
+   (llego el barrido 5: el robot anda; todavia no se guarda)
+   (llego el barrido 6: el robot anda; todavia no se guarda)
+   (llego el barrido 7: el robot anda; todavia no se guarda)
+   (llego el barrido 8: el robot anda; todavia no se guarda)
+   (llego el barrido 9: el robot anda; todavia no se guarda)
+   (llego el barrido 10: el robot anda; todavia no se guarda)
+   (llego el barrido 11: el robot anda; todavia no se guarda)
+   (llego el barrido 12: el robot anda; todavia no se guarda)
+   (llego el barrido 13: el robot anda; todavia no se guarda)
+   (llego el barrido 14: el robot anda; todavia no se guarda)
+   (llego el barrido 15: el robot anda; todavia no se guarda)
+   (llego el barrido 16: el robot anda; todavia no se guarda)
+   (llego el barrido 17: el robot anda; todavia no se guarda)
+   (llego el barrido 18: el robot anda; todavia no se guarda)
+   (llego el barrido 19: el robot anda; todavia no se guarda)
+   (llego el barrido 20: el robot anda; todavia no se guarda)
+   (llego el barrido 21: el robot anda; todavia no se guarda)
+   (llego el barrido 22: el robot anda; todavia no se guarda)
+   (llego el barrido 23: el robot anda; todavia no se guarda)
+   (llego el barrido 24: el robot anda; todavia no se guarda)
+   (llego el barrido 25: el robot anda; todavia no se guarda)
+   (llego el barrido 26: el robot anda; todavia no se guarda)
+   (llego el barrido 27: el robot anda; todavia no se guarda)
+   (llego el barrido 28: el robot anda; todavia no se guarda)
+   (llego el barrido 29: el robot anda; todavia no se guarda)
+   (llego el barrido 30: el robot anda; todavia no se guarda)
+   (llego el barrido 31: el robot anda; todavia no se guarda)
+   (llego el barrido 32: el robot anda; todavia no se guarda)
+   (llego el barrido 33: el robot anda; todavia no se guarda)
+   (llego el barrido 34: el robot anda; todavia no se guarda)
+   (llego el barrido 35: el robot anda; todavia no se guarda)
+   (llego el barrido 36: el robot anda; todavia no se guarda)
+   (llego el barrido 37: el robot anda; todavia no se guarda)
+   (llego el barrido 38: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 75, izq 45   |   sectores sin dato: 12 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 2 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 17 (3 barridos):
+   - izq 30 (anotado SALIDA): la red dijo LIBRE 1 de 3, SALIDA 1 de 3, PARED 1 de 3
+   - izq 15 (anotado SALIDA): la red dijo LIBRE 1 de 3, PARED 2 de 3
+   - frente (anotado SALIDA): la red dijo LIBRE 1 de 3, PARED 2 de 3
+   - der 15 (anotado SALIDA): la red dijo LIBRE 1 de 3, PARED 2 de 3
+   - der 30 (anotado SALIDA): la red dijo LIBRE 1 de 3, PARED 2 de 3
+   - LOBITO donde no hay canica: izq 75 (1 de 3), izq 45 (1 de 3)
+   - Sectores sin dato: 5.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 43: el robot anda; todavia no se guarda)
+   (llego el barrido 44: el robot anda; todavia no se guarda)
+   (llego el barrido 45: el robot anda; todavia no se guarda)
+   (llego el barrido 46: el robot anda; todavia no se guarda)
+   (llego el barrido 47: el robot anda; todavia no se guarda)
+   (llego el barrido 48: el robot anda; todavia no se guarda)
+   (llego el barrido 49: el robot anda; todavia no se guarda)
+   (llego el barrido 50: el robot anda; todavia no se guarda)
+>> Repetimos la escena 17 (lo de recien se borro).
+
+==================================================================
+ Escena 17 de 25   (nota: salida -30 +30)
+ Pone el robot justo EN LA BOCA de la salida, mirando hacia afuera. Sin canicas ni obstaculos.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 51: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: frente, der 15, der 30   |   sectores sin dato: 4 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: frente   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 17 (3 barridos):
+   - izq 30 (anotado SALIDA): la red dijo SALIDA 1 de 3, PARED 2 de 3
+   - izq 15 (anotado SALIDA): la red dijo PARED 3 de 3
+   - frente (anotado SALIDA): la red dijo LOBITO 2 de 3, SALIDA 1 de 3
+   - der 15 (anotado SALIDA): la red dijo LOBITO 1 de 3, SALIDA 1 de 3, PARED 1 de 3
+   - der 30 (anotado SALIDA): la red dijo LOBITO 1 de 3, SALIDA 1 de 3, PARED 1 de 3
+   - LOBITO donde no hay canica: frente (2 de 3), der 15 (1 de 3), der 30 (1 de 3)
+   - Sectores sin dato: 1.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+>> Escena 17 guardada.
+
+==================================================================
+ Escena 18 de 25   (nota: lobito 0 15 ; obstaculo +30 20)
+ Pone una CANICA DERECHO ADELANTE, a 15 cm del sensor, y un OBSTACULO a la IZQUIERDA (30 grados), a 20 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 56: el robot anda; todavia no se guarda)
+   (llego el barrido 57: el robot anda; todavia no se guarda)
+   (llego el barrido 58: el robot anda; todavia no se guarda)
+   (llego el barrido 59: el robot anda; todavia no se guarda)
+   (llego el barrido 60: el robot anda; todavia no se guarda)
+   (llego el barrido 61: el robot anda; todavia no se guarda)
+   (llego el barrido 62: el robot anda; todavia no se guarda)
+   (llego el barrido 63: el robot anda; todavia no se guarda)
+   (llego el barrido 64: el robot anda; todavia no se guarda)
+   (llego el barrido 65: el robot anda; todavia no se guarda)
+   (llego el barrido 66: el robot anda; todavia no se guarda)
+   (llego el barrido 67: el robot anda; todavia no se guarda)
+   (llego el barrido 68: el robot anda; todavia no se guarda)
+   (llego el barrido 69: el robot anda; todavia no se guarda)
+   (llego el barrido 70: el robot anda; todavia no se guarda)
+   (llego el barrido 71: el robot anda; todavia no se guarda)
+   (llego el barrido 72: el robot anda; todavia no se guarda)
+   (llego el barrido 73: el robot anda; todavia no se guarda)
+   (llego el barrido 74: el robot anda; todavia no se guarda)
+   (llego el barrido 75: el robot anda; todavia no se guarda)
+   (llego el barrido 76: el robot anda; todavia no se guarda)
+   (llego el barrido 77: el robot anda; todavia no se guarda)
+   (llego el barrido 78: el robot anda; todavia no se guarda)
+   (llego el barrido 79: el robot anda; todavia no se guarda)
+   (llego el barrido 80: el robot anda; todavia no se guarda)
+   (llego el barrido 81: el robot anda; todavia no se guarda)
+   (llego el barrido 82: el robot anda; todavia no se guarda)
+   (llego el barrido 83: el robot anda; todavia no se guarda)
+   (llego el barrido 84: el robot anda; todavia no se guarda)
+   (llego el barrido 85: el robot anda; todavia no se guarda)
+   (llego el barrido 86: el robot anda; todavia no se guarda)
+   (llego el barrido 87: el robot anda; todavia no se guarda)
+   (llego el barrido 88: el robot anda; todavia no se guarda)
+   (llego el barrido 89: el robot anda; todavia no se guarda)
+   (llego el barrido 90: el robot anda; todavia no se guarda)
+   (llego el barrido 91: el robot anda; todavia no se guarda)
+   (llego el barrido 92: el robot anda; todavia no se guarda)
+   (llego el barrido 93: el robot anda; todavia no se guarda)
+   (llego el barrido 94: el robot anda; todavia no se guarda)
+   (llego el barrido 95: el robot anda; todavia no se guarda)
+   (llego el barrido 96: el robot anda; todavia no se guarda)
+   (llego el barrido 97: el robot anda; todavia no se guarda)
+   (llego el barrido 98: el robot anda; todavia no se guarda)
+   (llego el barrido 99: el robot anda; todavia no se guarda)
+   (llego el barrido 100: el robot anda; todavia no se guarda)
+   (llego el barrido 101: el robot anda; todavia no se guarda)
+   (llego el barrido 102: el robot anda; todavia no se guarda)
+   (llego el barrido 103: el robot anda; todavia no se guarda)
+   (llego el barrido 104: el robot anda; todavia no se guarda)
+   (llego el barrido 105: el robot anda; todavia no se guarda)
+   (llego el barrido 106: el robot anda; todavia no se guarda)
+   (llego el barrido 107: el robot anda; todavia no se guarda)
+   (llego el barrido 108: el robot anda; todavia no se guarda)
+   (llego el barrido 109: el robot anda; todavia no se guarda)
+   (llego el barrido 110: el robot anda; todavia no se guarda)
+   (llego el barrido 111: el robot anda; todavia no se guarda)
+   (llego el barrido 112: el robot anda; todavia no se guarda)
+   (llego el barrido 113: el robot anda; todavia no se guarda)
+   (llego el barrido 114: el robot anda; todavia no se guarda)
+   (llego el barrido 115: el robot anda; todavia no se guarda)
+   (llego el barrido 116: el robot anda; todavia no se guarda)
+   (llego el barrido 117: el robot anda; todavia no se guarda)
+   (llego el barrido 118: el robot anda; todavia no se guarda)
+   (llego el barrido 119: el robot anda; todavia no se guarda)
+   (llego el barrido 120: el robot anda; todavia no se guarda)
+   (llego el barrido 121: el robot anda; todavia no se guarda)
+   (llego el barrido 122: el robot anda; todavia no se guarda)
+   (llego el barrido 123: el robot anda; todavia no se guarda)
+   (llego el barrido 124: el robot anda; todavia no se guarda)
+   (llego el barrido 125: el robot anda; todavia no se guarda)
+   (llego el barrido 126: el robot anda; todavia no se guarda)
+   (llego el barrido 127: el robot anda; todavia no se guarda)
+   (llego el barrido 128: el robot anda; todavia no se guarda)
+   (llego el barrido 129: el robot anda; todavia no se guarda)
+   (llego el barrido 130: el robot anda; todavia no se guarda)
+   (llego el barrido 131: el robot anda; todavia no se guarda)
+   (llego el barrido 132: el robot anda; todavia no se guarda)
+   (llego el barrido 133: el robot anda; todavia no se guarda)
+   (llego el barrido 134: el robot anda; todavia no se guarda)
+   (llego el barrido 135: el robot anda; todavia no se guarda)
+   (llego el barrido 136: el robot anda; todavia no se guarda)
+   (llego el barrido 137: el robot anda; todavia no se guarda)
+   (llego el barrido 138: el robot anda; todavia no se guarda)
+   (llego el barrido 139: el robot anda; todavia no se guarda)
+   (llego el barrido 140: el robot anda; todavia no se guarda)
+   (llego el barrido 141: el robot anda; todavia no se guarda)
+   (llego el barrido 142: el robot anda; todavia no se guarda)
+   (llego el barrido 143: el robot anda; todavia no se guarda)
+   (llego el barrido 144: el robot anda; todavia no se guarda)
+   (llego el barrido 145: el robot anda; todavia no se guarda)
+   (llego el barrido 146: el robot anda; todavia no se guarda)
+   (llego el barrido 147: el robot anda; todavia no se guarda)
+   (llego el barrido 148: el robot anda; todavia no se guarda)
+   (llego el barrido 149: el robot anda; todavia no se guarda)
+   (llego el barrido 150: el robot anda; todavia no se guarda)
+   (llego el barrido 151: el robot anda; todavia no se guarda)
+   (llego el barrido 152: el robot anda; todavia no se guarda)
+   (llego el barrido 153: el robot anda; todavia no se guarda)
+   (llego el barrido 154: el robot anda; todavia no se guarda)
+   (llego el barrido 155: el robot anda; todavia no se guarda)
+   (llego el barrido 156: el robot anda; todavia no se guarda)
+   (llego el barrido 157: el robot anda; todavia no se guarda)
+   (llego el barrido 158: el robot anda; todavia no se guarda)
+   (llego el barrido 159: el robot anda; todavia no se guarda)
+   (llego el barrido 160: el robot anda; todavia no se guarda)
+   (llego el barrido 161: el robot anda; todavia no se guarda)
+   (llego el barrido 162: el robot anda; todavia no se guarda)
+   (llego el barrido 163: el robot anda; todavia no se guarda)
+   (llego el barrido 164: el robot anda; todavia no se guarda)
+   (llego el barrido 165: el robot anda; todavia no se guarda)
+   (llego el barrido 166: el robot anda; todavia no se guarda)
+   (llego el barrido 167: el robot anda; todavia no se guarda)
+   (llego el barrido 168: el robot anda; todavia no se guarda)
+   (llego el barrido 169: el robot anda; todavia no se guarda)
+   (llego el barrido 170: el robot anda; todavia no se guarda)
+   (llego el barrido 171: el robot anda; todavia no se guarda)
+   (llego el barrido 172: el robot anda; todavia no se guarda)
+   (llego el barrido 173: el robot anda; todavia no se guarda)
+   (llego el barrido 174: el robot anda; todavia no se guarda)
+   (llego el barrido 175: el robot anda; todavia no se guarda)
+   (llego el barrido 176: el robot anda; todavia no se guarda)
+   (llego el barrido 177: el robot anda; todavia no se guarda)
+   (llego el barrido 178: el robot anda; todavia no se guarda)
+   (llego el barrido 179: el robot anda; todavia no se guarda)
+   (llego el barrido 180: el robot anda; todavia no se guarda)
+   (llego el barrido 181: el robot anda; todavia no se guarda)
+   (llego el barrido 182: el robot anda; todavia no se guarda)
+   (llego el barrido 183: el robot anda; todavia no se guarda)
+   (llego el barrido 184: el robot anda; todavia no se guarda)
+   (llego el barrido 185: el robot anda; todavia no se guarda)
+   (llego el barrido 186: el robot anda; todavia no se guarda)
+   (llego el barrido 187: el robot anda; todavia no se guarda)
+   (llego el barrido 188: el robot anda; todavia no se guarda)
+   (llego el barrido 189: el robot anda; todavia no se guarda)
+   (llego el barrido 190: el robot anda; todavia no se guarda)
+   (llego el barrido 191: el robot anda; todavia no se guarda)
+   (llego el barrido 192: el robot anda; todavia no se guarda)
+   (llego el barrido 193: el robot anda; todavia no se guarda)
+   (llego el barrido 194: el robot anda; todavia no se guarda)
+   (llego el barrido 195: el robot anda; todavia no se guarda)
+   (llego el barrido 196: el robot anda; todavia no se guarda)
+   (llego el barrido 197: el robot anda; todavia no se guarda)
+   (llego el barrido 198: el robot anda; todavia no se guarda)
+   (llego el barrido 199: el robot anda; todavia no se guarda)
+   (llego el barrido 200: el robot anda; todavia no se guarda)
+   (llego el barrido 201: el robot anda; todavia no se guarda)
+   (llego el barrido 202: el robot anda; todavia no se guarda)
+   (llego el barrido 203: el robot anda; todavia no se guarda)
+   (llego el barrido 204: el robot anda; todavia no se guarda)
+   (llego el barrido 205: el robot anda; todavia no se guarda)
+   (llego el barrido 206: el robot anda; todavia no se guarda)
+   (llego el barrido 207: el robot anda; todavia no se guarda)
+   (llego el barrido 208: el robot anda; todavia no se guarda)
+   (llego el barrido 209: el robot anda; todavia no se guarda)
+   (llego el barrido 210: el robot anda; todavia no se guarda)
+   (llego el barrido 211: el robot anda; todavia no se guarda)
+   (llego el barrido 212: el robot anda; todavia no se guarda)
+   (llego el barrido 213: el robot anda; todavia no se guarda)
+   (llego el barrido 214: el robot anda; todavia no se guarda)
+   (llego el barrido 215: el robot anda; todavia no se guarda)
+   (llego el barrido 216: el robot anda; todavia no se guarda)
+   (llego el barrido 217: el robot anda; todavia no se guarda)
+   (llego el barrido 218: el robot anda; todavia no se guarda)
+   (llego el barrido 219: el robot anda; todavia no se guarda)
+   (llego el barrido 220: el robot anda; todavia no se guarda)
+   (llego el barrido 221: el robot anda; todavia no se guarda)
+   (llego el barrido 222: el robot anda; todavia no se guarda)
+   (llego el barrido 223: el robot anda; todavia no se guarda)
+   (llego el barrido 224: el robot anda; todavia no se guarda)
+   (llego el barrido 225: el robot anda; todavia no se guarda)
+   (llego el barrido 226: el robot anda; todavia no se guarda)
+   (llego el barrido 227: el robot anda; todavia no se guarda)
+   (llego el barrido 228: el robot anda; todavia no se guarda)
+   (llego el barrido 229: el robot anda; todavia no se guarda)
+   (llego el barrido 230: el robot anda; todavia no se guarda)
+   (llego el barrido 231: el robot anda; todavia no se guarda)
+   (llego el barrido 232: el robot anda; todavia no se guarda)
+   (llego el barrido 233: el robot anda; todavia no se guarda)
+   (llego el barrido 234: el robot anda; todavia no se guarda)
+   (llego el barrido 235: el robot anda; todavia no se guarda)
+   (llego el barrido 236: el robot anda; todavia no se guarda)
+   (llego el barrido 237: el robot anda; todavia no se guarda)
+   (llego el barrido 238: el robot anda; todavia no se guarda)
+   (llego el barrido 239: el robot anda; todavia no se guarda)
+   (llego el barrido 240: el robot anda; todavia no se guarda)
+   (llego el barrido 241: el robot anda; todavia no se guarda)
+   (llego el barrido 242: el robot anda; todavia no se guarda)
+   (llego el barrido 243: el robot anda; todavia no se guarda)
+   (llego el barrido 244: el robot anda; todavia no se guarda)
+   (llego el barrido 245: el robot anda; todavia no se guarda)
+   (llego el barrido 246: el robot anda; todavia no se guarda)
+   (llego el barrido 247: el robot anda; todavia no se guarda)
+   (llego el barrido 248: el robot anda; todavia no se guarda)
+   (llego el barrido 249: el robot anda; todavia no se guarda)
+   (llego el barrido 250: el robot anda; todavia no se guarda)
+   (llego el barrido 251: el robot anda; todavia no se guarda)
+   (llego el barrido 252: el robot anda; todavia no se guarda)
+   (llego el barrido 253: el robot anda; todavia no se guarda)
+   (llego el barrido 254: el robot anda; todavia no se guarda)
+   (llego el barrido 255: el robot anda; todavia no se guarda)
+   (llego el barrido 256: el robot anda; todavia no se guarda)
+   (llego el barrido 257: el robot anda; todavia no se guarda)
+   (llego el barrido 258: el robot anda; todavia no se guarda)
+   (llego el barrido 259: el robot anda; todavia no se guarda)
+   (llego el barrido 260: el robot anda; todavia no se guarda)
+   (llego el barrido 261: el robot anda; todavia no se guarda)
+   (llego el barrido 262: el robot anda; todavia no se guarda)
+   (llego el barrido 263: el robot anda; todavia no se guarda)
+   (llego el barrido 264: el robot anda; todavia no se guarda)
+   (llego el barrido 265: el robot anda; todavia no se guarda)
+   (llego el barrido 266: el robot anda; todavia no se guarda)
+   (llego el barrido 267: el robot anda; todavia no se guarda)
+   (llego el barrido 268: el robot anda; todavia no se guarda)
+   (llego el barrido 269: el robot anda; todavia no se guarda)
+   (llego el barrido 270: el robot anda; todavia no se guarda)
+   (llego el barrido 271: el robot anda; todavia no se guarda)
+   (llego el barrido 272: el robot anda; todavia no se guarda)
+   (llego el barrido 273: el robot anda; todavia no se guarda)
+   (llego el barrido 274: el robot anda; todavia no se guarda)
+   (llego el barrido 275: el robot anda; todavia no se guarda)
+   (llego el barrido 276: el robot anda; todavia no se guarda)
+   (llego el barrido 277: el robot anda; todavia no se guarda)
+   (llego el barrido 278: el robot anda; todavia no se guarda)
+   (llego el barrido 279: el robot anda; todavia no se guarda)
+   (llego el barrido 280: el robot anda; todavia no se guarda)
+   (llego el barrido 281: el robot anda; todavia no se guarda)
+   (llego el barrido 282: el robot anda; todavia no se guarda)
+   (llego el barrido 283: el robot anda; todavia no se guarda)
+   (llego el barrido 284: el robot anda; todavia no se guarda)
+   (llego el barrido 285: el robot anda; todavia no se guarda)
+   (llego el barrido 286: el robot anda; todavia no se guarda)
+   (llego el barrido 287: el robot anda; todavia no se guarda)
+   (llego el barrido 288: el robot anda; todavia no se guarda)
+   (llego el barrido 289: el robot anda; todavia no se guarda)
+   (llego el barrido 290: el robot anda; todavia no se guarda)
+   (llego el barrido 291: el robot anda; todavia no se guarda)
+   (llego el barrido 292: el robot anda; todavia no se guarda)
+   (llego el barrido 293: el robot anda; todavia no se guarda)
+   (llego el barrido 294: el robot anda; todavia no se guarda)
+   (llego el barrido 295: el robot anda; todavia no se guarda)
+   (llego el barrido 296: el robot anda; todavia no se guarda)
+   (llego el barrido 297: el robot anda; todavia no se guarda)
+   (llego el barrido 298: el robot anda; todavia no se guarda)
+   (llego el barrido 299: el robot anda; todavia no se guarda)
+   (llego el barrido 300: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 30, izq 15   |   sectores sin dato: 8 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 5 de 13
+>> Resumen de la escena 18 (3 barridos):
+   - izq 30 (anotado OBSTACULO): la red dijo LOBITO 1 de 3, SALIDA 2 de 3
+   - frente (anotado LOBITO): la red dijo LIBRE 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3)
+   - Sectores sin dato: 5.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 305: el robot anda; todavia no se guarda)
+   (llego el barrido 306: el robot anda; todavia no se guarda)
+>> Repetimos la escena 18 (lo de recien se borro).
+
+==================================================================
+ Escena 18 de 25   (nota: lobito 0 15 ; obstaculo +30 20)
+ Pone una CANICA DERECHO ADELANTE, a 15 cm del sensor, y un OBSTACULO a la IZQUIERDA (30 grados), a 20 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 307: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 60, izq 45, izq 30, izq 15   |   sectores sin dato: 5 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 5 de 13
+>> Resumen de la escena 18 (3 barridos):
+   - izq 30 (anotado OBSTACULO): la red dijo LOBITO 1 de 3, SALIDA 2 de 3
+   - frente (anotado LOBITO): la red dijo LIBRE 1 de 3, SALIDA 2 de 3
+   - LOBITO donde no hay canica: izq 60 (1 de 3), izq 45 (1 de 3), izq 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3)
+   - Sectores sin dato: 4.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 312: el robot anda; todavia no se guarda)
+   (llego el barrido 313: el robot anda; todavia no se guarda)
+   (llego el barrido 314: el robot anda; todavia no se guarda)
+   (llego el barrido 315: el robot anda; todavia no se guarda)
+   (llego el barrido 316: el robot anda; todavia no se guarda)
+   (llego el barrido 317: el robot anda; todavia no se guarda)
+   (llego el barrido 318: el robot anda; todavia no se guarda)
+>> Enter = guardar y seguir, R = repetir, S = saltear.
+   (llego el barrido 319: el robot anda; todavia no se guarda)
+>> Repetimos la escena 18 (lo de recien se borro).
+
+==================================================================
+ Escena 18 de 25   (nota: lobito 0 15 ; obstaculo +30 20)
+ Pone una CANICA DERECHO ADELANTE, a 15 cm del sensor, y un OBSTACULO a la IZQUIERDA (30 grados), a 20 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 15, frente   |   sectores sin dato: 5 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15, frente, der 15   |   sectores sin dato: 6 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 30, izq 15, frente, der 15   |   sectores sin dato: 4 de 13
+>> Resumen de la escena 18 (3 barridos):
+   - izq 30 (anotado OBSTACULO): la red dijo SALIDA 1 de 3, PARED 1 de 3, LOBITO 1 de 3
+   - frente (anotado LOBITO): la red dijo LOBITO 3 de 3
+   - LOBITO donde no hay canica: izq 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (3 de 3), der 15 (2 de 3)
+   - Sectores sin dato: 5.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 324: el robot anda; todavia no se guarda)
+   (llego el barrido 325: el robot anda; todavia no se guarda)
+   (llego el barrido 326: el robot anda; todavia no se guarda)
+   (llego el barrido 327: el robot anda; todavia no se guarda)
+   (llego el barrido 328: el robot anda; todavia no se guarda)
+   (llego el barrido 329: el robot anda; todavia no se guarda)
+   (llego el barrido 330: el robot anda; todavia no se guarda)
+   (llego el barrido 331: el robot anda; todavia no se guarda)
+   (llego el barrido 332: el robot anda; todavia no se guarda)
+   (llego el barrido 333: el robot anda; todavia no se guarda)
+   (llego el barrido 334: el robot anda; todavia no se guarda)
+   (llego el barrido 335: el robot anda; todavia no se guarda)
+   (llego el barrido 336: el robot anda; todavia no se guarda)
+   (llego el barrido 337: el robot anda; todavia no se guarda)
+   (llego el barrido 338: el robot anda; todavia no se guarda)
+   (llego el barrido 339: el robot anda; todavia no se guarda)
+   (llego el barrido 340: el robot anda; todavia no se guarda)
+   (llego el barrido 341: el robot anda; todavia no se guarda)
+   (llego el barrido 342: el robot anda; todavia no se guarda)
+   (llego el barrido 343: el robot anda; todavia no se guarda)
+   (llego el barrido 344: el robot anda; todavia no se guarda)
+   (llego el barrido 345: el robot anda; todavia no se guarda)
+   (llego el barrido 346: el robot anda; todavia no se guarda)
+   (llego el barrido 347: el robot anda; todavia no se guarda)
+   (llego el barrido 348: el robot anda; todavia no se guarda)
+   (llego el barrido 349: el robot anda; todavia no se guarda)
+>> Escena 18 guardada.
+
+==================================================================
+ Escena 19 de 25   (nota: lobito -30 20 ; obstaculo +15 15)
+ Pone una CANICA a la DERECHA (30 grados), a 20 cm del sensor, y un OBSTACULO a la IZQUIERDA (15 grados), a 15 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 350: el robot anda; todavia no se guarda)
+   (llego el barrido 351: el robot anda; todavia no se guarda)
+   (llego el barrido 352: el robot anda; todavia no se guarda)
+   (llego el barrido 353: el robot anda; todavia no se guarda)
+   (llego el barrido 354: el robot anda; todavia no se guarda)
+   (llego el barrido 355: el robot anda; todavia no se guarda)
+   (llego el barrido 356: el robot anda; todavia no se guarda)
+   (llego el barrido 357: el robot anda; todavia no se guarda)
+   (llego el barrido 358: el robot anda; todavia no se guarda)
+   (llego el barrido 359: el robot anda; todavia no se guarda)
+   (llego el barrido 360: el robot anda; todavia no se guarda)
+   (llego el barrido 361: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 15, frente   |   sectores sin dato: 7 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 15, frente   |   sectores sin dato: 7 de 13
+>> Resumen de la escena 19 (3 barridos):
+   - izq 15 (anotado OBSTACULO): la red dijo LOBITO 2 de 3, SALIDA 1 de 3
+   - der 30 (anotado LOBITO): la red dijo LIBRE 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 15 (2 de 3), frente (2 de 3)
+   - Sectores sin dato: 6.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 366: el robot anda; todavia no se guarda)
+   (llego el barrido 367: el robot anda; todavia no se guarda)
+   (llego el barrido 368: el robot anda; todavia no se guarda)
+   (llego el barrido 369: el robot anda; todavia no se guarda)
+   (llego el barrido 370: el robot anda; todavia no se guarda)
+   (llego el barrido 371: el robot anda; todavia no se guarda)
+   (llego el barrido 372: el robot anda; todavia no se guarda)
+   (llego el barrido 373: el robot anda; todavia no se guarda)
+   (llego el barrido 374: el robot anda; todavia no se guarda)
+   (llego el barrido 375: el robot anda; todavia no se guarda)
+   (llego el barrido 376: el robot anda; todavia no se guarda)
+   (llego el barrido 377: el robot anda; todavia no se guarda)
+   (llego el barrido 378: el robot anda; todavia no se guarda)
+   (llego el barrido 379: el robot anda; todavia no se guarda)
+   (llego el barrido 380: el robot anda; todavia no se guarda)
+   (llego el barrido 381: el robot anda; todavia no se guarda)
+>> Escena 19 guardada.
+
+==================================================================
+ Escena 20 de 25   (nota: lobito 0 20 ; obstaculo 0 40)
+ Pone una CANICA DERECHO ADELANTE, a 20 cm del sensor, y un OBSTACULO DERECHO ADELANTE, a 40 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 382: el robot anda; todavia no se guarda)
+   (llego el barrido 383: el robot anda; todavia no se guarda)
+   (llego el barrido 384: el robot anda; todavia no se guarda)
+   (llego el barrido 385: el robot anda; todavia no se guarda)
+   (llego el barrido 386: el robot anda; todavia no se guarda)
+   (llego el barrido 387: el robot anda; todavia no se guarda)
+   (llego el barrido 388: el robot anda; todavia no se guarda)
+   (llego el barrido 389: el robot anda; todavia no se guarda)
+   (llego el barrido 390: el robot anda; todavia no se guarda)
+   (llego el barrido 391: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 30, izq 15   |   sectores sin dato: 5 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15, frente   |   sectores sin dato: 4 de 13
+>> Guardado 3/3   la red ve LOBITO en: frente, der 15, der 30   |   sectores sin dato: 6 de 13
+>> Resumen de la escena 20 (3 barridos):
+   - frente (anotado LOBITO): la red dijo SALIDA 1 de 3, LOBITO 2 de 3
+   - LOBITO donde no hay canica: izq 30 (1 de 3), der 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (2 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 5.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 396: el robot anda; todavia no se guarda)
+>> Escena 20 guardada.
+
+==================================================================
+ Escena 21 de 25   (nota: lobito +45 15 ; obstaculo -45 15)
+ Pone una CANICA a la IZQUIERDA (45 grados), a 15 cm del sensor, y un OBSTACULO a la DERECHA (45 grados), a 15 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 397: el robot anda; todavia no se guarda)
+   (llego el barrido 398: el robot anda; todavia no se guarda)
+   (llego el barrido 399: el robot anda; todavia no se guarda)
+   (llego el barrido 400: el robot anda; todavia no se guarda)
+   (llego el barrido 401: el robot anda; todavia no se guarda)
+   (llego el barrido 402: el robot anda; todavia no se guarda)
+   (llego el barrido 403: el robot anda; todavia no se guarda)
+   (llego el barrido 404: el robot anda; todavia no se guarda)
+   (llego el barrido 405: el robot anda; todavia no se guarda)
+   (llego el barrido 406: el robot anda; todavia no se guarda)
+   (llego el barrido 407: el robot anda; todavia no se guarda)
+   (llego el barrido 408: el robot anda; todavia no se guarda)
+   (llego el barrido 409: el robot anda; todavia no se guarda)
+   (llego el barrido 410: el robot anda; todavia no se guarda)
+   (llego el barrido 411: el robot anda; todavia no se guarda)
+   (llego el barrido 412: el robot anda; todavia no se guarda)
+   (llego el barrido 413: el robot anda; todavia no se guarda)
+   (llego el barrido 414: el robot anda; todavia no se guarda)
+   (llego el barrido 415: el robot anda; todavia no se guarda)
+   (llego el barrido 416: el robot anda; todavia no se guarda)
+   (llego el barrido 417: el robot anda; todavia no se guarda)
+   (llego el barrido 418: el robot anda; todavia no se guarda)
+   (llego el barrido 419: el robot anda; todavia no se guarda)
+   (llego el barrido 420: el robot anda; todavia no se guarda)
+   (llego el barrido 421: el robot anda; todavia no se guarda)
+   (llego el barrido 422: el robot anda; todavia no se guarda)
+   (llego el barrido 423: el robot anda; todavia no se guarda)
+   (llego el barrido 424: el robot anda; todavia no se guarda)
+   (llego el barrido 425: el robot anda; todavia no se guarda)
+   (llego el barrido 426: el robot anda; todavia no se guarda)
+   (llego el barrido 427: el robot anda; todavia no se guarda)
+   (llego el barrido 428: el robot anda; todavia no se guarda)
+   (llego el barrido 429: el robot anda; todavia no se guarda)
+   (llego el barrido 430: el robot anda; todavia no se guarda)
+   (llego el barrido 431: el robot anda; todavia no se guarda)
+   (llego el barrido 432: el robot anda; todavia no se guarda)
+   (llego el barrido 433: el robot anda; todavia no se guarda)
+   (llego el barrido 434: el robot anda; todavia no se guarda)
+   (llego el barrido 435: el robot anda; todavia no se guarda)
+   (llego el barrido 436: el robot anda; todavia no se guarda)
+   (llego el barrido 437: el robot anda; todavia no se guarda)
+   (llego el barrido 438: el robot anda; todavia no se guarda)
+   (llego el barrido 439: el robot anda; todavia no se guarda)
+   (llego el barrido 440: el robot anda; todavia no se guarda)
+   (llego el barrido 441: el robot anda; todavia no se guarda)
+   (llego el barrido 442: el robot anda; todavia no se guarda)
+   (llego el barrido 443: el robot anda; todavia no se guarda)
+   (llego el barrido 444: el robot anda; todavia no se guarda)
+   (llego el barrido 445: el robot anda; todavia no se guarda)
+   (llego el barrido 446: el robot anda; todavia no se guarda)
+   (llego el barrido 447: el robot anda; todavia no se guarda)
+   (llego el barrido 448: el robot anda; todavia no se guarda)
+   (llego el barrido 449: el robot anda; todavia no se guarda)
+   (llego el barrido 450: el robot anda; todavia no se guarda)
+   (llego el barrido 451: el robot anda; todavia no se guarda)
+   (llego el barrido 452: el robot anda; todavia no se guarda)
+   (llego el barrido 453: el robot anda; todavia no se guarda)
+   (llego el barrido 454: el robot anda; todavia no se guarda)
+   (llego el barrido 455: el robot anda; todavia no se guarda)
+   (llego el barrido 456: el robot anda; todavia no se guarda)
+   (llego el barrido 457: el robot anda; todavia no se guarda)
+   (llego el barrido 458: el robot anda; todavia no se guarda)
+   (llego el barrido 459: el robot anda; todavia no se guarda)
+   (llego el barrido 460: el robot anda; todavia no se guarda)
+Exception in thread "main" com.fazecast.jSerialComm.SerialPortTimeoutException: The write operation timed out before all data was written.
+	at com.fazecast.jSerialComm.SerialPort$SerialPortOutputStream.write(SerialPort.java:2285)
+	at com.fazecast.jSerialComm.SerialPort$SerialPortOutputStream.write(SerialPort.java:2260)
+	at orquitas.herramientas.PruebaDeteccion.enviar(PruebaDeteccion.java:185)
+	at orquitas.herramientas.TomaGuiada.atender(TomaGuiada.java:359)
+	at orquitas.herramientas.TomaGuiada.main(TomaGuiada.java:345)
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by com.fazecast.jSerialComm.SerialPort in an unnamed module (file:/C:/Users/ilyaf/Documents/orquita-corridas/toma-compilado_20261124_1921/target/dependency/jSerialComm-2.11.4.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+System.Management.Automation.RemoteException
+Abriendo COM4 (intento 1 de 6)...
+Abriendo COM4 (intento 2 de 6)...
+Conectado.
+Toma guiada: 25 escenas, 3 barridos por escena. El robot queda quieto. Ctrl+C para cortar.
+Se guarda en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv (sigo desde la escena 21)
+
+==================================================================
+ Escena 21 de 25   (nota: lobito +45 15 ; obstaculo -45 15)
+ Pone una CANICA a la IZQUIERDA (45 grados), a 15 cm del sensor, y un OBSTACULO a la DERECHA (45 grados), a 15 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 1: el robot anda; todavia no se guarda)
+   (llego el barrido 2: el robot anda; todavia no se guarda)
+   (llego el barrido 3: el robot anda; todavia no se guarda)
+   (llego el barrido 4: el robot anda; todavia no se guarda)
+   (llego el barrido 5: el robot anda; todavia no se guarda)
+   (llego el barrido 6: el robot anda; todavia no se guarda)
+   (llego el barrido 7: el robot anda; todavia no se guarda)
+   (llego el barrido 8: el robot anda; todavia no se guarda)
+   (llego el barrido 9: el robot anda; todavia no se guarda)
+   (llego el barrido 10: el robot anda; todavia no se guarda)
+   (llego el barrido 11: el robot anda; todavia no se guarda)
+   (llego el barrido 12: el robot anda; todavia no se guarda)
+   (llego el barrido 13: el robot anda; todavia no se guarda)
+   (llego el barrido 14: el robot anda; todavia no se guarda)
+   (llego el barrido 15: el robot anda; todavia no se guarda)
+   (llego el barrido 16: el robot anda; todavia no se guarda)
+   (llego el barrido 17: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: frente   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 60, der 30   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 30, izq 15   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 21 (3 barridos):
+   - izq 45 (anotado LOBITO): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - der 45 (anotado OBSTACULO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 15 (1 de 3), frente (1 de 3), der 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 60 (1 de 3), izq 30 (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 22: el robot anda; todavia no se guarda)
+   (llego el barrido 23: el robot anda; todavia no se guarda)
+   (llego el barrido 24: el robot anda; todavia no se guarda)
+   (llego el barrido 25: el robot anda; todavia no se guarda)
+   (llego el barrido 26: el robot anda; todavia no se guarda)
+   (llego el barrido 27: el robot anda; todavia no se guarda)
+   (llego el barrido 28: el robot anda; todavia no se guarda)
+   (llego el barrido 29: el robot anda; todavia no se guarda)
+   (llego el barrido 30: el robot anda; todavia no se guarda)
+   (llego el barrido 31: el robot anda; todavia no se guarda)
+   (llego el barrido 32: el robot anda; todavia no se guarda)
+   (llego el barrido 33: el robot anda; todavia no se guarda)
+   (llego el barrido 34: el robot anda; todavia no se guarda)
+   (llego el barrido 35: el robot anda; todavia no se guarda)
+   (llego el barrido 36: el robot anda; todavia no se guarda)
+   (llego el barrido 37: el robot anda; todavia no se guarda)
+   (llego el barrido 38: el robot anda; todavia no se guarda)
+   (llego el barrido 39: el robot anda; todavia no se guarda)
+   (llego el barrido 40: el robot anda; todavia no se guarda)
+   (llego el barrido 41: el robot anda; todavia no se guarda)
+   (llego el barrido 42: el robot anda; todavia no se guarda)
+   (llego el barrido 43: el robot anda; todavia no se guarda)
+   (llego el barrido 44: el robot anda; todavia no se guarda)
+   (llego el barrido 45: el robot anda; todavia no se guarda)
+   (llego el barrido 46: el robot anda; todavia no se guarda)
+   (llego el barrido 47: el robot anda; todavia no se guarda)
+>> Escena 21 guardada.
+
+==================================================================
+ Escena 22 de 25   (nota: lobito 0 10 ; obstaculo -30 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor, y un OBSTACULO a la DERECHA (30 grados), a 10 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 48: el robot anda; todavia no se guarda)
+   (llego el barrido 49: el robot anda; todavia no se guarda)
+   (llego el barrido 50: el robot anda; todavia no se guarda)
+   (llego el barrido 51: el robot anda; todavia no se guarda)
+   (llego el barrido 52: el robot anda; todavia no se guarda)
+   (llego el barrido 53: el robot anda; todavia no se guarda)
+   (llego el barrido 54: el robot anda; todavia no se guarda)
+   (llego el barrido 55: el robot anda; todavia no se guarda)
+   (llego el barrido 56: el robot anda; todavia no se guarda)
+   (llego el barrido 57: el robot anda; todavia no se guarda)
+   (llego el barrido 58: el robot anda; todavia no se guarda)
+   (llego el barrido 59: el robot anda; todavia no se guarda)
+   (llego el barrido 60: el robot anda; todavia no se guarda)
+   (llego el barrido 61: el robot anda; todavia no se guarda)
+   (llego el barrido 62: el robot anda; todavia no se guarda)
+   (llego el barrido 63: el robot anda; todavia no se guarda)
+   (llego el barrido 64: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 75, izq 30, izq 15, der 30   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 75, izq 15   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 22 (3 barridos):
+   - frente (anotado LOBITO): la red dijo PARED 3 de 3
+   - der 30 (anotado OBSTACULO): la red dijo LOBITO 1 de 3, PARED 1 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 75 (2 de 3), izq 30 (1 de 3), der 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (3 de 3)
+   - Sectores sin dato: 0.3 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 69: el robot anda; todavia no se guarda)
+   (llego el barrido 70: el robot anda; todavia no se guarda)
+   (llego el barrido 71: el robot anda; todavia no se guarda)
+   (llego el barrido 72: el robot anda; todavia no se guarda)
+   (llego el barrido 73: el robot anda; todavia no se guarda)
+   (llego el barrido 74: el robot anda; todavia no se guarda)
+   (llego el barrido 75: el robot anda; todavia no se guarda)
+   (llego el barrido 76: el robot anda; todavia no se guarda)
+   (llego el barrido 77: el robot anda; todavia no se guarda)
+   (llego el barrido 78: el robot anda; todavia no se guarda)
+   (llego el barrido 79: el robot anda; todavia no se guarda)
+   (llego el barrido 80: el robot anda; todavia no se guarda)
+   (llego el barrido 81: el robot anda; todavia no se guarda)
+   (llego el barrido 82: el robot anda; todavia no se guarda)
+   (llego el barrido 83: el robot anda; todavia no se guarda)
+   (llego el barrido 84: el robot anda; todavia no se guarda)
+>> Repetimos la escena 22 (lo de recien se borro).
+
+==================================================================
+ Escena 22 de 25   (nota: lobito 0 10 ; obstaculo -30 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor, y un OBSTACULO a la DERECHA (30 grados), a 10 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 85: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: frente   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 30, izq 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: frente, der 30, der 45   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 22 (3 barridos):
+   - frente (anotado LOBITO): la red dijo LOBITO 2 de 3, PARED 1 de 3
+   - der 30 (anotado OBSTACULO): la red dijo PARED 2 de 3, LOBITO 1 de 3
+   - LOBITO donde no hay canica: izq 30 (1 de 3), der 30 (1 de 3), der 45 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3)
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 90: el robot anda; todavia no se guarda)
+   (llego el barrido 91: el robot anda; todavia no se guarda)
+   (llego el barrido 92: el robot anda; todavia no se guarda)
+   (llego el barrido 93: el robot anda; todavia no se guarda)
+   (llego el barrido 94: el robot anda; todavia no se guarda)
+   (llego el barrido 95: el robot anda; todavia no se guarda)
+   (llego el barrido 96: el robot anda; todavia no se guarda)
+   (llego el barrido 97: el robot anda; todavia no se guarda)
+>> Repetimos la escena 22 (lo de recien se borro).
+
+==================================================================
+ Escena 22 de 25   (nota: lobito 0 10 ; obstaculo -30 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor, y un OBSTACULO a la DERECHA (30 grados), a 10 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 90   |   sectores sin dato: 4 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 90   |   sectores sin dato: 5 de 13
+>> Resumen de la escena 22 (3 barridos):
+   - frente (anotado LOBITO): la red dijo SALIDA 2 de 3, PARED 1 de 3
+   - der 30 (anotado OBSTACULO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 90 (2 de 3)
+   - LOBITO al lado de la canica: izq 15 (1 de 3)
+   - Sectores sin dato: 3.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 102: el robot anda; todavia no se guarda)
+   (llego el barrido 103: el robot anda; todavia no se guarda)
+   (llego el barrido 104: el robot anda; todavia no se guarda)
+   (llego el barrido 105: el robot anda; todavia no se guarda)
+   (llego el barrido 106: el robot anda; todavia no se guarda)
+   (llego el barrido 107: el robot anda; todavia no se guarda)
+   (llego el barrido 108: el robot anda; todavia no se guarda)
+   (llego el barrido 109: el robot anda; todavia no se guarda)
+   (llego el barrido 110: el robot anda; todavia no se guarda)
+   (llego el barrido 111: el robot anda; todavia no se guarda)
+   (llego el barrido 112: el robot anda; todavia no se guarda)
+   (llego el barrido 113: el robot anda; todavia no se guarda)
+   (llego el barrido 114: el robot anda; todavia no se guarda)
+   (llego el barrido 115: el robot anda; todavia no se guarda)
+   (llego el barrido 116: el robot anda; todavia no se guarda)
+   (llego el barrido 117: el robot anda; todavia no se guarda)
+   (llego el barrido 118: el robot anda; todavia no se guarda)
+   (llego el barrido 119: el robot anda; todavia no se guarda)
+   (llego el barrido 120: el robot anda; todavia no se guarda)
+   (llego el barrido 121: el robot anda; todavia no se guarda)
+   (llego el barrido 122: el robot anda; todavia no se guarda)
+   (llego el barrido 123: el robot anda; todavia no se guarda)
+   (llego el barrido 124: el robot anda; todavia no se guarda)
+>> Repetimos la escena 22 (lo de recien se borro).
+
+==================================================================
+ Escena 22 de 25   (nota: lobito 0 10 ; obstaculo -30 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor, y un OBSTACULO a la DERECHA (30 grados), a 10 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 125: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 75, izq 15, frente   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 75, frente, der 15   |   sectores sin dato: 2 de 13
+>> Resumen de la escena 22 (3 barridos):
+   - frente (anotado LOBITO): la red dijo LOBITO 2 de 3, SALIDA 1 de 3
+   - der 30 (anotado OBSTACULO): la red dijo PARED 2 de 3, SALIDA 1 de 3
+   - LOBITO donde no hay canica: izq 75 (2 de 3)
+   - LOBITO al lado de la canica: izq 15 (2 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 1.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 130: el robot anda; todavia no se guarda)
+>> Repetimos la escena 22 (lo de recien se borro).
+
+==================================================================
+ Escena 22 de 25   (nota: lobito 0 10 ; obstaculo -30 10)
+ Pone una CANICA DERECHO ADELANTE, a 10 cm del sensor, y un OBSTACULO a la DERECHA (30 grados), a 10 cm del sensor.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 75, izq 60, izq 45, izq 30, izq 15, frente   |   sectores sin dato: 2 de 13
+>> Guardado 2/3   la red ve LOBITO en: izq 15, frente, der 15   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: izq 15   |   sectores sin dato: 1 de 13
+>> Resumen de la escena 22 (3 barridos):
+   - frente (anotado LOBITO): la red dijo LOBITO 2 de 3, SALIDA 1 de 3
+   - der 30 (anotado OBSTACULO): la red dijo PARED 3 de 3
+   - LOBITO donde no hay canica: izq 75 (1 de 3), izq 60 (1 de 3), izq 45 (1 de 3), izq 30 (1 de 3)
+   - LOBITO al lado de la canica: izq 15 (3 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 1.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 135: el robot anda; todavia no se guarda)
+   (llego el barrido 136: el robot anda; todavia no se guarda)
+   (llego el barrido 137: el robot anda; todavia no se guarda)
+>> Escena 22 guardada.
+
+==================================================================
+ Escena 23 de 25   (nota: vacio)
+ Saca todas las canicas y obstaculos. Pone el robot en un lugar de la bahia (lugar 1 de 3, distinto de los otros), lejos de la salida. Que solo vea paredes.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 138: el robot anda; todavia no se guarda)
+   (llego el barrido 139: el robot anda; todavia no se guarda)
+   (llego el barrido 140: el robot anda; todavia no se guarda)
+   (llego el barrido 141: el robot anda; todavia no se guarda)
+   (llego el barrido 142: el robot anda; todavia no se guarda)
+   (llego el barrido 143: el robot anda; todavia no se guarda)
+   (llego el barrido 144: el robot anda; todavia no se guarda)
+   (llego el barrido 145: el robot anda; todavia no se guarda)
+   (llego el barrido 146: el robot anda; todavia no se guarda)
+   (llego el barrido 147: el robot anda; todavia no se guarda)
+   (llego el barrido 148: el robot anda; todavia no se guarda)
+   (llego el barrido 149: el robot anda; todavia no se guarda)
+   (llego el barrido 150: el robot anda; todavia no se guarda)
+   (llego el barrido 151: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 3 de 13
+>> Guardado 3/3   la red ve LOBITO en: frente, der 15   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 23 (3 barridos):
+   - LOBITO donde no hay canica: frente (1 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 1.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 156: el robot anda; todavia no se guarda)
+   (llego el barrido 157: el robot anda; todavia no se guarda)
+   (llego el barrido 158: el robot anda; todavia no se guarda)
+   (llego el barrido 159: el robot anda; todavia no se guarda)
+   (llego el barrido 160: el robot anda; todavia no se guarda)
+   (llego el barrido 161: el robot anda; todavia no se guarda)
+   (llego el barrido 162: el robot anda; todavia no se guarda)
+   (llego el barrido 163: el robot anda; todavia no se guarda)
+   (llego el barrido 164: el robot anda; todavia no se guarda)
+   (llego el barrido 165: el robot anda; todavia no se guarda)
+   (llego el barrido 166: el robot anda; todavia no se guarda)
+   (llego el barrido 167: el robot anda; todavia no se guarda)
+>> Escena 23 guardada.
+
+==================================================================
+ Escena 24 de 25   (nota: vacio)
+ Saca todas las canicas y obstaculos. Pone el robot en un lugar de la bahia (lugar 2 de 3, distinto de los otros), lejos de la salida. Que solo vea paredes.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 168: el robot anda; todavia no se guarda)
+   (llego el barrido 169: el robot anda; todavia no se guarda)
+   (llego el barrido 170: el robot anda; todavia no se guarda)
+   (llego el barrido 171: el robot anda; todavia no se guarda)
+   (llego el barrido 172: el robot anda; todavia no se guarda)
+   (llego el barrido 173: el robot anda; todavia no se guarda)
+   (llego el barrido 174: el robot anda; todavia no se guarda)
+   (llego el barrido 175: el robot anda; todavia no se guarda)
+   (llego el barrido 176: el robot anda; todavia no se guarda)
+   (llego el barrido 177: el robot anda; todavia no se guarda)
+   (llego el barrido 178: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Guardado 3/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 24 (3 barridos):
+   - LOBITO donde no hay canica: ninguno
+   - Sectores sin dato: 0.0 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 183: el robot anda; todavia no se guarda)
+   (llego el barrido 184: el robot anda; todavia no se guarda)
+   (llego el barrido 185: el robot anda; todavia no se guarda)
+   (llego el barrido 186: el robot anda; todavia no se guarda)
+   (llego el barrido 187: el robot anda; todavia no se guarda)
+   (llego el barrido 188: el robot anda; todavia no se guarda)
+   (llego el barrido 189: el robot anda; todavia no se guarda)
+>> Escena 24 guardada.
+
+==================================================================
+ Escena 25 de 25   (nota: vacio)
+ Saca todas las canicas y obstaculos. Pone el robot en un lugar de la bahia (lugar 3 de 3, distinto de los otros), lejos de la salida. Que solo vea paredes.
+ Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)
+ Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.
+==================================================================
+   (llego el barrido 190: el robot anda; todavia no se guarda)
+   (llego el barrido 191: el robot anda; todavia no se guarda)
+   (llego el barrido 192: el robot anda; todavia no se guarda)
+   (llego el barrido 193: el robot anda; todavia no se guarda)
+   (llego el barrido 194: el robot anda; todavia no se guarda)
+   (llego el barrido 195: el robot anda; todavia no se guarda)
+   (llego el barrido 196: el robot anda; todavia no se guarda)
+   (llego el barrido 197: el robot anda; todavia no se guarda)
+   (llego el barrido 198: el robot anda; todavia no se guarda)
+   (llego el barrido 199: el robot anda; todavia no se guarda)
+   (llego el barrido 200: el robot anda; todavia no se guarda)
+   (llego el barrido 201: el robot anda; todavia no se guarda)
+   (llego el barrido 202: el robot anda; todavia no se guarda)
+   (llego el barrido 203: el robot anda; todavia no se guarda)
+   (llego el barrido 204: el robot anda; todavia no se guarda)
+   (llego el barrido 205: el robot anda; todavia no se guarda)
+   (llego el barrido 206: el robot anda; todavia no se guarda)
+   (llego el barrido 207: el robot anda; todavia no se guarda)
+   (llego el barrido 208: el robot anda; todavia no se guarda)
+   (llego el barrido 209: el robot anda; todavia no se guarda)
+   (llego el barrido 210: el robot anda; todavia no se guarda)
+   (llego el barrido 211: el robot anda; todavia no se guarda)
+   (llego el barrido 212: el robot anda; todavia no se guarda)
+
+>> Listo. Descarto el barrido que esta en curso y guardo los 3 siguientes. No muevas nada.
+>> Barrido en curso descartado (empezo antes de acomodar la escena).
+>> Guardado 1/3   la red ve LOBITO en: izq 15, frente   |   sectores sin dato: 1 de 13
+>> Guardado 2/3   la red ve LOBITO en: ningun sector   |   sectores sin dato: 1 de 13
+>> Guardado 3/3   la red ve LOBITO en: der 15   |   sectores sin dato: 0 de 13
+>> Resumen de la escena 25 (3 barridos):
+   - LOBITO donde no hay canica: izq 15 (1 de 3), frente (1 de 3), der 15 (1 de 3)
+   - Sectores sin dato: 0.7 de 13 en promedio
+>> Enter = guardar y seguir   |   R + Enter = repetir   |   S + Enter = saltear
+   (llego el barrido 217: el robot anda; todavia no se guarda)
+   (llego el barrido 218: el robot anda; todavia no se guarda)
+   (llego el barrido 219: el robot anda; todavia no se guarda)
+>> Escena 25 guardada.
+
+==================================================================
+ Listo: se guardaron 5 escenas en C:\Users\ilyaf\Documents\orquita-corridas\toma_guiada_20261124_1202\deteccion.csv
+==================================================================

@@ -1,4 +1,4 @@
-# Traspaso del Proyecto Orquitas (23/11/2026)
+# Traspaso del Proyecto Orquitas (23/11/2026, actualizado el 24/11)
 
 Documento para quien sigue el proyecto. Reúne el contexto, cómo está armado todo, qué no tocar, qué se probó y descartó, y la lista de pendientes en orden. **La competencia es el jueves 26/11.**
 
@@ -25,6 +25,12 @@ Sistema cliente-servidor por **Bluetooth (SPP)** para el robot **Orquita**:
 - El sistema completo funciona de punta a punta en el robot real: Bluetooth, telemetría, órdenes, motores, servos y sensor.
 - **El problema abierto es la percepción con datos reales:** la red ve lobitos donde hay piso o salida (ver §7).
 - Las redes se eligieron y midieron en simulación. **En la pista real nunca completaron una misión.**
+
+**Novedades del 24/11** (detalle: `docs/evidencias/prueba_real/Toma_Guiada_20261124.md`):
+
+- **El robot mandaba los sectores espejados:** el servo tiene 0° a la izquierda y el Servidor supone sector 0 = derecha. Está corregido en `Orquita.ino` (`anguloSector`). **Hay que volver a cargar el sketch.** Todas las pruebas reales anteriores (21 y 22/11) se hicieron con la izquierda y la derecha cambiadas.
+- Toma guiada real (25 escenas): el sensor ve la canica **solo a ~10 cm, de frente**. La red E2 marca LOBITO en el 15 % de los sectores que no son canica, también en sectores sin ningún dato.
+- Filtro para LOBITO en el Servidor, por defecto `eco`: LOBITO solo si el 4x4 tiene eco. Es neutro en la simulación.
 
 ## 2. Competencia (26/11)
 
@@ -113,7 +119,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 2. Clonar el repo en **`Documents\sistema-orquita`**, en la rama `maestro-v2`.
 3. Copiar los modelos E2 del zip a **`Documents\orquita-corridas\experimentos2_20261116_1544\modelos_E2_repeticion_2_s3\`**. Es la ruta que buscan `orquita_prueba_real` y `orquita_prueba_deteccion`.
 4. Copiar los `.bat`/`.ps1` de `herramientas_pc/` a `Documents`.
-5. **Ojo:** `orquita_prueba_real.ps1` compila un commit fijo (`$Commit`, línea 8). Desde el 23/11 es `af9023e`, que ya trae la corrección del piso (antes era `36e16d2`). Si cambiás el Servidor (por ejemplo, la corrección del piso), poné ahí el commit nuevo. Si no, la prueba corre el código viejo. `orquita_prueba_deteccion` ya compila siempre lo último de `origin/maestro-v2`.
+5. **Ojo:** `orquita_prueba_real.ps1` compila un commit fijo (`$Commit`, línea 8). Desde el 24/11 es `002419c`, que trae la corrección del piso y el filtro `eco` para LOBITO (antes `af9023e`). Si cambiás el Servidor (por ejemplo, la corrección del piso), poné ahí el commit nuevo. Si no, la prueba corre el código viejo. `orquita_prueba_deteccion` ya compila siempre lo último de `origin/maestro-v2`.
 
 **Requisitos de la PC:** Java 17 o más nuevo, Git y Maven (los scripts usan `Documents\herramientas\apache-maven-3.9.11` si no hay `mvn`). Desde el repo: `./preparar.ps1` compila y corre las pruebas; `./ejecutar.ps1 servidor COMx --umbral=3` corre el Servidor.
 
@@ -167,23 +173,20 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 
 ### Antes de la competencia (prioridad alta)
 
-1. **Tomar telemetrías reales etiquetadas (primero, porque todo lo demás se mide con esto)** con `orquita_toma_guiada.bat` (guiada, 25 escenas, ver §6) o a mano con `orquita_prueba_deteccion.bat`:
-   - Antes de empezar: el sensor tiene que medir parejo (caja a 20 cm al frente → ~190 mm en los sectores 5 a 7, sin barridos todo "-"). El 23/11 un falso contacto en los cables del sensor hizo fallar ángulos enteros.
-   - Unas 15 de lobito, 15 de obstáculo y 15 de salida: 5 posiciones distintas × 3 barridos cada una.
-   - La nota tiene que decir tipo, ángulo y distancia: `lobito -15 20`, `obstaculo +30 15`, `salida -30 +15`. Ángulo positivo a la izquierda, 0 al frente.
-   - Incluir **obstáculos de frente y de costado (con el borde a la vista)**, canicas muy cerca (5–10 cm) y escenas con un obstáculo y un lobito juntos.
-   - Con eso se mide, sector por sector, qué confunde la red. Varias cosas en una nota: `obstaculo 0 15 y lobito -30 10`. Revisar que la consola conteste "Entiendo: …" con el sector correcto.
-   - Después: `orquita_analisis_deteccion.bat` (ver §6).
+0. **Antes de competir (25/11), con el robot:**
+   - Cargar `arduino/Orquita/Orquita.ino` nuevo (commit 3358855 o posterior; actualizar la PC con `armar_pc_orquita.bat`).
+   - **Probar el lado del sensor:** con `orquita_prueba_deteccion.bat`, parado detrás del robot, poner una caja a su izquierda a ~10 cm. Tiene que aparecer ~100 mm en las filas "izq 75 / izq 90". Si aparece en "der", algo quedó mal: no competir con redes hasta arreglarlo.
+   - **Probar el sentido de giro:** `GIRAR_IZQ` también tiene un `TODO confirmar` en el sketch. Con `ControlManual.ino`, la tecla `a` es lo mismo que `GIRAR_IZQ`: visto desde arriba, el robot tiene que girar a su izquierda (contra las agujas del reloj). Si gira al revés, intercambiar los `motores(...)` de `GIRAR_IZQ` y `GIRAR_DER` en `Orquita.ino`.
+1. ~~**Tomar telemetrías reales etiquetadas**~~ **Hecho (24/11)** con `orquita_toma_guiada.bat`: 25 escenas, 75 barridos. Análisis en `docs/evidencias/prueba_real/Toma_Guiada_20261124.md`. Para repetir otra toma: el sensor tiene que medir parejo antes de empezar, e izquierda y derecha son **las del robot**.
 2. ~~**Corrección del piso en el Servidor**~~ **Hecho (23/11).** En `PreprocesadorTelemetria.corregir()`, solo para el 8x8 y el 16x16 a menos de 200 mm: si el 4x4 tiene dato y el ROI grande mide más de 20 mm menos, toma el valor del 4x4; si el 4x4 no tiene eco, el ROI grande queda sin eco. Se apaga con `-Dorquita.correccionPiso=false`. Arregla la salida y el piso, **no los obstáculos**.
    - CSV reales del 22/11 (red E2): lobitos falsos mirando la salida 4,0 → 2,1 por barrido.
    - Simulación (900 bahías): con el ruido actual cuesta ~10 puntos, porque el 4x4 simulado pierde el eco al azar mucho más que el real y la corrección borra paredes cercanas; con una pérdida del 4x4 parecida a la real queda neutra (dentro del ruido). Un ajuste fino de la percepción con la corrección no mejoró y se descartó.
    - Detalle: `docs/evidencias/prueba_real/Correccion_Piso_20261123.md`. Falta copiarla a `entrega-java/` (pendiente 10).
-3. **Filtro de forma para LOBITO** después de la percepción. Un sector queda como LOBITO solo si:
-   - **(a)** el 4x4 tiene eco cerca (menos de ~40 cm);
-   - **(b)** se parece a un objeto chico, con el 16x16 claramente más lejos que el 4x4: si los tres ROI miden casi lo mismo, es una cara de obstáculo o una pared;
-   - **(c)** está aislado: si un sector vecino mide casi la misma distancia, es parte de un objeto más ancho (obstáculo).
-   - Los umbrales se ajustan con los datos de la 1. Sin esos datos, es adivinar. `analisis.md` ya prueba combinaciones de (a) 250/300/400 mm, (b) y (c) de 0 a 80 mm, y muestra cuántos lobitos quedan y cuántos falsos saca cada una.
-4. **Ajuste fino de la percepción con esos datos** (con los obstáculos etiquetados como OBSTACULO). Seguir entrenando `percepcion.nnet` de E2 con Neuroph, **mezclando** barridos reales (ya corregidos por la 2) con simulados, y separando algunos reales para medir antes y después. Si se entrena solo con lo real, la red se olvida de lo que sabía.
+3. ~~**Filtro para LOBITO**~~ **Hecho (24/11)** en `RedPercepcion` (`-Dorquita.filtroLobito`):
+   - **`eco`** (por defecto): LOBITO solo si el 4x4 tiene eco. En la simulación es neutro (−1 ± 3,4 puntos de misión, sin más choques). En los datos reales saca los LOBITO de sectores sin dato: falsos 141 → 97, en la salida 18 → 14.
+   - **`forma`**: además, 4x4 a menos de 250 mm, 16x16 al menos 10 mm más lejos y vecinos a más de 50 mm. Se ajustó dejando una escena afuera. En los datos reales baja los falsos 141 → 13 (obstáculos 24 → 4, salida 18 → 0), pero en la simulación la misión cae 37 puntos, porque ahí la canica se ve lejos y ancha. Solo para probar en la pista si con `eco` el robot va a buscar obstáculos.
+   - **`no`**: la red sola. Los análisis corren así.
+4. **Ajuste fino de la percepción con esos datos** (ojo: son pocos; la canica vista de verdad aparece en 4–6 barridos) (con los obstáculos etiquetados como OBSTACULO). Seguir entrenando `percepcion.nnet` de E2 con Neuroph, **mezclando** barridos reales (ya corregidos por la 2) con simulados, y separando algunos reales para medir antes y después. Si se entrena solo con lo real, la red se olvida de lo que sabía.
 5. **Recalibrar avance y giro.** Ahora los motores van con 9,6 V y `CalibracionRobot` dice 200 mm/s y 212 °/s, medidos con otra fuente. Con `ControlManual`: medir cuánto avanza y gira con 300 ms y actualizar `CalibracionRobot`.
 6. **Ángulo de elevación para atrapar.** Con `ControlManual` (`i`/`k`), buscar el menor ángulo con el que la canica entra al embudo sin tocar el sensor y ponerlo en `SENSOR_ARRIBA_GRADOS` de `Orquita.ino`. Hoy está en 180° (lento). Ojo: el sensor sube solo si el último barrido vio algo a menos de 35 cm al frente.
 7. **`BARRIDO_RAPIDO` en `Orquita.ino`.** En el repo está en `true` (configuración D, ~2 s). En la PC quedó en `false` (~4,8 s) por el diagnóstico de alimentación. Con la alimentación arreglada, volver a probar `true`. Si aparece `I2C trabado`, dejar un solo tiempo de medición para los 3 ROI (~30 ms).

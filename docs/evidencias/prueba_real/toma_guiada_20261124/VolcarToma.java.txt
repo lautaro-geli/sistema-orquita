@@ -1,0 +1,30 @@
+// Archivo de herramienta (no compila con el proyecto): genera red_e2_espejado.txt
+package orquitas.herramientas;
+import java.nio.file.*; import java.util.*; import java.io.*;
+import orquitas.servidor.navegacion.*;
+/** Scratch: vuelve a pasar la toma por la red. espejar=1 invierte el orden de los sectores (s -> 12-s). */
+public class VolcarToma {
+    public static void main(String[] a) throws Exception {
+        RedPercepcion red = new RedPercepcion(Path.of(a[0]));
+        boolean espejar = a[2].equals("1");
+        List<String> l = Files.readAllLines(Path.of(a[1]));
+        try (PrintWriter out = new PrintWriter(new FileWriter(a[3]))) {
+            for (int n = 1; n < l.size(); n++) {
+                String[] c = l.get(n).split(",", -1);
+                if (c.length < 42) continue;
+                int[] t = new int[39];
+                for (int i = 0; i < 39; i++) t[i] = Integer.parseInt(c[3 + i]);
+                if (espejar) { int[] m = new int[39]; for (int s = 0; s < 13; s++) for (int r = 0; r < 3; r++) m[(12 - s) * 3 + r] = t[s * 3 + r]; t = m; }
+                double[] p = red.probabilidades(t);
+                EtiquetaSector[] et = RedPercepcion.etiquetas(p);
+                int[] cor = PreprocesadorTelemetria.corregir(t);
+                StringBuilder sb = new StringBuilder(c[1] + "|" + c[2] + "|");
+                for (int i = 0; i < 39; i++) sb.append(t[i]).append(i < 38 ? "," : "|");
+                for (int i = 0; i < 39; i++) sb.append(cor[i]).append(i < 38 ? "," : "|");
+                for (int s = 0; s < 13; s++) sb.append(et[s]).append(s < 12 ? "," : "|");
+                for (int i = 0; i < 65; i++) sb.append(String.format(Locale.ROOT, "%.4f", p[i])).append(i < 64 ? "," : "");
+                out.println(sb);
+            }
+        }
+    }
+}
