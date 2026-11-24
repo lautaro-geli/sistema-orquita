@@ -4,7 +4,7 @@ Valores elegidos para no frenar el desarrollo. Los marcados **[A CONFIRMAR]** ha
 
 ## Robot (sketch `arduino/Orquita/Orquita.ino`)
 
-- **[A CONFIRMAR] Sentido de los ángulos:** 0° = derecha del robot, 90° = frente, 180° = izquierda. Debe coincidir con la convención del Servidor (sector 0 = derecha, 6 = frente, 12 = izquierda). Si el servo de barrido está montado al revés, invertir el ángulo en `barrer()`.
+- **[CONFIRMADO 24/11/2026: el servo estaba al revés, corregido en `anguloSector()` del sketch] Sentido de los ángulos:** 0° = derecha del robot, 90° = frente, 180° = izquierda. Debe coincidir con la convención del Servidor (sector 0 = derecha, 6 = frente, 12 = izquierda). Si el servo de barrido está montado al revés, invertir el ángulo en `barrer()`.
 - **[A CONFIRMAR] Sentido de los giros:** `GIRAR_IZQ` = motor izquierdo atrás y derecho adelante; `GIRAR_DER`, lo contrario. Depende del cableado del L298N.
 - **Colector:** fuera del sketch (el servo de rotación continua no se maneja desde el Arduino).
 - **[A CONFIRMAR] Servo de elevación:** bajado (0°) durante el barrido, levantado (180°) durante el paso de movimiento, y vuelve a bajar antes del siguiente barrido.

@@ -86,7 +86,9 @@ const int CERCA_FRENTE_MM = 350;
 const uint16_t TIMEOUT_SENSOR_MS = 300;
 const uint16_t DIST_MIN_MM = 40;                    // Fuera de [40, 1300] mm la lectura es -1.
 const uint16_t DIST_MAX_MM = 1300;
-// Sentido de los ángulos: TODO confirmar. Se asume 0° = derecha del robot, 90° = frente, 180° = izquierda.
+// Sentido de los ángulos (confirmado en el robot el 24/11/2026): el servo de barrido en 0° apunta a la IZQUIERDA
+// del robot y en 180° a la DERECHA. El protocolo usa sector 0 = derecha, 6 = frente, 12 = izquierda, así que el
+// sector s se mide con el servo en 180 - 15·s (ver anguloSector).
 
 // ---------------- Protocolo y tiempos ----------------
 const unsigned long BAUDIOS_HC06 = 9600;
@@ -375,7 +377,12 @@ int medir(uint8_t lado, uint8_t centro, uint32_t presupuestoUs) {
 
 bool barridoDeIda = true; // Alterna 0->180 y 180->0: no pierde tiempo volviendo a 0 en cada ciclo.
 
-/** Barrido de 13 posiciones x 3 ROI. Las lecturas quedan siempre ordenadas por ángulo (0° a 180°).
+/** Ángulo del servo de barrido para el sector s del protocolo (0 = derecha): el servo tiene 0° a la izquierda. */
+int anguloSector(uint8_t s) {
+  return 180 - 15 * s;
+}
+
+/** Barrido de 13 posiciones x 3 ROI. Las lecturas quedan siempre ordenadas por sector (0 = derecha a 12 = izquierda).
  *  Devuelve false si se cortó por Safe Mode. */
 bool barrer() {
   if (!sensorListo) { // No arrancó (o se cayó): se reintenta en cada barrido en vez de quedar ciego.
@@ -387,8 +394,8 @@ bool barrer() {
   for (uint8_t k = 0; k < SECTORES; k++) {
     uint8_t s = barridoDeIda ? k : SECTORES - 1 - k;
     int antes = anguloServo[CANAL_BARRIDO];
-    moverServo(CANAL_BARRIDO, s * 15);
-    bool lejos = antes < 0 || abs(antes - s * 15) > 15; // Arranque o barrido cortado: viene de lejos.
+    moverServo(CANAL_BARRIDO, anguloSector(s));
+    bool lejos = antes < 0 || abs(antes - anguloSector(s)) > 15; // Arranque o barrido cortado: viene de lejos.
     if (!esperarMs(lejos ? ESPERA_INICIO_BARRIDO_MS : ESPERA_SERVO_MS)) return false;
     soltarServos(); // Quietos mientras mide.
     lecturas[s * ROIS + 2] = medir(16, CENTRO_ROI_16, PRESUPUESTO_16_US);
@@ -455,7 +462,7 @@ void setup() {
   bt.begin(BAUDIOS_HC06);
 
   moverServo(CANAL_ELEVACION, SENSOR_ABAJO_GRADOS);
-  moverServo(CANAL_BARRIDO, 0);
+  moverServo(CANAL_BARRIDO, anguloSector(0)); // Donde arranca el primer barrido.
   delay(1000); // Como en el barrido probado: los servos terminan de moverse antes de iniciar el sensor.
   soltarServos();
 
