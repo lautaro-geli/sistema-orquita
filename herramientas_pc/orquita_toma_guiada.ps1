@@ -57,7 +57,7 @@ try {
     $csv = Join-Path $salida 'deteccion.csv'
     if (Test-Path $csv) {
         Write-Host '== Analizando los datos (AnalisisDeteccion)'
-        & java -cp $classpath orquitas.herramientas.AnalisisDeteccion $red $csv "--salida=$salida" 2>&1 | ForEach-Object { "$_" } | Out-Null
+        & java '-Dorquita.filtroLobito=no' -cp $classpath orquitas.herramientas.AnalisisDeteccion $red $csv "--salida=$salida" 2>&1 | ForEach-Object { "$_" } | Out-Null
         $informe = Join-Path $salida 'analisis.md'
         if (Test-Path $informe) { Start-Process notepad.exe $informe }
     }

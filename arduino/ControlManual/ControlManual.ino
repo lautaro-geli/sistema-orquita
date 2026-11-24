@@ -6,7 +6,7 @@
  *       Cada comando mueve durante "paso" ms y frena solo. Si el comando se repite antes de que
  *       termine (tecla apretada en orquita_control_manual.bat), sigue andando sin cortes.
  *   + / -  = paso de 100 ms mas o menos (100..1500; arranca en 300)
- *   j / l  = servo de barrido 15 grados a la izquierda / derecha     b = barrido a 90 (frente)
+ *   j / l  = servo de barrido +15 / -15 grados (0 = izquierda del robot, 180 = derecha; confirmado 24/11)     b = barrido a 90 (frente)
  *   i / k  = servo de elevacion +15 / -15 grados                     n = elevacion a 0
  *   r      = medir con el VL53L1X en el angulo actual (ROI 4x4, 8x8 y 16x16), con los servos quietos
  *   1..4   = prender SOLO el pin IN1, IN2, IN3 o IN4 durante "paso" ms (para ver que rueda y sentido mueve cada uno)

@@ -41,7 +41,7 @@ try {
     $red = Join-Path $e2 'percepcion.nnet'
     if (-not (Test-Path $red)) { throw "No encuentro la red de percepcion E2 en $red" }
 
-    $argumentos = @('-cp', $classpath, 'orquitas.herramientas.AnalisisDeteccion', $red) + $csvs + @("--salida=$salida")
+    $argumentos = @('-Dorquita.filtroLobito=no', '-cp', $classpath, 'orquitas.herramientas.AnalisisDeteccion', $red) + $csvs + @("--salida=$salida")
     & java @argumentos 2>&1 | ForEach-Object { "$_" }
     if ($LASTEXITCODE -ne 0) { throw "Fallo el analisis (codigo $LASTEXITCODE)" }
     $informe = Join-Path $salida 'analisis.md'

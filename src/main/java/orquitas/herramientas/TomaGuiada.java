@@ -284,7 +284,7 @@ public class TomaGuiada {
 
     private static String donde(int angulo, int cm) {
         String dir = angulo == 0 ? "DERECHO ADELANTE"
-                : (angulo > 0 ? "a la IZQUIERDA (" + angulo + " grados)" : "a la DERECHA (" + (-angulo) + " grados)");
+                : (angulo > 0 ? "a la IZQUIERDA del robot (" + angulo + " grados)" : "a la DERECHA del robot (" + (-angulo) + " grados)");
         return dir + ", a " + cm + " cm del sensor";
     }
 
@@ -327,7 +327,8 @@ public class TomaGuiada {
         SerialPort puerto = PruebaDeteccion.abrir(posicionales.get(0));
         if (puerto == null) System.exit(1);
         System.out.println("Toma guiada: " + ESCENAS.size() + " escenas, " + BARRIDOS_POR_ESCENA
-                + " barridos por escena. El robot queda quieto. Ctrl+C para cortar.");
+                + " barridos por escena. El robot queda quieto. Ctrl+C para cortar.\n"
+                + "Izquierda y derecha son las DEL ROBOT: parate detras de el, mirando para donde mira.");
         System.out.println("Se guarda en " + csv.toAbsolutePath()
                 + (desde > 1 ? " (sigo desde la escena " + desde + ")" : ""));
         TomaGuiada toma = new TomaGuiada(ESCENAS, desde, red, csv, System.out);
