@@ -71,7 +71,7 @@ Repo: `lautaro-geli/sistema-orquita`. **Rama de trabajo: `maestro-v2`.** Lleva u
 3. `RedMovimiento` (184 → 48 → 15): elige el sector meta (o ATRAS) y los mm. `MetaMovimiento` lo traduce a orden y ms con `CalibracionRobot` (200 mm/s, 212 °/s).
 4. Capas de seguridad: `ReflejoSeguridad` (frente cerca → retrocede; **candado de salida**: en BUSQUEDA no sale de la bahía), `DetectorAtasco`.
 
-**Plan B:** `--reglas` usa `entorno.nnet` (una sola clase por barrido) con paso fijo. Las dos opciones se eligen desde `orquita_prueba_real.bat`.
+**Plan B:** `--reglas` usa `entorno.nnet` (una sola clase por barrido) con paso fijo. Las dos opciones se eligen desde `orquita_prueba_real.bat`. **Ojo: las reglas no pasan por el reflejo ni por el candado de salida.** En BUSQUEDA, si ven SALIDA, avanzan, así que pueden salir sin las 3 canicas.
 
 ## 5. Hardware (lo que funciona al 22/11)
 
@@ -96,7 +96,7 @@ Alimentación (**todas las masas unidas**):
 
 **Lección más importante:** casi todas las fallas "raras" fueron de **alimentación**. Por ejemplo: I2C trabado, "VL53L1X no detectado", reinicios del Arduino (`Orquita lista` repetido), servos o ruedas que no se mueven aunque el Arduino manda la orden. Con 6 V en el jack, el Arduino no da 5 V. **Antes de tocar código, cargá las pilas y medí tensiones.**
 
-Más detalles del sensor: está a ~0,8 cm del piso. El 16x16 (y en parte el 8x8) **ve el piso a 5–8 cm**. La canica se ve bien con el 4x4 hasta ~20 cm. El ruido real es de 1–2 mm.
+Más detalles del sensor: está a ~0,8 cm del piso. El 16x16 (y en parte el 8x8) **ve el piso a 5–8 cm**. En la toma guiada del 24/11, el 4x4 vio la canica solo a ~10 cm, de frente; a 20–30 cm, o de costado, casi nunca. El ruido real es de 1–2 mm.
 
 ## 6. Cómo correr cada cosa (PC Windows)
 
@@ -192,7 +192,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 7. **`BARRIDO_RAPIDO` en `Orquita.ino`.** En el repo está en `true` (configuración D, ~2 s). En la PC quedó en `false` (~4,8 s) por el diagnóstico de alimentación. Con la alimentación arreglada, volver a probar `true`. Si aparece `I2C trabado`, dejar un solo tiempo de medición para los 3 ROI (~30 ms).
 8. **Pulsos muy cortos:** el reflejo manda `RETROCEDER 50 ms` (1 cm), que en el robot real puede no mover nada. Subir el mínimo de `OrdenMovimiento` o del reflejo (por ejemplo a 150 ms) y probar.
 9. **Prueba completa en la bahía** con E2, umbral 3, filmada. Verificar: Safe Mode (apagar el Bluetooth de la PC), `CAPTURA|id` con el FC-51, candado de salida, Modo Escape y que el robot no quede quieto más de 1 minuto.
-10. **Dejar lista la entrega:** unir `maestro-v2` a la rama de entrega o a `main`; copiar las redes finales a `modelos/` de la PC de la competencia; congelar todo el 25/11; probar el plan B `--reglas` (también le sirven la 2 y la 3).
+10. **Dejar lista la entrega:** unir `maestro-v2` a la rama de entrega o a `main`; copiar las redes finales a `modelos/` de la PC de la competencia; congelar todo el 25/11; probar el plan B `--reglas` (también le sirve la 2; ojo, no tiene candado de salida).
 
 ### Si sobra tiempo
 
@@ -213,7 +213,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 ## 10. Glosario
 
 - **Lobito:** canica que hay que capturar. **Estómago:** `estomago.txt`, con una línea por captura (`id;fecha`).
-- **Sector:** cada uno de los 13 ángulos del barrido (0° = derecha, 90° = frente, 180° = izquierda). En las tablas del Servidor, el ángulo relativo es positivo a la izquierda.
+- **Sector:** cada uno de los 13 ángulos del barrido: sector 0 = derecha, 6 = frente, 12 = izquierda. El servo de barrido está al revés (0° = izquierda), y `anguloSector()` del sketch lo traduce. En las tablas del Servidor, el ángulo relativo es positivo a la izquierda.
 - **ROI 4x4 / 8x8 / 16x16:** cuánto de la grilla del sensor se usa. Más chico = más angosto. El 4x4 ve la canica; el 16x16 ve el piso.
 - **Maestro:** piloto de reglas del simulador que conoce la geometría real (hace trampa). Las redes lo imitan; es el techo.
 - **E2:** la red de movimiento elegida (experimentos2, repetición máxima 2, semilla 3).
