@@ -51,6 +51,19 @@ public class AnalisisDeteccionTest {
         assertFalse(NotaEscena.leer("").anotada());
     }
 
+    @Test public void escenaVaciaEstaAnotadaSinObjetos() {
+        NotaEscena n = NotaEscena.leer("vacio");
+        assertTrue(n.valida());
+        assertTrue(n.anotada());
+        assertTrue(n.vacio());
+        for (NotaEscena.Tipo t : n.verdad()) assertNull(t);
+        assertFalse(NotaEscena.leer("vacio lobito 0 10").valida());
+        // Punto y coma como separador.
+        NotaEscena dos = NotaEscena.leer("lobito 0 15 ; obstaculo +30 20");
+        assertTrue(dos.valida());
+        assertEquals(2, dos.objetos().size());
+    }
+
     @Test public void anguloRedondeaAlSectorMasCercano() {
         assertEquals(6, NotaEscena.sector(0));
         assertEquals(7, NotaEscena.sector(10));

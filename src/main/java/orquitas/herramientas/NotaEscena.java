@@ -14,8 +14,9 @@ import java.util.Locale;
  *   <li>{@code obstaculo +30 15}: obstáculo a 30° a la izquierda, a 15 cm.</li>
  *   <li>{@code salida -30 +15}: la salida ocupa de 30° a la derecha a 15° a la izquierda.</li>
  * </ul>
- * Se pueden poner varias cosas en la misma nota: {@code obstaculo 0 15 y lobito -30 10}. Una nota vacía
- * es "sin anotar". El ángulo se lleva al sector más cercano (cada 15°).
+ * Se pueden poner varias cosas en la misma nota: {@code obstaculo 0 15 y lobito -30 10} (también con ";").
+ * {@code vacio}: escena anotada sin lobitos ni obstáculos (solo paredes); en el análisis, todo LOBITO es falso.
+ * Una nota vacía es "sin anotar". El ángulo se lleva al sector más cercano (cada 15°).
  */
 public final class NotaEscena {
     public enum Tipo { LOBITO, OBSTACULO, SALIDA }
@@ -29,9 +30,11 @@ public final class NotaEscena {
     private final String texto;
     private final List<Objeto> objetos;
     private final List<String> problemas;
+    private final boolean vacio;
 
-    private NotaEscena(String texto, List<Objeto> objetos, List<String> problemas) {
+    private NotaEscena(String texto, List<Objeto> objetos, List<String> problemas, boolean vacio) {
         this.texto = texto;
+        this.vacio = vacio;
         this.objetos = Collections.unmodifiableList(objetos);
         this.problemas = Collections.unmodifiableList(problemas);
     }
@@ -42,8 +45,10 @@ public final class NotaEscena {
                 .replace(',', ' ').replace(';', ' ').replaceAll("(\\d)\\s*cm\\b", "$1");
         List<Objeto> objetos = new ArrayList<>();
         List<String> problemas = new ArrayList<>();
+        boolean vacio = false;
         String[] t = limpio.isEmpty() ? new String[0] : limpio.split("\\s+");
         for (int i = 0; i < t.length; i++) {
+            if (t[i].equals("vacio") || t[i].equals("vacia")) { vacio = true; continue; }
             Tipo tipo = tipo(t[i]);
             if (tipo == null) {
                 if (!RELLENO.contains(t[i])) problemas.add("no entiendo \"" + t[i] + "\"");
@@ -70,7 +75,8 @@ public final class NotaEscena {
                 objetos.add(new Objeto(tipo, a, b, a));
             }
         }
-        return new NotaEscena(texto, objetos, problemas);
+        if (vacio && !objetos.isEmpty()) problemas.add("\"vacio\" no se combina con lobitos, obstaculos ni salida");
+        return new NotaEscena(texto, objetos, problemas, vacio && objetos.isEmpty());
     }
 
     private static Tipo tipo(String palabra) {
@@ -133,11 +139,14 @@ public final class NotaEscena {
     public String texto() { return texto; }
     public List<Objeto> objetos() { return objetos; }
     public List<String> problemas() { return problemas; }
-    public boolean anotada() { return !objetos.isEmpty(); }
+    public boolean anotada() { return vacio || !objetos.isEmpty(); }
+    /** Escena anotada sin lobitos, obstáculos ni salida (solo paredes). */
+    public boolean vacio() { return vacio; }
     public boolean valida() { return problemas.isEmpty(); }
 
     /** Resumen legible, para confirmar la nota al escribirla. */
     public String resumen() {
+        if (vacio) return "VACIO (solo paredes, sin lobitos ni obstaculos)";
         if (objetos.isEmpty()) return "sin anotar";
         StringBuilder sb = new StringBuilder();
         for (Objeto o : objetos) {
