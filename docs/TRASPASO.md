@@ -99,6 +99,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 | Para | Qué usar |
 |---|---|
 | **Prueba en la bahía con el Servidor** | `orquita_prueba_real.bat` → 1 (redes E2) o 2 (reglas) → COM saliente. Consola en `orquita-corridas\prueba_real_<fecha>\consola.txt` |
+| **Tomar los datos etiquetados (pendiente 1)** | `orquita_toma_guiada.bat`: recorre 25 escenas y dice qué poner en cada una; con Enter descarta el barrido en curso y guarda 3; después Enter = seguir, R = repetir, S = saltear. Si se corta, volver a abrirlo y poner la escena que seguía. Al terminar corre el análisis. Queda en `orquita-corridas\toma_guiada_<fecha>` |
 | Ver qué detecta la red con datos reales | `orquita_prueba_deteccion.bat` (robot quieto, tabla por sector, CSV con notas). Al escribir la nota, contesta "Entiendo: …" o avisa si le falta algo |
 | Analizar esos datos por sector | `orquita_analisis_deteccion.bat`: elegís las carpetas `deteccion_*` y deja `analisis.md` (qué confunde la red, por distancia, y la prueba del filtro de forma), `analisis_sectores.csv` y `analisis_filtro.csv` |
 | Ver cuál COM es el saliente del HC-06 | `orquita_puertos_bt.bat` |
@@ -166,7 +167,8 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
 
 ### Antes de la competencia (prioridad alta)
 
-1. **Tomar telemetrías reales etiquetadas (primero, porque todo lo demás se mide con esto)** con `orquita_prueba_deteccion.bat`:
+1. **Tomar telemetrías reales etiquetadas (primero, porque todo lo demás se mide con esto)** con `orquita_toma_guiada.bat` (guiada, 25 escenas, ver §6) o a mano con `orquita_prueba_deteccion.bat`:
+   - Antes de empezar: el sensor tiene que medir parejo (caja a 20 cm al frente → ~190 mm en los sectores 5 a 7, sin barridos todo "-"). El 23/11 un falso contacto en los cables del sensor hizo fallar ángulos enteros.
    - Unas 15 de lobito, 15 de obstáculo y 15 de salida: 5 posiciones distintas × 3 barridos cada una.
    - La nota tiene que decir tipo, ángulo y distancia: `lobito -15 20`, `obstaculo +30 15`, `salida -30 +15`. Ángulo positivo a la izquierda, 0 al frente.
    - Incluir **obstáculos de frente y de costado (con el borde a la vista)**, canicas muy cerca (5–10 cm) y escenas con un obstáculo y un lobito juntos.

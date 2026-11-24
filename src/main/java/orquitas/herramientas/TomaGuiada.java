@@ -152,10 +152,8 @@ public class TomaGuiada {
     synchronized void telemetria(int[] t) throws IOException {
         recibidos++;
         switch (estado) {
-            case INSTRUCCION, ELIGIENDO -> {
-                out.print('.'); // Cada punto: un barrido que llegó y no se guarda.
-                out.flush();
-            }
+            // Línea completa (no un punto): PowerShell muestra la salida recién al terminar cada línea.
+            case INSTRUCCION, ELIGIENDO -> out.println("   (llego el barrido " + recibidos + ": el robot anda; todavia no se guarda)");
             case DESCARTANDO -> {
                 out.println(">> Barrido en curso descartado (empezo antes de acomodar la escena).");
                 tamanoAntes = Files.exists(csv) ? Files.size(csv) : -1;
@@ -210,7 +208,7 @@ public class TomaGuiada {
         out.println(" Escena " + (indice + 1) + " de " + escenas.size() + "   (nota: " + e.nota() + ")");
         out.println(" " + e.instruccion());
         out.println(" Cuando este lista, apreta Enter.   (S + Enter = saltear esta escena)");
-        out.println(" Cada punto que aparece abajo es un barrido que llega del robot (todavia no se guarda).");
+        out.println(" Abajo aparece cada barrido que llega del robot: si no aparece ninguno, el robot no esta mandando.");
         out.println("==================================================================");
     }
 
