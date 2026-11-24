@@ -38,23 +38,8 @@ public class PruebaDeteccion {
         }
         RedPercepcion red = new RedPercepcion(Path.of(args[1]));
         Path csv = Path.of(args.length > 2 ? args[2] : "deteccion.csv");
-        SerialPort puerto = SerialPort.getCommPort(args[0]);
-        puerto.setBaudRate(9600);
-        puerto.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 200, 0);
-        // Con el HC-06, Windows a veces tarda en armar el enlace Bluetooth y el primer intento falla.
-        boolean abierto = false;
-        for (int intento = 1; intento <= INTENTOS_ABRIR && !abierto; intento++) {
-            System.out.println("Abriendo " + args[0] + " (intento " + intento + " de " + INTENTOS_ABRIR + ")...");
-            abierto = puerto.openPort();
-            if (!abierto && intento < INTENTOS_ABRIR) Thread.sleep(ESPERA_ENTRE_INTENTOS_MS);
-        }
-        if (!abierto) {
-            System.err.println("No se pudo abrir " + args[0] + ". Revisar: robot prendido y LED del HC-06 parpadeando;"
-                    + " ninguna otra ventana (PuTTY, otro .bat) con el puerto abierto. Si el LED queda fijo sin conectar,"
-                    + " cortar la energia del robot unos segundos y volver a probar.");
-            System.exit(1);
-        }
-        System.out.println("Conectado.");
+        SerialPort puerto = abrir(args[0]);
+        if (puerto == null) System.exit(1);
         Thread teclado = new Thread(() -> {
             try (BufferedReader r = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8))) {
                 String l;
@@ -80,6 +65,25 @@ public class PruebaDeteccion {
         } finally {
             puerto.closePort();
         }
+    }
+
+    /** Abre el puerto del HC-06 con reintentos (Windows a veces tarda en armar el enlace). null si no pudo. */
+    static SerialPort abrir(String nombre) throws InterruptedException {
+        SerialPort puerto = SerialPort.getCommPort(nombre);
+        puerto.setBaudRate(9600);
+        puerto.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 200, 0);
+        for (int intento = 1; intento <= INTENTOS_ABRIR; intento++) {
+            System.out.println("Abriendo " + nombre + " (intento " + intento + " de " + INTENTOS_ABRIR + ")...");
+            if (puerto.openPort()) {
+                System.out.println("Conectado.");
+                return puerto;
+            }
+            if (intento < INTENTOS_ABRIR) Thread.sleep(ESPERA_ENTRE_INTENTOS_MS);
+        }
+        System.err.println("No se pudo abrir " + nombre + ". Revisar: robot prendido y LED del HC-06 parpadeando;"
+                + " ninguna otra ventana (PuTTY, otro .bat) con el puerto abierto. Si el LED queda fijo sin conectar,"
+                + " cortar la energia del robot unos segundos y volver a probar.");
+        return null;
     }
 
     static void atender(InputStream entrada, OutputStream salida, RedPercepcion red, Path csv) throws Exception {
@@ -111,8 +115,8 @@ public class PruebaDeteccion {
                 barrido++;
                 double[] p = red.probabilidades(t);
                 EtiquetaSector[] et = RedPercepcion.etiquetas(p);
-                mostrar(barrido, t, p, et);
-                guardar(csv, barrido, t, p, et);
+                System.out.print(tabla(barrido, nota, t, p, et));
+                guardar(csv, barrido, nota, t, p, et);
             } else if (trama.startsWith("CAPTURA|")) {
                 enviar(salida, "CONFIRMACION");
                 System.out.println("*** CAPTURA (el FC-51 detecto algo) ***");
@@ -135,7 +139,8 @@ public class PruebaDeteccion {
         return t;
     }
 
-    private static void mostrar(int barrido, int[] t, double[] p, EtiquetaSector[] et) {
+    /** Tabla de un barrido, sector por sector, como se ve parado detrás del robot. */
+    static String tabla(int barrido, String nota, int[] t, double[] p, EtiquetaSector[] et) {
         int sinDato = 0;
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%n== Barrido %d (%s)%s%n", barrido, LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
@@ -151,14 +156,15 @@ public class PruebaDeteccion {
                     et[s], 100 * prob, et[s] == EtiquetaSector.LOBITO ? "   <- LOBITO" : ""));
         }
         sb.append(String.format(" Sectores sin ningun dato: %d de 13%n", sinDato));
-        System.out.print(sb);
+        return sb.toString();
     }
 
     private static String mm(int v) {
         return v < 0 ? "-" : Integer.toString(v);
     }
 
-    private static void guardar(Path csv, int barrido, int[] t, double[] p, EtiquetaSector[] et) throws IOException {
+    /** Agrega un barrido al CSV (lo crea con encabezado si no existe). */
+    static void guardar(Path csv, int barrido, String nota, int[] t, double[] p, EtiquetaSector[] et) throws IOException {
         boolean nuevo = !Files.exists(csv);
         try (BufferedWriter w = Files.newBufferedWriter(csv, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             if (nuevo) {
@@ -175,7 +181,7 @@ public class PruebaDeteccion {
         }
     }
 
-    private static void enviar(OutputStream salida, String linea) throws IOException {
+    static void enviar(OutputStream salida, String linea) throws IOException {
         salida.write((linea + "\n").getBytes(StandardCharsets.US_ASCII));
         salida.flush();
     }
