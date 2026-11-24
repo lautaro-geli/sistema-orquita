@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import orquitas.servidor.comunicacion.EnlaceOrquita;
 import orquitas.servidor.navegacion.Navegacion;
+import orquitas.servidor.navegacion.PreprocesadorTelemetria;
 import orquitas.servidor.navegacion.RedMovimiento;
 import orquitas.servidor.navegacion.RedNeuronal;
 import orquitas.servidor.navegacion.RedPercepcion;
@@ -59,6 +60,8 @@ public class ServidorOrquita {
         Navegacion navegacion;
         if (conRedes) {
             System.out.println(" Navegación: redes de percepción (" + rutaPercepcion + ") y movimiento (" + rutaMovimiento + ")");
+            System.out.println(" Filtro de LOBITO: " + RedPercepcion.FILTRO_LOBITO + " | Corrección del piso: "
+                    + (PreprocesadorTelemetria.CORRECCION_PISO ? "prendida" : "apagada"));
             navegacion = new Navegacion(new RedPercepcion(rutaPercepcion), new RedMovimiento(rutaMovimiento));
         } else {
             if (!Files.isRegularFile(rutaModelo)) {
