@@ -111,4 +111,16 @@ public class PilotoBarridoTest {
         for (int s = 5; s <= 7; s++) { sector(t, s, 900, 900, 900); e[s] = EtiquetaSector.SALIDA; }
         assertEquals(Movimiento.AVANZAR, new PilotoBarrido().decidir(t, e, ModoOperativo.ESCAPE, 3).movimiento());
     }
+
+    @Test
+    public void mideLaInclinacionDeLaParedDeAdelante() {
+        // Pared a 300 mm, con la normal 10° a la derecha del frente: hay que girar -10° para tenerla de frente.
+        int[] t = todo(600);
+        for (int s = 4; s <= 8; s++) {
+            double th = Math.toRadians((s - 6) * 15);
+            int d = (int) Math.round(300 / Math.cos(th + Math.toRadians(10)));
+            sector(t, s, d, d, d);
+        }
+        assertEquals(-10, PilotoBarrido.inclinacionPared(PreprocesadorTelemetria.corregir(t), etiquetas(EtiquetaSector.PARED)), 1.5);
+    }
 }

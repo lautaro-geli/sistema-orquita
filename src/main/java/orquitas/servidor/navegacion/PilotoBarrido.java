@@ -6,7 +6,9 @@ package orquitas.servidor.navegacion;
  * de buscarla de lejos, se pasa por todos lados con la boca. Usa la percepción de Neuroph (etiquetas por
  * sector) y la telemetría; el rumbo sale de las órdenes ejecutadas ({@link Seguimiento}).
  * <ul>
- *   <li>Carril: avanza de a PASO_MM manteniendo el rumbo del carril, hasta que el frente queda a PARADA_MM.</li>
+ *   <li>Carril: avanza de a PASO_MM manteniendo el rumbo del carril, hasta que el frente queda a PARADA_MM.
+ *       Al llegar a una pared se mide su inclinación con los sectores del frente y se endereza el rumbo del
+ *       carril (perpendicular a esa pared): así el error de girar a tiempo no se acumula.</li>
  *   <li>Fin de carril: gira 90° hacia el lado del cambio, avanza CARRIL_MM, gira otros 90° y vuelve en sentido
  *       contrario. Si no hay lugar para el cambio (llegó a la otra punta), el zigzag da la vuelta hacia el otro lado.</li>
  *   <li>Obstáculo adelante (la percepción marca OBSTACULO o LOBITO en el frente y no es una canica): lo rodea
@@ -21,8 +23,13 @@ package orquitas.servidor.navegacion;
 public final class PilotoBarrido {
     /** Separación entre carriles: el ancho de la boca. */
     public static final double CARRIL_MM = CalibracionRobot.BOCA_MM;
-    /** Avance máximo por barrido. */
-    static final double PASO_MM = 250;
+    /**
+     * Avance máximo por barrido. Puede ser largo: una canica en el carril entra en la boca aunque el sensor
+     * no la vea (la ve recién a ~10 cm); verla sirve para desviarse hacia las que quedan al costado.
+     */
+    static final double PASO_MM = 450;
+    /** Una pared vista de frente se usa para enderezar el rumbo si está a menos de esto de perpendicular. */
+    static final double ENDEREZAR_MAXIMO_GRADOS = 30;
     /** Distancia al frente a la que termina un carril. */
     static final double PARADA_MM = 120;
     /** Una canica más lejos que esto (4x4, desde el sensor) no se persigue: el sensor real no la ve bien. */
@@ -51,6 +58,12 @@ public final class PilotoBarrido {
     private double restanteCambio = 0;
     /** Barridos seguidos con el frente ciego (los 3 sectores del frente sin ningún dato). */
     private int ciegos = 0;
+    /** Lo avanzado en el carril actual y carriles seguidos que terminaron casi sin avanzar. */
+    private double avanceCarril = 0;
+    private int carrilesCortos = 0;
+    /** Carriles cortos seguidos a partir de los que se sale hacia lo más abierto. */
+    static final int CARRILES_CORTOS_MAXIMO = 2;
+    static final double CARRIL_CORTO_MM = 100;
 
     public Fase fase() { return fase; }
     public int ladoCambio() { return ladoCambio; }
@@ -61,6 +74,8 @@ public final class PilotoBarrido {
         escape.registrarOrden(o);
         if (o != null && fase == Fase.CAMBIO && o.movimiento() == Movimiento.AVANZAR)
             restanteCambio -= CalibracionRobot.mmEn(o.milisegundos());
+        if (o != null && fase == Fase.CARRIL && o.movimiento() == Movimiento.AVANZAR)
+            avanceCarril += CalibracionRobot.mmEn(o.milisegundos());
     }
 
     public OrdenMovimiento decidir(int[] telemetria, EtiquetaSector[] etiquetas, ModoOperativo modo, int capturas) {
@@ -89,7 +104,7 @@ public final class PilotoBarrido {
 
     static boolean frenteCiego(int[] corregida) {
         for (int s = ReflejoSeguridad.PRIMER_FRENTE; s <= ReflejoSeguridad.ULTIMO_FRENTE; s++)
-            if (ReflejoSeguridad.distancia(corregida, s) != Double.MAX_VALUE) return false;
+            if (distanciaConCuatro(corregida, s) != Double.MAX_VALUE) return false;
         return true;
     }
 
@@ -113,7 +128,21 @@ public final class PilotoBarrido {
                     if (Math.abs(error) > TOLERANCIA_RUMBO_GRADOS) return girar(error);
                     double avance = Math.min(PASO_MM, frente - PARADA_MM);
                     if (avance >= AVANCE_MINIMO_MM) return avanzar(avance);
+                    carrilesCortos = avanceCarril < CARRIL_CORTO_MM ? carrilesCortos + 1 : 0;
+                    avanceCarril = 0;
+                    if (carrilesCortos >= CARRILES_CORTOS_MAXIMO) {
+                        // Encerrado (rincón u obstáculos): carril nuevo hacia lo más abierto.
+                        carrilesCortos = 0;
+                        double hacia = anguloMasAbierto(corregida);
+                        rumboCarril = normalizar(rumbo + hacia);
+                        ladoCambio = -ladoCambio;
+                        return girar(hacia);
+                    }
                     rodeo = obstaculoAdelante(corregida, etiquetas);
+                    if (!rodeo) {
+                        double inclinacion = inclinacionPared(corregida, etiquetas);
+                        if (!Double.isNaN(inclinacion)) rumboCarril = normalizar(rumbo + inclinacion);
+                    }
                     fase = Fase.GIRO_A_CAMBIO;
                 }
                 case GIRO_A_CAMBIO -> {
@@ -137,6 +166,7 @@ public final class PilotoBarrido {
                     if (Math.abs(error) > TOLERANCIA_RUMBO_GRADOS) return girar(error);
                     rumboCarril = normalizar(destino);
                     rodeo = false;
+                    avanceCarril = 0;
                     fase = Fase.CARRIL;
                 }
             }
@@ -168,12 +198,59 @@ public final class PilotoBarrido {
      */
     public static double frente(int[] corregida, EtiquetaSector[] etiquetas) {
         double libre = Math.min(ReflejoSeguridad.frenteLibre(corregida, null), ReflejoSeguridad.corredorLibre(corregida));
-        if (libre == Double.MAX_VALUE) libre = PilotoSeguimiento.SIN_DATO_MM;
         for (int s = ReflejoSeguridad.PRIMER_FRENTE; s <= ReflejoSeguridad.ULTIMO_FRENTE; s++) {
-            if (etiquetas[s] == EtiquetaSector.SALIDA) return Math.min(libre, PARADA_MM);
-            if (ReflejoSeguridad.distancia(corregida, s) == Double.MAX_VALUE) libre = Math.min(libre, FRENTE_CIEGO_MM);
+            double d = distanciaConCuatro(corregida, s);
+            libre = Math.min(libre, d == Double.MAX_VALUE ? FRENTE_CIEGO_MM : d - CalibracionRobot.SENSOR_AL_FRENTE_MM);
+            if (etiquetas[s] == EtiquetaSector.SALIDA) libre = Math.min(libre, PARADA_MM);
         }
-        return libre;
+        return libre == Double.MAX_VALUE ? PilotoSeguimiento.SIN_DATO_MM : libre;
+    }
+
+    /** Menor distancia conocida del sector con los 3 ROI (MAX_VALUE si ninguno tiene dato ni se infiere pegado). */
+    static double distanciaConCuatro(int[] corregida, int s) {
+        double d = ReflejoSeguridad.distancia(corregida, s);
+        int d4 = corregida[s * PreprocesadorTelemetria.ROIS];
+        return PreprocesadorTelemetria.esDesconocido(d4) ? d : Math.min(d, d4);
+    }
+
+    /** Ángulo (grados, + izquierda) del sector más abierto, sin contar el frente. */
+    static double anguloMasAbierto(int[] corregida) {
+        int mejor = 0;
+        double mejorD = -1;
+        for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
+            if (s >= ReflejoSeguridad.PRIMER_FRENTE && s <= ReflejoSeguridad.ULTIMO_FRENTE) continue;
+            double d = distanciaConCuatro(corregida, s);
+            if (d == Double.MAX_VALUE) continue;
+            if (d > mejorD) { mejorD = d; mejor = s; }
+        }
+        return (mejor - MetaMovimiento.FRENTE) * MetaMovimiento.GRADOS_POR_SECTOR;
+    }
+
+    /**
+     * Hacia dónde habría que mirar (grados, + izquierda) para tener de frente, perpendicular, la pared que
+     * está adelante; NaN si no se puede medir. Usa el 4x4 (el más angosto) de los sectores de ±15° y ±30°
+     * que sean PARED, y ajusta una recta.
+     */
+    static double inclinacionPared(int[] corregida, EtiquetaSector[] etiquetas) {
+        double sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+        int n = 0;
+        for (int s = 4; s <= 8; s++) {
+            if (etiquetas[s] != EtiquetaSector.PARED) continue;
+            int d = corregida[s * PreprocesadorTelemetria.ROIS];
+            if (PreprocesadorTelemetria.esDesconocido(d) || d > 600) continue;
+            double t = Math.toRadians((s - MetaMovimiento.FRENTE) * MetaMovimiento.GRADOS_POR_SECTOR);
+            double x = d * Math.cos(t), y = d * Math.sin(t); // x adelante, y a la izquierda.
+            sx += x; sy += y; sxx += x * x; sxy += x * y; syy += y * y;
+            n++;
+        }
+        if (n < 3) return Double.NaN;
+        // Recta x = a + b·y (la pared corre "de costado"): b = dx/dy.
+        double den = n * syy - sy * sy;
+        if (Math.abs(den) < 1e-6) return Double.NaN;
+        double b = (n * sxy - sx * sy) / den;
+        // Dirección de la pared (dy=1, dx=b); su normal hacia adelante forma con el frente un ángulo de -atan(b).
+        double grados = -Math.toDegrees(Math.atan(b));
+        return Math.abs(grados) <= ENDEREZAR_MAXIMO_GRADOS ? grados : Double.NaN;
     }
 
     /** True si lo que corta el carril parece un obstáculo (no la pared): al menos 2 sectores del frente así. */
