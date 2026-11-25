@@ -1,0 +1,2 @@
+Rama TEMPORAL: solo para pasar los modelos N_maestro_s2 (noche del 24/11, simulación realista).
+No unir a ninguna rama: los .nnet no van a git. Se borra cuando el equipo los haya bajado.
