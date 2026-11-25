@@ -34,7 +34,7 @@ Sistema cliente-servidor por **Bluetooth (SPP)** para el robot **Orquita**:
 - **Noche del 24/11** (`docs/evidencias/prueba_real/Sim_Realista_20261124.md`):
   - Simulación realista (`-Dorquita.simRealista=true`), ajustada a la toma guiada. Con ella, E2 completa solo el 13,8 % de las misiones (en la de siempre, el 73 %).
   - Modo barrido en el Servidor (`--modo=barrido`, zigzag de 15 cm). En la simulación realista todavía es peor que E2 (7,7 %).
-  - Entrenamiento de la noche con la simulación realista (`orquita_noche_realista.bat`). A la mañana se compara con `orquita_comparar_realista.bat`.
+  - Entrenamiento de la noche con la simulación realista: **N_maestro_s2 completa el 59 % (E2, el 13,8 %) en esa simulación**, con choques dentro del ruido. Está en `orquita-corridas\noche_realista_20261124_2319\modelos_N_maestro_s2`. Falta confirmarlo en la pista.
 
 ## 2. Competencia (26/11)
 
@@ -181,7 +181,7 @@ Los `.bat` están en `herramientas_pc/`. En la PC del equipo se usaban desde `C:
    - Cargar `arduino/Orquita/Orquita.ino` nuevo (commit 3358855 o posterior; actualizar la PC con `armar_pc_orquita.bat`).
    - **Probar el lado del sensor:** con `orquita_prueba_deteccion.bat`, parado detrás del robot, poner una caja a su izquierda a ~10 cm. Tiene que aparecer ~100 mm en las filas "izq 75 / izq 90". Si aparece en "der", algo quedó mal: no competir con redes hasta arreglarlo.
    - **Probar el sentido de giro:** `GIRAR_IZQ` también tiene un `TODO confirmar` en el sketch. Con `ControlManual.ino`, la tecla `a` es lo mismo que `GIRAR_IZQ`: visto desde arriba, el robot tiene que girar a su izquierda (contra las agujas del reloj). Si gira al revés, intercambiar los `motores(...)` de `GIRAR_IZQ` y `GIRAR_DER` en `Orquita.ino`.
-   - **Prueba real de los tres pilotos** con `orquita_prueba_real.bat`: 1 = E2, 3 = barrido, 4 = red nueva (elegir la carpeta `modelos_*` que gane en `comparacion.md`). Misma bahía, mismas canicas y obstáculos y misma partida para los tres; anotar capturas, choques y tiempo, y guardar `consola.txt`.
+   - **Prueba real de los tres pilotos** con `orquita_prueba_real.bat`: 1 = E2, 3 = barrido, 4 = red nueva (`modelos_N_maestro_s2`, la que ganó en `comparacion.md`). Misma bahía, mismas canicas y obstáculos y misma partida para los tres; anotar capturas, choques y tiempo, y guardar `consola.txt`.
 1. ~~**Tomar telemetrías reales etiquetadas**~~ **Hecho (24/11)** con `orquita_toma_guiada.bat`: 25 escenas, 75 barridos. Análisis en `docs/evidencias/prueba_real/Toma_Guiada_20261124.md`. Para repetir otra toma: el sensor tiene que medir parejo antes de empezar, e izquierda y derecha son **las del robot**.
 2. ~~**Corrección del piso en el Servidor**~~ **Hecho (23/11).** En `PreprocesadorTelemetria.corregir()`, solo para el 8x8 y el 16x16 a menos de 200 mm: si el 4x4 tiene dato y el ROI grande mide más de 20 mm menos, toma el valor del 4x4; si el 4x4 no tiene eco, el ROI grande queda sin eco. Se apaga con `-Dorquita.correccionPiso=false`. Arregla la salida y el piso, **no los obstáculos**.
    - CSV reales del 22/11 (red E2): lobitos falsos mirando la salida 4,0 → 2,1 por barrido.

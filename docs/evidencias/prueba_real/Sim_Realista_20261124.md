@@ -67,3 +67,24 @@ Con etiquetas perfectas (el maestro "sin trampa" del entrenamiento) completa el 
 - **Etiquetas de los barridos reales:** LOBITO solo donde el sensor puede ver la canica (7–12 cm); si no, lo de atrás.
 
 A la mañana, `orquita_comparar_realista.bat` compara E2, el barrido y las 6 redes nuevas en 900 bahías.
+
+### Resultado (25/11, 01:35; `orquita_comparar_realista.bat` en la PC del equipo)
+
+900 bahías con las mismas semillas, en la simulación realista. Las bahías de evaluación (semilla 900000 + i) no se usaron para entrenar.
+
+| Piloto | Misión | Capturas | Choques | Puntaje | Segundos | Misión vs E2 | Choques vs E2 |
+|---|---|---|---|---|---|---|---|
+| E2 | 13,8 % | 1,84 | 2,76 | 9,0 | 405 | — | — |
+| Barrido (percepción E2) | 7,7 % | 1,54 | 3,03 | 2,0 | 411 | −6,1 ± 2,8 | +0,3 ± 0,9 |
+| B_barrido_s1 | 0,1 % | 0,72 | 1,95 | −4,9 | 421 | −13,7 ± 2,3 | −0,8 ± 0,8 |
+| B_barrido_s2 | 0,3 % | 0,84 | 2,32 | −5,5 | 421 | −13,4 ± 2,3 | −0,4 ± 0,8 |
+| B_barrido_s3 | 0,1 % | 0,57 | 1,12 | −2,0 | 421 | −13,7 ± 2,3 | −1,6 ± 0,6 |
+| N_maestro_s1 | 51,8 % | 2,51 | 4,46 | 29,2 | 333 | +38,0 ± 3,6 | +1,7 ± 0,9 |
+| **N_maestro_s2** | **59,0 %** | 2,62 | 3,45 | **39,3** | 313 | **+45,2 ± 3,7** | +0,7 ± 0,8 |
+| N_maestro_s3 | 58,7 % | 2,60 | 4,84 | 31,8 | 311 | +44,9 ± 3,7 | +2,1 ± 1,0 |
+
+- **Las redes entrenadas con la simulación realista (maestro de siempre) superan a E2 en esa simulación por +38 a +45 puntos de misión.** La mejor es **N_maestro_s2**: más misiones, más puntaje y choques dentro del ruido contra E2.
+- El maestro "barrido" no sirve como maestro: sus redes casi nunca completan.
+- **Límite:** esto se mide en la simulación realista, que es un modelo ajustado con 75 barridos de una sola bahía. Lo que decide es la prueba real del 25/11: E2 contra N_maestro_s2, mismas condiciones.
+- Los modelos están en la PC del equipo, en `Documents\orquita-corridas\noche_realista_20261124_2319\modelos_*`. No van a git.
+
