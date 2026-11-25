@@ -5,7 +5,7 @@
 $ErrorActionPreference = 'Continue'
 
 # ---- Configuración ----
-$Commit = '002419c'
+$Commit = 'ed04b06'
 $Umbral = 3   # Lobitos para pasar a ESCAPE (reglamento de la competencia).
 # -----------------------
 
@@ -63,10 +63,23 @@ try {
     Write-Host ''
     Write-Host 'Navegación:'
     Write-Host '  1 = redes E2 (percepción + movimiento)   <- la que queremos probar'
-    Write-Host '  2 = reglas (navegación anterior, plan B)'
-    $modo = Read-Host 'Elegí 1 o 2'
+    Write-Host '  2 = reglas (navegación anterior, plan B; ojo: sin candado de salida)'
+    Write-Host '  3 = barrido (zigzag con la percepción de E2)'
+    Write-Host '  4 = red nueva (percepción + movimiento de otra carpeta, por ejemplo la de anoche)'
+    $modo = Read-Host 'Elegí 1, 2, 3 o 4'
     $extra = @()
     if ($modo -eq '2') { $extra = @('--reglas') }
+    elseif ($modo -eq '3') {
+        if (-not (Test-Path (Join-Path $e2 'percepcion.nnet'))) { throw "No encuentro la percepción E2 en $e2" }
+        Copy-Item (Join-Path $e2 'percepcion.nnet') $modelos -Force
+        $extra = @('--modo=barrido')
+    }
+    elseif ($modo -eq '4') {
+        $nueva = (Read-Host 'Carpeta con percepcion.nnet y movimiento.nnet (podés arrastrarla acá)').Trim('"', ' ')
+        if (-not (Test-Path (Join-Path $nueva 'movimiento.nnet'))) { throw "No encuentro movimiento.nnet en $nueva" }
+        Copy-Item (Join-Path $nueva 'percepcion.nnet') $modelos -Force
+        Copy-Item (Join-Path $nueva 'movimiento.nnet') $modelos -Force
+    }
     else {
         if (-not (Test-Path (Join-Path $e2 'movimiento.nnet'))) { throw "No encuentro las redes E2 en $e2" }
         Copy-Item (Join-Path $e2 'percepcion.nnet') $modelos -Force
