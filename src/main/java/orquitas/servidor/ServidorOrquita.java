@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import orquitas.servidor.comunicacion.EnlaceOrquita;
 import orquitas.servidor.navegacion.Navegacion;
+import orquitas.servidor.navegacion.PilotoBarrido;
 import orquitas.servidor.navegacion.PreprocesadorTelemetria;
 import orquitas.servidor.navegacion.RedMovimiento;
 import orquitas.servidor.navegacion.RedNeuronal;
@@ -14,10 +15,11 @@ import orquitas.servidor.persistencia.Estomago;
 /**
  * Arranque del Servidor del Hito 3. Uso:
  * {@code ServidorOrquita <COMx> [--umbral=N] [--estomago=ruta] [--modelo=ruta]
- *  [--percepcion=ruta --movimiento=ruta | --reglas]}.
+ *  [--percepcion=ruta --movimiento=ruta | --reglas | --modo=barrido]}.
  * Si existen modelos/percepcion.nnet y modelos/movimiento.nnet (entrenados en la bahía simulada), la
  * navegación usa las dos redes (etiqueta por sector, dirección y ms). Con --reglas, o si no están,
- * usa la red de una clase (--modelo) con paso fijo.
+ * usa la red de una clase (--modelo) con paso fijo. Con --modo=barrido, la percepción etiqueta cada
+ * sector y PilotoBarrido recorre la bahía en zigzag (no usa la red de movimiento).
  * Cada arranque empieza una misión nueva: vacía estomago.txt.
  */
 public class ServidorOrquita {
@@ -26,7 +28,7 @@ public class ServidorOrquita {
     public static void main(String[] args) throws Exception {
         if (args.length < 1 || args[0].startsWith("--")) {
             System.err.println("Uso: ServidorOrquita <COMx> [--umbral=N] [--estomago=ruta] [--modelo=ruta]"
-                    + " [--percepcion=ruta --movimiento=ruta | --reglas]");
+                    + " [--percepcion=ruta --movimiento=ruta | --reglas | --modo=barrido]");
             System.exit(2);
         }
         String nombrePuerto = args[0];
@@ -35,7 +37,7 @@ public class ServidorOrquita {
         Path rutaModelo = Path.of("modelos/entorno.nnet");
         Path rutaPercepcion = Path.of("modelos/percepcion.nnet");
         Path rutaMovimiento = Path.of("modelos/movimiento.nnet");
-        boolean soloReglas = false;
+        boolean soloReglas = false, barrido = false;
         for (int i = 1; i < args.length; i++) {
             if (args[i].startsWith("--umbral=")) umbral = Integer.parseInt(args[i].substring(9));
             else if (args[i].startsWith("--estomago=")) rutaEstomago = args[i].substring(11);
@@ -43,6 +45,8 @@ public class ServidorOrquita {
             else if (args[i].startsWith("--percepcion=")) rutaPercepcion = Path.of(args[i].substring(13));
             else if (args[i].startsWith("--movimiento=")) rutaMovimiento = Path.of(args[i].substring(13));
             else if (args[i].equals("--reglas")) soloReglas = true;
+            else if (args[i].equals("--modo=barrido")) barrido = true;
+            else if (args[i].equals("--modo=redes")) barrido = false;
             else {
                 System.err.println("Argumento desconocido: " + args[i]);
                 System.exit(2);
@@ -58,7 +62,16 @@ public class ServidorOrquita {
         estomago.reiniciar();
         boolean conRedes = !soloReglas && Files.isRegularFile(rutaPercepcion) && Files.isRegularFile(rutaMovimiento);
         Navegacion navegacion;
-        if (conRedes) {
+        if (barrido) {
+            if (!Files.isRegularFile(rutaPercepcion)) {
+                System.err.println("El modo barrido necesita la red de percepción: no se encontró " + rutaPercepcion.toAbsolutePath());
+                System.exit(1);
+            }
+            System.out.println(" Navegación: modo BARRIDO (zigzag) con la red de percepción (" + rutaPercepcion + ")");
+            System.out.println(" Filtro de LOBITO: " + RedPercepcion.FILTRO_LOBITO + " | Corrección del piso: "
+                    + (PreprocesadorTelemetria.CORRECCION_PISO ? "prendida" : "apagada"));
+            navegacion = new Navegacion(new RedPercepcion(rutaPercepcion), new PilotoBarrido());
+        } else if (conRedes) {
             System.out.println(" Navegación: redes de percepción (" + rutaPercepcion + ") y movimiento (" + rutaMovimiento + ")");
             System.out.println(" Filtro de LOBITO: " + RedPercepcion.FILTRO_LOBITO + " | Corrección del piso: "
                     + (PreprocesadorTelemetria.CORRECCION_PISO ? "prendida" : "apagada"));

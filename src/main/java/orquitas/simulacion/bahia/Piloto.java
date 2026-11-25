@@ -61,6 +61,22 @@ public interface Piloto {
         };
     }
 
+    /**
+     * Modo barrido del Servidor (ver PilotoBarrido): zigzag con la percepción de la red (o, si percepcion es
+     * null, con las etiquetas reales: así hace de maestro sin trampa, que no conoce la geometría). Uno por prueba.
+     */
+    static Piloto barrido(RedPercepcion percepcion) {
+        orquitas.servidor.navegacion.PilotoBarrido p = new orquitas.servidor.navegacion.PilotoBarrido();
+        return new Piloto() {
+            @Override public Decision decidir(SimuladorBahia sim, SensorSimulado.Barrido b) {
+                EtiquetaSector[] etiquetas = percepcion == null ? b.etiquetas() : RedPercepcion.etiquetas(percepcion.probabilidades(b.telemetria()));
+                return new Decision(p.decidir(b.telemetria(), etiquetas, sim.modo(), sim.capturas()), etiquetas);
+            }
+
+            @Override public void registrarOrden(OrdenMovimiento ejecutada) { p.registrarOrden(ejecutada); }
+        };
+    }
+
     /** Maestro v2 (ver MaestroV2): uno por prueba, porque puede tener memoria. */
     static Piloto maestroV2(MaestroV2.Opciones opciones) {
         MaestroV2 m = new MaestroV2(opciones);

@@ -20,6 +20,9 @@ import java.util.Objects;
  *       ReflejoSeguridad (frenar o retroceder antes de chocar) y el DetectorAtasco (si el barrido no
  *       cambió, la orden anterior no tuvo efecto y se prueba otra). La orden final se registra en
  *       la memoria.</li>
+ *   <li>Barrido (--modo=barrido, {@link PilotoBarrido}): la percepción de Neuroph etiqueta cada sector y
+ *       un piloto de reglas recorre la bahía en zigzag, va a la canica cuando la ve cerca y en ESCAPE busca
+ *       la salida. También pasa por el reflejo, el atasco y el candado de la salida.</li>
  *   <li>Por reglas (RedNeuronal de una sola clase por barrido): la forma anterior, con paso fijo.</li>
  * </ul>
  * En los dos casos la telemetría pasa antes por la regla del -1 (PreprocesadorTelemetria).
@@ -44,6 +47,7 @@ public class Navegacion {
     private final RedNeuronal redNeuronal;
     private final RedPercepcion redPercepcion;
     private final RedMovimiento redMovimiento;
+    private final PilotoBarrido pilotoBarrido;
     private volatile ModoOperativo modoOperativo = ModoOperativo.BUSQUEDA;
     private OrdenMovimiento ordenDecidida = new OrdenMovimiento(Movimiento.DETENER, 0);
     private EtiquetaSector[] ultimasEtiquetas;
@@ -57,6 +61,15 @@ public class Navegacion {
         this.redNeuronal = Objects.requireNonNull(redNeuronal);
         this.redPercepcion = null;
         this.redMovimiento = null;
+        this.pilotoBarrido = null;
+    }
+
+    /** Modo barrido: percepción de Neuroph por sector y el recorrido en zigzag de PilotoBarrido. */
+    public Navegacion(RedPercepcion redPercepcion, PilotoBarrido pilotoBarrido) {
+        this.redNeuronal = null;
+        this.redPercepcion = Objects.requireNonNull(redPercepcion);
+        this.redMovimiento = null;
+        this.pilotoBarrido = Objects.requireNonNull(pilotoBarrido);
     }
 
     /** Navegación con las redes de percepción por sector y de movimiento (dirección y ms). */
@@ -64,11 +77,16 @@ public class Navegacion {
         this.redNeuronal = null;
         this.redPercepcion = Objects.requireNonNull(redPercepcion);
         this.redMovimiento = Objects.requireNonNull(redMovimiento);
+        this.pilotoBarrido = null;
     }
 
     /** CU-07. Decide la orden (dirección y duración) y la deja en ordenDecidida (CU-08 la envía). */
     public synchronized void determinarMovimiento(int[] telemetria) {
         int[] corregida = PreprocesadorTelemetria.corregir(telemetria);
+        if (pilotoBarrido != null) {
+            ordenDecidida = decidirConBarrido(telemetria, corregida);
+            return;
+        }
         if (redPercepcion != null) {
             ordenDecidida = decidirConRedes(telemetria, corregida);
             return;
@@ -80,6 +98,15 @@ public class Navegacion {
         }
         lecturasNoReconocidas = 0;
         ordenDecidida = OrdenMovimiento.conPasoFijo(calcularMovimiento(entorno, corregida));
+    }
+
+    private OrdenMovimiento decidirConBarrido(int[] telemetria, int[] corregida) {
+        ultimasEtiquetas = RedPercepcion.etiquetas(redPercepcion.probabilidades(telemetria));
+        if (modoOperativo == ModoOperativo.ESCAPE && campoLibre(corregida)) establecerModoOperativo(ModoOperativo.LIBERADA);
+        OrdenMovimiento elegida = pilotoBarrido.decidir(telemetria, ultimasEtiquetas, modoOperativo, 0);
+        pilotoBarrido.registrarOrden(elegida);
+        System.out.println("[Barrido] fase " + pilotoBarrido.fase() + " | modo " + modoOperativo + " | orden " + elegida);
+        return elegida;
     }
 
     private OrdenMovimiento decidirConRedes(int[] telemetria, int[] corregida) {
