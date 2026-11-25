@@ -5,7 +5,7 @@
 $ErrorActionPreference = 'Continue'
 
 # ---- Configuración ----
-$Commit = 'ed04b06'
+$Commit = 'd3195f7'
 $Umbral = 3   # Lobitos para pasar a ESCAPE (reglamento de la competencia).
 # -----------------------
 
