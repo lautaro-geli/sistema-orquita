@@ -83,7 +83,7 @@ import orquitas.simulacion.bahia.SimuladorBahia;
  */
 public class EntrenamientoSimulado {
     static final String USO = "Uso: EntrenamientoSimulado [episodios=250] [epocas=60] [carpeta=modelos] [rondasDagger=2] [--hilos=N]"
-            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia] [--mm-solo-avance] [--peso-mm=X] [--escapes=N] [--maestro=actual|v2|opciones]";
+            + " [--entradas=VARIANTE] [--semilla=N] [--percepcion-reforzada] [--repeticion=N] [--pruebas=N] [--error=cuadratico|entropia] [--mm-solo-avance] [--peso-mm=X] [--escapes=N] [--maestro=actual|v2|barrido|opciones] [--reales=ruta.csv] [--peso-reales=N]";
     /** Semilla de la recolección, de los pesos iniciales y de las mezclas (--semilla=N la cambia; la evaluación no). */
     static long SEMILLA = 20261113L;
     static final long SEMILLA_EVALUACION = 900_000L;
@@ -119,6 +119,18 @@ public class EntrenamientoSimulado {
      * son el avance que sigue) y así se la evalúa. Null = Maestro actual.
      */
     static MaestroV2.Opciones MAESTRO_V2 = null;
+    /**
+     * --maestro=barrido: enseña el modo barrido del Servidor (PilotoBarrido) con las etiquetas verdaderas por
+     * sector: un maestro sin trampa, que no conoce la geometría (dónde están las canicas o la salida).
+     */
+    static boolean MAESTRO_BARRIDO = false;
+    /**
+     * --reales=ruta.csv: barridos reales etiquetados por sector (39 valores + 13 etiquetas por línea) que se
+     * suman a los datos de la percepción, repetidos --peso-reales=N veces (por defecto 20).
+     */
+    static Path REALES = null;
+    static int PESO_REALES = 20;
+
     /** Bahías nuevas de la evaluación final (--pruebas=N). */
     static int PRUEBAS = 100;
 
@@ -191,7 +203,7 @@ public class EntrenamientoSimulado {
                 + "; error " + (ENTROPIA ? "entropía cruzada" : "cuadrático")
                 + (MM_SOLO_AVANCE ? "; mm solo en avances" : "") + (PESO_MM != 1 ? "; peso mm " + PESO_MM : "")
                 + (ESCAPES > 0 ? "; episodios de escape " + ESCAPES : "")
-                + "; maestro " + (MAESTRO_V2 == null ? "actual" : "v2 " + MAESTRO_V2) + "; barrido " + SimuladorBahia.SEGUNDOS_BARRIDO + " s" + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
+                + "; maestro " + (MAESTRO_BARRIDO ? "barrido (sin trampa)" : MAESTRO_V2 == null ? "actual" : "v2 " + MAESTRO_V2) + "; sim realista " + SensorSimulado.REALISTA + "; barrido " + SimuladorBahia.SEGUNDOS_BARRIDO + " s" + "; semilla " + SEMILLA + "; repetición máxima " + REPETICION_MAXIMA + "; evaluación en " + PRUEBAS + " bahías"
                 + (PERCEPCION_REFORZADA ? "; percepción reforzada" : ""));
         MultiLayerPerceptron movimiento = nuevaRed(VARIANTE.entradas, ocultas, RedMovimiento.SALIDAS);
         if (ENTROPIA) salidaLineal(movimiento);
@@ -311,8 +323,11 @@ public class EntrenamientoSimulado {
             else if (a.startsWith("--escapes=")) ESCAPES = Math.max(0, Integer.parseInt(a.substring(10)));
             else if (a.startsWith("--maestro=")) {
                 String m = a.substring(10).toLowerCase(Locale.ROOT);
-                MAESTRO_V2 = m.equals("actual") ? null : MaestroV2.Opciones.desde(m.equals("v2") ? "giro+seguro+embudo" : m);
+                MAESTRO_BARRIDO = m.equals("barrido");
+                MAESTRO_V2 = m.equals("actual") || MAESTRO_BARRIDO ? null : MaestroV2.Opciones.desde(m.equals("v2") ? "giro+seguro+embudo" : m);
             }
+            else if (a.startsWith("--reales=")) REALES = Path.of(a.substring(9));
+            else if (a.startsWith("--peso-reales=")) PESO_REALES = Math.max(1, Integer.parseInt(a.substring(14)));
         }
     }
 
@@ -328,7 +343,8 @@ public class EntrenamientoSimulado {
             else if (!a.startsWith("--hilos=") && !a.startsWith("--entradas=") && !a.startsWith("--semilla=")
                     && !a.equals("--percepcion-reforzada") && !a.startsWith("--repeticion=") && !a.startsWith("--pruebas=")
                     && !a.startsWith("--error=") && !a.equals("--mm-solo-avance") && !a.startsWith("--peso-mm=")
-                    && !a.startsWith("--escapes=") && !a.startsWith("--maestro=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
+                    && !a.startsWith("--escapes=") && !a.startsWith("--maestro=") && !a.startsWith("--reales=")
+                    && !a.startsWith("--peso-reales=")) throw new IllegalArgumentException("Argumento desconocido: " + a);
         }
         return posicionales;
     }
@@ -483,7 +499,38 @@ public class EntrenamientoSimulado {
                 }
             }
         }
+        if (REALES != null) filas.addAll(filasReales(REALES, PESO_REALES));
         return mezclado(RedPercepcion.ENTRADAS, RedPercepcion.SALIDAS_RED, filas);
+    }
+
+    /**
+     * Filas de percepción de barridos reales etiquetados: cada línea tiene los 39 valores (en el orden del
+     * protocolo: sector 0 = derecha) y las 13 etiquetas; se ignoran las líneas que empiezan con #. Cada
+     * sector se repite peso veces (los LOBITO, 4 veces más, como en los simulados).
+     */
+    static List<DataSetRow> filasReales(Path archivo, int peso) {
+        List<DataSetRow> filas = new ArrayList<>();
+        int barridos = 0;
+        try {
+            for (String linea : Files.readAllLines(archivo, StandardCharsets.UTF_8)) {
+                if (linea.isBlank() || linea.startsWith("#") || linea.startsWith("v0")) continue;
+                String[] c = linea.split(",");
+                int[] t = new int[PreprocesadorTelemetria.VALORES];
+                for (int i = 0; i < t.length; i++) t[i] = Integer.parseInt(c[i].trim());
+                double[] entradas = PreprocesadorTelemetria.entradas(t);
+                for (int s = 0; s < PreprocesadorTelemetria.SECTORES; s++) {
+                    EtiquetaSector et = EtiquetaSector.valueOf(c[PreprocesadorTelemetria.VALORES + s].trim());
+                    DataSetRow fila = new DataSetRow(PreprocesadorTelemetria.entradasVentana(entradas, s), RedPercepcion.salidaDeseada(et));
+                    int veces = peso * (et == EtiquetaSector.LOBITO ? 4 : 1);
+                    for (int i = 0; i < veces; i++) filas.add(fila);
+                }
+                barridos++;
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        log("Percepción: " + barridos + " barridos reales de " + archivo + " (x" + peso + ")");
+        return filas;
     }
 
     /**
@@ -572,6 +619,7 @@ public class EntrenamientoSimulado {
             Piloto.Decision ejecutada = azar.nextDouble() < PROBABILIDAD_ORDEN_AL_AZAR ? new Piloto.Decision(ordenAlAzar(azar), null) : d;
             episodio.add(ejemplo(b, sim.modo(), d, ejecutada));
             ejecutada.ejecutarEn(sim);
+            maestro.registrar(ejecutada); // El maestro barrido recuerda lo que se movió (los otros no hacen nada).
         }
         return episodio;
     }
@@ -609,12 +657,14 @@ public class EntrenamientoSimulado {
             episodio.add(ejemplo(b, sim.modo(), delMaestro, ejecutada));
             ejecutada.ejecutarEn(sim);
             piloto.registrar(ejecutada);
+            maestro.registrar(ejecutada);
         }
         return episodio;
     }
 
     /** Maestro que enseña: el actual o el v2 (uno por episodio). */
     static Piloto maestroDelEpisodio() {
+        if (MAESTRO_BARRIDO) return Piloto.barrido(null);
         return MAESTRO_V2 == null ? Piloto.maestro() : Piloto.maestroV2(MAESTRO_V2);
     }
 
@@ -723,6 +773,7 @@ public class EntrenamientoSimulado {
             if (red.movimiento() == maestro.movimiento()) iguales++;
             total++;
             dm.ejecutarEn(sim);
+            delMaestro.registrar(dm);
             memoria.registrarOrden(maestro);
             if (dm.avanceDespues() != null) memoria.registrarOrden(dm.avanceDespues());
         }
