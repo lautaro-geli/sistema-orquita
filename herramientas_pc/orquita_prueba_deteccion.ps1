@@ -5,7 +5,17 @@ $ErrorActionPreference = 'Continue'
 $docs = Join-Path $env:USERPROFILE 'Documents'
 $repo = Join-Path $docs 'sistema-orquita'
 $base = Join-Path $docs 'orquita-corridas'
-$e2 = Join-Path $base 'modelos_N_maestro_s2'   # Red nueva; la de E2 era experimentos2_20261116_1544\modelos_E2_repeticion_2_s3
+# Red nueva N_maestro_s2: la primera carpeta que la tenga (orquita-corridas, la noche_realista_* que la entreno,
+# Escritorio o Descargas). Si no esta en ninguna, se usa E2.
+$e2 = Join-Path $base 'modelos_N_maestro_s2'
+$candidatas = @($e2)
+$candidatas += Get-ChildItem $base -Directory -Filter 'noche_realista_*' -ErrorAction SilentlyContinue |
+               Sort-Object Name -Descending | ForEach-Object { Join-Path $_.FullName 'modelos_N_maestro_s2' }
+$candidatas += @((Join-Path $env:USERPROFILE 'OneDrive\Desktop\modelos_N_maestro_s2'), (Join-Path $env:USERPROFILE 'Desktop\modelos_N_maestro_s2'),
+                 (Join-Path $env:USERPROFILE 'Downloads\modelos_N_maestro_s2'),
+                 (Join-Path $base 'experimentos2_20261116_1544\modelos_E2_repeticion_2_s3'))
+foreach ($c in $candidatas) { if (Test-Path (Join-Path $c 'percepcion.nnet')) { $e2 = $c; break } }
+Write-Host "== Red de percepcion: $e2"
 $fecha = Get-Date -Format 'yyyyMMdd_HHmm'
 $compilado = Join-Path $base "deteccion-compilado_$fecha"
 $prueba = Join-Path $base "deteccion_$fecha"
@@ -30,7 +40,7 @@ try {
     Paso 'Compilando (mvn clean package)' { powershell -NoProfile -ExecutionPolicy Bypass -File .\preparar.ps1 }
     $classpath = (Join-Path $compilado 'target\classes') + ';' + (Join-Path $compilado 'target\dependency\*')
     $red = Join-Path $e2 'percepcion.nnet'
-    if (-not (Test-Path $red)) { throw "No encuentro la red de percepcion N_maestro_s2 en $red" }
+    if (-not (Test-Path $red)) { throw "No encuentro la red de percepcion (ni N_maestro_s2 ni E2). Buscada en: $($candidatas -join ', ')" }
 
     $puertos = [System.IO.Ports.SerialPort]::GetPortNames() | Sort-Object
     Write-Host ''
